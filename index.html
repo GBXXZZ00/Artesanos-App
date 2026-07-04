@@ -281,9 +281,9 @@
   .nav-item.active{ color:var(--gold); }
   .nav-item span{ font-size:10.5px; font-weight:600; }
 
-  /* ---------- M / DRAWER ---------- */
-  .m{ position:absolute; inset:0; background:rgba(0,0,0,.6); opacity:0; pointer-events:none; transition:opacity .28s var(--ease-out); z-index:20; }
-  .m.open{ opacity:1; pointer-events:auto; }
+  /* ---------- SCRIM / DRAWER ---------- */
+  .scrim{ position:absolute; inset:0; background:rgba(0,0,0,.6); opacity:0; pointer-events:none; transition:opacity .28s var(--ease-out); z-index:20; }
+  .scrim.open{ opacity:1; pointer-events:auto; }
   .drawer{
     position:absolute; left:0; right:0; bottom:0; max-height:90%; background:var(--surface);
     border-radius:18px 18px 0 0; border-top:1px solid var(--border); transform:translateY(100%);
@@ -364,6 +364,8 @@
   .client-edit-actions button{ flex:1; padding:8px; font-size:12.5px; font-weight:700; border-radius:var(--radius-sm); cursor:pointer; }
 
   .item-row{ position:relative; cursor:pointer; border-radius:8px; transition: background .15s var(--ease-out), margin .15s var(--ease-out); }
+  .item-thumb{ width:42px; height:42px; border-radius:8px; background:var(--surface2); flex-shrink:0; overflow:hidden; }
+  .item-left{ display:flex; align-items:center; gap:10px; min-width:0; }
   .item-row.selected{ background:var(--gold-dim); margin:0 -10px; padding-left:10px; padding-right:10px; }
   .item-row .item-actions{ display:flex; align-items:center; gap:10px; }
   .item-delete-btn{ color:var(--red); background:none; border:none; font-size:17px; cursor:pointer; padding:2px 4px; line-height:1; }
@@ -387,16 +389,16 @@
   .catalog-divider::before, .catalog-divider::after{ content:''; flex:1; height:1px; background:var(--border); }
   .catalog-divider span{ font-size:11px; color:var(--text3); font-weight:600; text-transform:uppercase; letter-spacing:.5px; }
 
-  .m2{ position:absolute; inset:0; background:rgba(0,0,0,.65); opacity:0; pointer-events:none; transition:opacity .28s var(--ease-out); z-index:30; }
-  .m2.open{ opacity:1; pointer-events:auto; }
+  .scrim2{ position:absolute; inset:0; background:rgba(0,0,0,.65); opacity:0; pointer-events:none; transition:opacity .28s var(--ease-out); z-index:30; }
+  .scrim2.open{ opacity:1; pointer-events:auto; }
   .drawer-item{
     position:absolute; left:0; right:0; bottom:0; max-height:92%; background:var(--surface);
     border-radius:18px 18px 0 0; border-top:1px solid var(--border); transform:translateY(100%);
     transition: transform .32s var(--ease-drawer); z-index:31; display:flex; flex-direction:column; overflow:hidden;
   }
   .drawer-item.open{ transform:translateY(0); }
-  .m3{ position:absolute; inset:0; background:rgba(0,0,0,.65); opacity:0; pointer-events:none; transition:opacity .28s var(--ease-out); z-index:32; }
-  .m3.open{ opacity:1; pointer-events:auto; }
+  .scrim3{ position:absolute; inset:0; background:rgba(0,0,0,.65); opacity:0; pointer-events:none; transition:opacity .28s var(--ease-out); z-index:32; }
+  .scrim3.open{ opacity:1; pointer-events:auto; }
   .drawer-exh{
     position:absolute; left:0; right:0; bottom:0; max-height:90%; background:var(--surface);
     border-radius:18px 18px 0 0; border-top:1px solid var(--border); transform:translateY(100%);
@@ -461,7 +463,7 @@
     <div class="login-form">
       <div class="field" id="fieldUsuario" style="position:relative">
         <label>Usuario</label>
-        <input type="text" id="inputUsuario" autocomplete="off" placeholder="Ebe o selecciona tu nombre">
+        <input type="text" id="inputUsuario" autocomplete="off" placeholder="Escribe o selecciona tu nombre">
         <div class="user-dd" id="userDd"></div>
         <div class="field-error">Ingresa tu usuario</div>
       </div>
@@ -597,8 +599,8 @@
     </div>
   </div>
 
-  <!-- M + DRAWER DETALLE -->
-  <div class="m" id="m" data-action="close-all"></div>
+  <!-- SCRIM + DRAWER DETALLE -->
+  <div class="scrim" id="scrim" data-action="close-all"></div>
   <div class="drawer" id="drawerDetalle">
     <div class="drawer-handle"></div>
     <div class="drawer-head">
@@ -615,7 +617,7 @@
           <input type="text" id="editClienteTelefono" placeholder="Teléfono">
           <input type="date" id="editFechaEntrega">
           <div class="client-edit-actions">
-            <button class="btn-sm" data-action="guardar-cliente" style="background:var(--gold-dim);color:var(--gold)">Guardar</button>
+            <button class="btn-sm" data-action="guardar-cliente" style="background:var(--gold);color:#1A1409">Guardar</button>
             <button class="btn-ghost" data-action="cancelar-editar-cliente">Cancelar</button>
           </div>
         </div>
@@ -634,12 +636,13 @@
       </div>
       <div class="abono-row">
         <input type="number" id="inputAbono" placeholder="Monto a abonar">
-        <button class="btn-sm" data-action="registrar-abono">Registrar abono</button>
+        <button class="btn-sm" data-action="registrar-abono" style="background:var(--gold);color:#1A1409">Registrar abono</button>
       </div>
       <div class="drawer-actions">
         <button class="btn-wa" data-action="wa-cliente">WhatsApp cliente</button>
-        <button class="btn-ghost" data-action="print-pedido">Imprimir</button>
+        <button class="btn-ghost" id="btnVerPresupuesto" data-action="ver-presupuesto"><span id="btnVerPresupuestoLabel">Ver presupuesto</span></button>
       </div>
+      <button class="btn-add-item-existing" id="btnEnviarNota" data-action="enviar-nota" style="margin-top:10px"><span id="btnEnviarNotaLabel">Enviar nota por WhatsApp</span></button>
     </div>
   </div>
 
@@ -688,8 +691,8 @@
     </div>
   </div>
 
-  <!-- M 2 + DRAWER ÍTEM (compartido: nuevo pedido / agregar a pedido existente) -->
-  <div class="m2" id="m2" data-action="close-item-drawer"></div>
+  <!-- SCRIM 2 + DRAWER ÍTEM (compartido: nuevo pedido / agregar a pedido existente) -->
+  <div class="scrim2" id="scrim2" data-action="close-item-drawer"></div>
   <div class="drawer-item" id="drawerItem">
     <div class="drawer-handle"></div>
     <div class="drawer-head">
@@ -741,13 +744,13 @@
           <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Precio final (editable)</label>
           <input type="number" id="npPrecioFinal" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px">
         </div>
-        <button class="btn-sm" id="btnAgregarItemAccion" style="width:100%;margin-bottom:10px" data-action="add-item"><span id="btnAgregarItemLabel">+ Agregar este ítem</span></button>
+        <button class="btn-primary" id="btnAgregarItemAccion" style="width:100%;margin-bottom:10px" data-action="add-item"><span id="btnAgregarItemLabel">+ Agregar este ítem</span></button>
       </div>
     </div>
   </div>
 
-  <!-- M 3 + DRAWER DETALLE DE PIEZA EN EXHIBICIÓN -->
-  <div class="m3" id="m3" data-action="close-exh-drawer"></div>
+  <!-- SCRIM 3 + DRAWER DETALLE DE PIEZA EN EXHIBICIÓN -->
+  <div class="scrim3" id="scrim3" data-action="close-exh-drawer"></div>
   <div class="drawer-exh" id="drawerExh">
     <div class="drawer-handle"></div>
     <div class="drawer-head">
@@ -771,8 +774,8 @@
     </div>
   </div>
 
-  <!-- M 4 + DRAWER DETALLE DE MODELO DE CATÁLOGO -->
-  <div class="m3" id="m4" data-action="close-cat-drawer"></div>
+  <!-- SCRIM 4 + DRAWER DETALLE DE MODELO DE CATÁLOGO -->
+  <div class="scrim3" id="scrim4" data-action="close-cat-drawer"></div>
   <div class="drawer-exh" id="drawerCat">
     <div class="drawer-handle"></div>
     <div class="drawer-head">
@@ -795,8 +798,8 @@
     </div>
   </div>
 
-  <!-- M 5 + DRAWER NUEVO MODELO DE CATÁLOGO -->
-  <div class="m3" id="m5" data-action="close-nuevo-modelo"></div>
+  <!-- SCRIM 5 + DRAWER NUEVO MODELO DE CATÁLOGO -->
+  <div class="scrim3" id="scrim5" data-action="close-nuevo-modelo"></div>
   <div class="drawer-exh" id="drawerNuevoModelo">
     <div class="drawer-handle"></div>
     <div class="drawer-head">
@@ -819,14 +822,20 @@
         <div class="field"><label>Ancho (m)</label><input type="number" step="0.01" id="nmAncho" value="0.90"></div>
       </div>
       <div class="form-group"><label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Color</label><input type="text" id="nmColor" placeholder="Blanco / Negro" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px"></div>
-      <div class="form-group"><label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Foto (URL, opcional)</label><input type="text" id="nmFoto" placeholder="https://..." style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px"></div>
+      <div class="form-group">
+        <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Foto (opcional)</label>
+        <input type="file" id="nmFoto" accept="image/*" style="width:100%;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:13px">
+        <div id="nmFotoPreviewWrap" class="hidden" style="margin-top:8px;width:70px;height:70px;border-radius:8px;overflow:hidden;border:1px solid var(--border)">
+          <img id="nmFotoPreview" style="width:100%;height:100%;object-fit:cover">
+        </div>
+      </div>
       <div class="form-group"><label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Precio base</label><input type="number" id="nmPrecio" placeholder="0" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px"></div>
-      <button class="btn-primary" style="width:100%" data-action="guardar-nuevo-modelo">Guardar modelo</button>
+      <button class="btn-primary" id="btnGuardarModelo" style="width:100%" data-action="guardar-nuevo-modelo"><span id="btnGuardarModeloLabel">Guardar modelo</span></button>
     </div>
   </div>
 
   <!-- MODAL DE CONFIRMACIÓN (reutilizable, bloqueante) -->
-  <div class="m3" id="mConfirm" style="z-index:80" data-action="cerrar-confirm"></div>
+  <div class="scrim3" id="scrimConfirm" style="z-index:80" data-action="cerrar-confirm"></div>
   <div class="drawer-exh" id="drawerConfirm" style="z-index:81; max-height:none">
     <div class="drawer-handle"></div>
     <div class="drawer-body" style="padding-top:10px">
@@ -841,10 +850,10 @@
   <div class="toast-container" id="toastContainer"></div>
 </div>
 
-<pt>
+<script>
 /* ============ CONFIG ============ */
 const MODO_DEMO = false;
-const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbxy2Czn_4UQQrICDZk2AF-hmx66wmA3hmd2atMAivcfQUBaIuE2RwDbvPihILKBpCpD/exec';
+const BACKEND_ = 'https://script.google.com/macros/s/AKfycbysbI3n4bMdEwBUtXcG9_U7kbRX-FkPcxHeiFRChBp0lMej7fn75yYtpdU8Q9312Z_Z/exec';
 const NUMERO_NEGOCIO = '584220167079';
 
 /* ============ CONEXIÓN AL BACKEND ============ */
@@ -1097,6 +1106,15 @@ function totalPedido(p){
   const desc = p.descuento || 0;
   return Math.max(0, sub - desc);
 }
+function iconoGenericoTipo(){
+  return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>`;
+}
+function miniaturaItem(item){
+  const foto = item.catalogoId ? (getModelo(item.catalogoId)?.foto || null) : null;
+  return foto
+    ? `<img src="${foto}" alt="" style="width:100%;height:100%;object-fit:cover">`
+    : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--gold)">${iconoGenericoTipo()}</div>`;
+}
 function especTexto(item){
   const e = item.especificaciones;
   const parts = [];
@@ -1192,7 +1210,10 @@ function poblarDetalle(id){
 
   document.getElementById('detItems').innerHTML = p.items.map((it,i)=>`
     <div class="item-row" data-action="toggle-select-item" data-index="${i}">
-      <div><div class="item-name">${it.nombreModelo || it.tipo}${it.cantidad>1 ? ' ×'+it.cantidad : ''}</div><div class="item-spec">${especTexto(it)}</div></div>
+      <div class="item-left">
+        <div class="item-thumb">${miniaturaItem(it)}</div>
+        <div><div class="item-name">${it.nombreModelo || it.tipo}${it.cantidad>1 ? ' ×'+it.cantidad : ''}</div><div class="item-spec">${especTexto(it)}</div></div>
+      </div>
       <div class="item-actions">
         <div class="item-price">${money(it.precio*it.cantidad)}</div>
         <button class="item-delete-btn" data-action="delete-item-existing" data-index="${i}" title="Eliminar ítem">&times;</button>
@@ -1207,11 +1228,11 @@ function poblarDetalle(id){
 }
 function abrirDrawer(id){
   poblarDetalle(id);
-  document.getElementById('m').classList.add('open');
+  document.getElementById('scrim').classList.add('open');
   document.getElementById('drawerDetalle').classList.add('open');
 }
 function cerrarTodo(){
-  document.getElementById('m').classList.remove('open');
+  document.getElementById('scrim').classList.remove('open');
   document.getElementById('drawerDetalle').classList.remove('open');
   document.getElementById('drawerNuevo').classList.remove('open');
   cerrarItemDrawer();
@@ -1279,7 +1300,7 @@ async function guardarEdicionItem(itemNuevo){
 function confirmar(mensaje){
   return new Promise(resolve=>{
     document.getElementById('confirmMensaje').textContent = mensaje;
-    document.getElementById('mConfirm').classList.add('open');
+    document.getElementById('scrimConfirm').classList.add('open');
     document.getElementById('drawerConfirm').classList.add('open');
     state.confirmResolver = resolve;
   });
@@ -1341,8 +1362,56 @@ function abrirWhatsapp(){
   const texto = encodeURIComponent(mensajeWhatsapp(p));
   window.open(`https://wa.me/${numero}?text=${texto}`, '_blank');
 }
-function imprimirPedido(){
-  window.print();
+function construirDatosNota(p){
+  const total = totalPedido(p);
+  const saldo = Math.max(0, total - p.abono);
+  return {
+    codigo: p.codigo,
+    cliente: p.cliente,
+    fecha_entrega: p.fecha_entrega,
+    estado: ESTADO_LABEL[p.estado],
+    items: p.items,
+    descuento: p.descuento || 0,
+    abono: p.abono || 0,
+    total, saldo
+  };
+}
+async function generarNotaPdf(p){
+  if(MODO_DEMO){
+    showToast('Generar la nota real requiere el backend conectado', 'error');
+    return null;
+  }
+  try{
+    const resultado = await llamarBackend('generarNota', construirDatosNota(p));
+    return resultado.url;
+  } catch(err){ return null; }
+}
+async function verPresupuesto(){
+  const p = pedidos.find(x=>x.id===state.openPedidoId);
+  if(!p) return;
+  const btn = document.getElementById('btnVerPresupuesto');
+  if(btn.disabled) return;
+  btn.disabled = true;
+  document.getElementById('btnVerPresupuestoLabel').textContent = 'Generando...';
+  const url = await generarNotaPdf(p);
+  btn.disabled = false;
+  document.getElementById('btnVerPresupuestoLabel').textContent = 'Ver presupuesto';
+  if(url) window.open(url, '_blank');
+}
+async function enviarNotaWhatsapp(){
+  const p = pedidos.find(x=>x.id===state.openPedidoId);
+  if(!p) return;
+  const btn = document.getElementById('btnEnviarNota');
+  if(btn.disabled) return;
+  btn.disabled = true;
+  document.getElementById('btnEnviarNotaLabel').textContent = 'Generando...';
+  const url = await generarNotaPdf(p);
+  btn.disabled = false;
+  document.getElementById('btnEnviarNotaLabel').textContent = 'Enviar nota por WhatsApp';
+  if(!url) return;
+  const numero = (p.cliente.telefono || '').replace(/\D/g,'');
+  const texto = encodeURIComponent(`Hola ${p.cliente.nombre}, aquí tienes la nota de tu pedido #${p.codigo}: ${url}`);
+  window.open(`https://wa.me/${numero}?text=${texto}`, '_blank');
 }
 
 /* ============ EDITAR CLIENTE Y ÍTEMS DE UN PEDIDO EXISTENTE ============ */
@@ -1463,7 +1532,7 @@ function cerrarExhDrawer(){
 }
 function construirItemDesdeExhibicion(x){
   const info = getInfoExhibicion(x);
-  return { tipo:info.tipo, nombreModelo:info.nombre, especificaciones:x.especificaciones, precio:x.precio, cantidad:1, exhibicionId:x.id };
+  return { tipo:info.tipo, nombreModelo:info.nombre, catalogoId:x.catalogo_id || null, especificaciones:x.especificaciones, precio:x.precio, cantidad:1, exhibicionId:x.id };
 }
 function venderPiezaExhibicion(){
   const x = exhibicion.find(e=>e.id===state.openExhId);
@@ -1548,6 +1617,7 @@ function abrirNuevoModelo(){
   document.getElementById('nmColor').value = '';
   document.getElementById('nmFoto').value = '';
   document.getElementById('nmPrecio').value = '';
+  document.getElementById('nmFotoPreviewWrap').classList.add('hidden');
   document.getElementById('scrim5').classList.add('open');
   document.getElementById('drawerNuevoModelo').classList.add('open');
 }
@@ -1555,15 +1625,41 @@ function cerrarNuevoModelo(){
   document.getElementById('scrim5').classList.remove('open');
   document.getElementById('drawerNuevoModelo').classList.remove('open');
 }
+function comprimirImagen(archivo, anchoMax){
+  return new Promise((resolve, reject)=>{
+    const lector = new FileReader();
+    lector.onerror = () => reject(new Error('No se pudo leer la imagen'));
+    lector.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error('Imagen inválida'));
+      img.onload = () => {
+        const escala = Math.min(1, anchoMax / img.width);
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width * escala;
+        canvas.height = img.height * escala;
+        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', 0.75).split(',')[1]);
+      };
+      img.src = lector.result;
+    };
+    lector.readAsDataURL(archivo);
+  });
+}
 async function guardarNuevoModelo(){
   const nombre = document.getElementById('nmNombre').value.trim();
   const precio = parseFloat(document.getElementById('nmPrecio').value);
   if(!nombre){ showToast('Ponle un nombre al modelo', 'error'); return; }
   if(!precio || precio <= 0){ showToast('Ingresa un precio base válido', 'error'); return; }
+
+  const btn = document.getElementById('btnGuardarModelo');
+  if(btn.disabled) return;
+  btn.disabled = true;
+  document.getElementById('btnGuardarModeloLabel').textContent = 'Guardando...';
+
   const modelo = {
     nombre,
     tipo: document.getElementById('nmTipo').value,
-    foto: document.getElementById('nmFoto').value.trim() || null,
+    foto: null,
     especificaciones_base: {
       alto: parseFloat(document.getElementById('nmAlto').value) || 1,
       ancho: parseFloat(document.getElementById('nmAncho').value) || 1,
@@ -1571,6 +1667,20 @@ async function guardarNuevoModelo(){
     },
     precio_base: precio
   };
+
+  const archivoFoto = document.getElementById('nmFoto').files[0];
+  if(archivoFoto && !MODO_DEMO){
+    try{
+      const base64 = await comprimirImagen(archivoFoto, 800);
+      const resultadoFoto = await llamarBackend('subirFoto', { base64, mimeType: 'image/jpeg', nombreProducto: nombre });
+      modelo.foto = resultadoFoto.url;
+    } catch(err){
+      btn.disabled = false;
+      document.getElementById('btnGuardarModeloLabel').textContent = 'Guardar modelo';
+      return;
+    }
+  }
+
   if(MODO_DEMO){
     modelo.id = catalogo.reduce((max,c)=>Math.max(max,c.id),0) + 1;
     catalogo.push(modelo);
@@ -1579,8 +1689,15 @@ async function guardarNuevoModelo(){
       const resultado = await llamarBackend('saveCatalogoModelo', modelo);
       modelo.id = resultado.id;
       catalogo.push(modelo);
-    } catch(err){ return; }
+    } catch(err){
+      btn.disabled = false;
+      document.getElementById('btnGuardarModeloLabel').textContent = 'Guardar modelo';
+      return;
+    }
   }
+
+  btn.disabled = false;
+  document.getElementById('btnGuardarModeloLabel').textContent = 'Guardar modelo';
   cerrarNuevoModelo();
   renderCatalogo();
   showToast('Modelo "' + nombre + '" agregado al catálogo', 'success');
@@ -1832,7 +1949,7 @@ function leerCamposActuales(){
     e.proteccion = e.variante === 'Con protección en puerta';
   }
 
-  return { tipo: tipoLabel, nombreModelo: state.modeloElegidoNombre || null, especificaciones: e, precio: parseFloat(g('npPrecioFinal').value) || 0, cantidad: 1 };
+  return { tipo: tipoLabel, nombreModelo: state.modeloElegidoNombre || null, catalogoId: state.catalogoIdElegido || null, especificaciones: e, precio: parseFloat(g('npPrecioFinal').value) || 0, cantidad: 1 };
 }
 
 /* ---- Drawer compartido de ítem (catálogo/exhibición + personalizado) ---- */
@@ -1955,7 +2072,10 @@ function renderAddedItems(){
   }
   cont.innerHTML = state.npItems.map((it,i)=>`
     <div class="added-item">
-      <div class="info"><b>${it.nombreModelo || it.tipo}${it.cantidad>1?' ×'+it.cantidad:''}</b><span>${especTexto(it)}${it.autoGenerado ? ' · incluido' : ' · ' + money(it.precio)}</span></div>
+      <div class="item-left">
+        <div class="item-thumb">${miniaturaItem(it)}</div>
+        <div class="info"><b>${it.nombreModelo || it.tipo}${it.cantidad>1?' ×'+it.cantidad:''}</b><span>${especTexto(it)}${it.autoGenerado ? ' · incluido' : ' · ' + money(it.precio)}</span></div>
+      </div>
       ${it.autoGenerado ? '' : `<button class="remove-item-btn" data-action="remove-item" data-index="${i}">&times;</button>`}
     </div>`).join('');
 }
@@ -2077,7 +2197,7 @@ function irAScreen(name, label){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active', n.dataset.screen===name && n.dataset.label===label));
   document.getElementById('btnNuevoPedido').classList.toggle('hidden', name!=='ventas');
   document.getElementById('btnNuevaExh').classList.toggle('hidden', name!=='exhibicion' || state.modoSeleccion);
-  document.getElementById('btnNuevoModelo').classList.toggle('hidden', name!=='catalogo' || state.modoSeleccion);
+  document.getElementById('btnNuevoModelo').classList.toggle('hidden', name!=='catalogo');
   actualizarBannerSeleccion();
   if(name === 'exhibicion') renderExhibicion();
   if(name === 'catalogo') renderCatalogo();
@@ -2131,6 +2251,17 @@ document.getElementById('searchInput').addEventListener('input', e=>{
 });
 
 document.getElementById('npTipoProducto').addEventListener('change', renderCamposDinamicos);
+document.getElementById('nmFoto').addEventListener('change', e=>{
+  const archivo = e.target.files[0];
+  const wrap = document.getElementById('nmFotoPreviewWrap');
+  if(!archivo){ wrap.classList.add('hidden'); return; }
+  const lector = new FileReader();
+  lector.onload = () => {
+    document.getElementById('nmFotoPreview').src = lector.result;
+    wrap.classList.remove('hidden');
+  };
+  lector.readAsDataURL(archivo);
+});
 document.getElementById('npDescuento').addEventListener('input', actualizarTotalNuevo);
 document.getElementById('npTelefono').addEventListener('input', chequearClienteExistente);
 document.getElementById('npCedula').addEventListener('input', chequearClienteExistente);
@@ -2183,7 +2314,8 @@ document.body.addEventListener('click', e=>{
   else if(action === 'cerrar-confirm') cerrarConfirm(false);
   else if(action === 'registrar-abono') registrarAbono();
   else if(action === 'wa-cliente') abrirWhatsapp();
-  else if(action === 'print-pedido') imprimirPedido();
+  else if(action === 'ver-presupuesto') verPresupuesto();
+  else if(action === 'enviar-nota') enviarNotaWhatsapp();
   else if(action === 'add-item') agregarItem();
   else if(action === 'remove-item') quitarItem(parseInt(el.dataset.index));
   else if(action === 'delete-item-existing') quitarItemExistente(parseInt(el.dataset.index));
