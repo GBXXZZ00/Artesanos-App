@@ -74,7 +74,7 @@
   .hidden{ display:none !important; }
 
   .phone{
-    width:100%; max-width:430px; height:100vh; height:100dvh; height:calc(var(--vh-real, 1vh) * 100); background:var(--bg); color:var(--text);
+    width:100%; max-width:430px; height:100vh; height:100dvh; background:var(--bg); color:var(--text);
     position:relative; overflow:hidden; display:flex; flex-direction:column;
   }
 
@@ -319,6 +319,14 @@
   .drawer-head h2{ font-size:19px; font-weight:800; margin-top:2px; }
   .drawer-body{ padding:16px 18px 26px; overflow-y:auto; overflow-x:hidden; }
 
+  /* Drawer lateral (desde la izquierda) — usado por el menú de usuario, distinto al resto que sale de abajo */
+  .side-drawer{
+    position:absolute; top:0; bottom:0; left:0; width:78%; max-width:300px; background:var(--surface);
+    border-right:1px solid var(--border); transform:translateX(-100%);
+    transition: transform .32s var(--ease-drawer); z-index:21; display:flex; flex-direction:column; overflow:hidden;
+  }
+  .side-drawer.open{ transform:translateX(0); }
+
   .stepper{ display:flex; align-items:center; margin-bottom:20px; }
   .step{ display:flex; flex-direction:column; align-items:center; gap:6px; flex:1; position:relative; cursor:pointer; }
   .step-dot{ width:11px; height:11px; border-radius:50%; background:var(--border2); z-index:2; transition:background .2s var(--ease-out); }
@@ -368,6 +376,8 @@
   .radio-group{ display:flex; gap:8px; }
   .radio-opt{ flex:1; text-align:center; padding:10px 6px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); font-size:13px; font-weight:600; color:var(--text2); cursor:pointer; transition: all .15s var(--ease-out); }
   .radio-opt.selected{ background:var(--gold-dim); border-color:var(--gold); color:var(--gold); }
+  .cat-color-opt{ flex:1; text-align:center; padding:10px 6px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); font-size:13px; font-weight:600; color:var(--text2); cursor:pointer; transition: all .15s var(--ease-out); }
+  .cat-color-opt.selected{ background:var(--gold-dim); border-color:var(--gold); color:var(--gold); }
 
   .subfields{ padding:12px; background:var(--surface3); border-radius:var(--radius-sm); margin:-4px 0 12px; border:1px dashed var(--border2); }
 
@@ -898,8 +908,8 @@
 
   <!-- SCRIM 7 + DRAWER MENÚ DE AVATAR -->
   <div class="scrim3" id="scrim7" style="z-index:44" data-action="close-avatar-menu"></div>
-  <div class="drawer" id="avatarMenu" style="z-index:45; max-height:none">
-    <div class="drawer-handle"></div>
+  <div class="side-drawer" id="avatarMenu" style="z-index:45; padding-top:env(safe-area-inset-top)">
+    <div style="height:14px"></div>
     <div class="avatar-menu-header">
       <div class="avatar-menu-nombre" id="avatarMenuNombre">—</div>
       <div class="avatar-menu-rol" id="avatarMenuRol">—</div>
@@ -921,7 +931,7 @@
 <script>
 /* ============ CONFIG ============ */
 const MODO_DEMO = false;
-const BACKEND_URL = 'https://script.google.com/macros/s/AKfycby2xzP_ZfiKPZzK1xeTWNBlahMH3J07ZwlczEOoKtm8HkqqCdgKqsK7XqL7P14YPcl7/exec';
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbxiuq_UW1NLtcx9u_KqjfdiMlPDyBUUFdrdBHavedWdJKHrtVNXTe-t3ofpz6aDEuP4/exec';
 const NUMERO_NEGOCIO = '584220167079';
 
 /* ============ SPINNER GENÉRICO PARA BOTONES ============ */
@@ -1837,7 +1847,7 @@ function abrirCatDrawer(id, color){
   state.openCatColor = color || m.especificaciones_base.color || 'Blanco';
   document.getElementById('catColorToggle').classList.remove('hidden');
   document.getElementById('catColorToggle').innerHTML = ['Blanco','Negro'].map(c=>
-    `<div class="radio-opt ${c===state.openCatColor?'selected':''}" data-action="cat-color-toggle" data-color="${c}">${c}</div>`
+    `<div class="cat-color-opt ${c===state.openCatColor?'selected':''}" data-action="cat-color-toggle" data-color="${c}">${c}</div>`
   ).join('');
   pintarDetalleCatalogo(m);
   document.getElementById('scrim4').classList.add('open');
@@ -1847,7 +1857,7 @@ function catToggleColor(color){
   const m = catalogo.find(c=>c.id===state.openCatId);
   if(!m) return;
   state.openCatColor = color;
-  document.querySelectorAll('#catColorToggle .radio-opt').forEach(el=>el.classList.toggle('selected', el.dataset.color === color));
+  document.querySelectorAll('#catColorToggle .cat-color-opt').forEach(el=>el.classList.toggle('selected', el.dataset.color === color));
   pintarDetalleCatalogo(m);
 }
 function pintarDetalleCatalogo(m){
@@ -2808,16 +2818,6 @@ document.body.addEventListener('click', e=>{
   link.href = URL.createObjectURL(blob);
   document.head.appendChild(link);
 })();
-
-/* ============ ALTURA REAL DEL VIEWPORT ============
-   100dvh a veces no calza igual cuando la app está anclada al inicio (modo standalone) en iOS.
-   Calculamos la altura real con JS y la sincronizamos en una variable CSS. */
-function actualizarAlturaReal(){
-  document.documentElement.style.setProperty('--vh-real', (window.innerHeight * 0.01) + 'px');
-}
-actualizarAlturaReal();
-window.addEventListener('resize', actualizarAlturaReal);
-window.addEventListener('orientationchange', actualizarAlturaReal);
 
 /* ============ INIT ============ */
 document.getElementById('demoBanner').classList.toggle('hidden', !MODO_DEMO);
