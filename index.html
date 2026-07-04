@@ -2,8 +2,14 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <title>Artesanos</title>
+<meta name="theme-color" content="#0A0A0A">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Artesanos">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%23111'/%3E%3Ctext x='90' y='112' text-anchor='middle' font-family='Georgia,serif' font-weight='700' font-size='72' fill='%23C9A96E'%3EHA%3C/text%3E%3C/svg%3E">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@500;600;700&display=swap');
 
@@ -55,17 +61,20 @@
   }
 
   *{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
-  html,body{ height:100%; }
+  html,body{
+    height:100%; width:100%; overflow:hidden; position:fixed; inset:0;
+    overscroll-behavior:none; -webkit-overflow-scrolling:touch;
+  }
   body{
     font-family:'Inter',sans-serif;
     background:#000; color:var(--text);
-    display:flex; justify-content:center; min-height:100vh;
+    display:flex; justify-content:center;
   }
   button, input, select{ font-family:inherit; }
   .hidden{ display:none !important; }
 
   .phone{
-    width:100%; max-width:430px; min-height:100vh; background:var(--bg); color:var(--text);
+    width:100%; max-width:430px; height:100vh; height:100dvh; background:var(--bg); color:var(--text);
     position:relative; overflow:hidden; display:flex; flex-direction:column;
   }
 
@@ -135,7 +144,7 @@
   .resume-sub{ font-size:12px; color:var(--text3); text-align:center; margin-top:4px; margin-bottom:20px; }
 
   /* ---------- APP SHELL ---------- */
-  .app{ display:flex; flex-direction:column; height:100%; min-height:100vh; }
+  .app{ display:flex; flex-direction:column; height:100%; }
   .topbar{
     height:var(--topbar-h); flex-shrink:0; display:flex; align-items:center; gap:10px; padding:0 14px;
     border-bottom:1px solid var(--border); background:var(--surface); position:sticky; top:0; z-index:10;
@@ -352,7 +361,8 @@
   .client-edit-actions{ display:flex; gap:8px; }
   .client-edit-actions button{ flex:1; padding:8px; font-size:12.5px; font-weight:700; border-radius:var(--radius-sm); cursor:pointer; }
 
-  .item-row{ position:relative; }
+  .item-row{ position:relative; cursor:pointer; border-radius:8px; transition: background .15s var(--ease-out), margin .15s var(--ease-out); }
+  .item-row.selected{ background:var(--gold-dim); margin:0 -10px; padding-left:10px; padding-right:10px; }
   .item-row .item-actions{ display:flex; align-items:center; gap:10px; }
   .item-delete-btn{ color:var(--red); background:none; border:none; font-size:17px; cursor:pointer; padding:2px 4px; line-height:1; }
   .btn-add-item-existing{ width:100%; margin-top:12px; padding:11px; background:var(--surface2); border:1px dashed var(--border2); color:var(--text2); border-radius:var(--radius-sm); font-weight:700; font-size:13px; cursor:pointer; transition:transform .12s var(--ease-out); }
@@ -561,7 +571,13 @@
 
     </div>
 
-    <button class="fab" id="btnNuevoPedido">
+    <button class="fab" id="btnNuevoPedido" data-action="abrir-nuevo-pedido">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1A1409" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+    </button>
+    <button class="fab hidden" id="btnNuevaExh" data-action="abrir-nueva-exh">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1A1409" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+    </button>
+    <button class="fab hidden" id="btnNuevoModelo" data-action="abrir-nuevo-modelo">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1A1409" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
     </button>
 
@@ -669,41 +685,56 @@
   <div class="drawer-item" id="drawerItem">
     <div class="drawer-handle"></div>
     <div class="drawer-head">
-      <h2>Agregar ítem</h2>
+      <h2 id="itemDrawerTitulo">Agregar ítem</h2>
       <div class="icon-btn" data-action="close-item-drawer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 6l12 12M18 6L6 18"/></svg></div>
     </div>
     <div class="drawer-body">
-      <div class="option-card" data-action="ir-seleccion-catalogo">
-        <div class="option-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v6"/></svg></div>
-        <div class="option-text"><b>Desde Catálogo</b><span>Elige un modelo y mándalo a fabricar a medida</span></div>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
-      </div>
-      <div class="option-card" data-action="ir-seleccion-exhibicion">
-        <div class="option-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></div>
-        <div class="option-text"><b>Desde Exhibición</b><span>Ya está fabricada y disponible ahora</span></div>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
-      </div>
-
-      <div class="catalog-divider"><span>o personaliza a medida</span></div>
-
-      <div class="field-group" style="margin-bottom:12px">
-        <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Tipo de producto</label>
-        <select id="npTipoProducto" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px">
-          <option value="ventana">Ventana</option>
-          <option value="porton">Portón</option>
-          <option value="puerta" selected>Puerta</option>
-          <option value="combo">Combo (Puerta + 2 Ventanas)</option>
-        </select>
+      <div id="itemDrawerOpciones">
+        <div class="option-card" data-action="ir-seleccion-catalogo">
+          <div class="option-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v6"/></svg></div>
+          <div class="option-text"><b>Desde Catálogo</b><span>Elige un modelo y mándalo a fabricar a medida</span></div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
+        </div>
+        <div class="option-card" data-action="ir-seleccion-exhibicion">
+          <div class="option-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></div>
+          <div class="option-text"><b>Desde Exhibición</b><span>Ya está fabricada y disponible ahora</span></div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
+        </div>
+        <div class="option-card" data-action="mostrar-form-personalizado">
+          <div class="option-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div>
+          <div class="option-text"><b>Personalizado</b><span>Arma las especificaciones desde cero</span></div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
+        </div>
       </div>
 
-      <div id="npCamposDinamicos"></div>
-
-      <div class="price-suggestion" id="npPrecioSugerido"></div>
-      <div class="form-group">
-        <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Precio final (editable)</label>
-        <input type="number" id="npPrecioFinal" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px">
+      <div id="npModeloHeader" class="hidden" style="display:flex;align-items:center;gap:12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:10px;margin-bottom:16px">
+        <div id="npModeloHeaderFoto" style="width:52px;height:52px;border-radius:8px;background:var(--surface3);display:flex;align-items:center;justify-content:center;color:var(--gold);flex-shrink:0;overflow:hidden"></div>
+        <div style="min-width:0">
+          <div style="font-size:10.5px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;font-weight:700">Modelo elegido</div>
+          <div id="npModeloHeaderNombre" style="font-size:14.5px;font-weight:700"></div>
+        </div>
       </div>
-      <button class="btn-sm" style="width:100%;margin-bottom:10px" data-action="add-item">+ Agregar este ítem</button>
+
+      <div id="npFormWrap" class="hidden">
+        <div class="field-group" style="margin-bottom:12px">
+          <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Tipo de producto</label>
+          <select id="npTipoProducto" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px">
+            <option value="ventana">Ventana</option>
+            <option value="porton">Portón</option>
+            <option value="puerta" selected>Puerta</option>
+            <option value="combo">Combo (Puerta + 2 Ventanas)</option>
+          </select>
+        </div>
+
+        <div id="npCamposDinamicos"></div>
+
+        <div class="price-suggestion" id="npPrecioSugerido"></div>
+        <div class="form-group">
+          <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Precio final (editable)</label>
+          <input type="number" id="npPrecioFinal" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px">
+        </div>
+        <button class="btn-sm" style="width:100%;margin-bottom:10px" data-action="add-item"><span id="btnAgregarItemLabel">+ Agregar este ítem</span></button>
+      </div>
     </div>
   </div>
 
@@ -753,6 +784,59 @@
       </div>
       <button class="btn-primary" style="width:100%;margin-top:18px" id="btnUsarModelo" data-action="usar-modelo-catalogo">Usar este modelo</button>
       <div id="catInfoLibre" class="price-suggestion" style="margin-top:14px">Este modelo se usa como base para mandar a fabricar. Ábrelo desde un pedido nuevo para usarlo.</div>
+    </div>
+  </div>
+
+  <!-- SCRIM 5 + DRAWER NUEVO MODELO DE CATÁLOGO -->
+  <div class="scrim3" id="scrim5" data-action="close-nuevo-modelo"></div>
+  <div class="drawer-exh" id="drawerNuevoModelo">
+    <div class="drawer-handle"></div>
+    <div class="drawer-head">
+      <h2>Nuevo modelo</h2>
+      <div class="icon-btn" data-action="close-nuevo-modelo"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 6l12 12M18 6L6 18"/></svg></div>
+    </div>
+    <div class="drawer-body">
+      <div class="form-group"><label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Nombre del modelo</label><input type="text" id="nmNombre" placeholder="Ej: Puerta Toscana Doble Panel" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px"></div>
+      <div class="form-group">
+        <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Tipo</label>
+        <select id="nmTipo" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px">
+          <option value="Ventana">Ventana</option>
+          <option value="Portón">Portón</option>
+          <option value="Puerta" selected>Puerta</option>
+          <option value="Combo">Combo</option>
+        </select>
+      </div>
+      <div class="form-row" style="margin-bottom:14px">
+        <div class="field"><label>Alto (m)</label><input type="number" step="0.01" id="nmAlto" value="2.10"></div>
+        <div class="field"><label>Ancho (m)</label><input type="number" step="0.01" id="nmAncho" value="0.90"></div>
+      </div>
+      <div class="form-group"><label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Color</label><input type="text" id="nmColor" placeholder="Blanco / Negro" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px"></div>
+      <div class="form-group"><label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Foto (URL, opcional)</label><input type="text" id="nmFoto" placeholder="https://..." style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px"></div>
+      <div class="form-group"><label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Precio base</label><input type="number" id="nmPrecio" placeholder="0" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px"></div>
+      <button class="btn-primary" style="width:100%" data-action="guardar-nuevo-modelo">Guardar modelo</button>
+    </div>
+  </div>
+
+  <!-- SCRIM 6 + DRAWER NUEVA PIEZA EN EXHIBICIÓN -->
+  <div class="scrim3" id="scrim6" data-action="close-nueva-exh"></div>
+  <div class="drawer-exh" id="drawerNuevaExh">
+    <div class="drawer-handle"></div>
+    <div class="drawer-head">
+      <h2>Nueva pieza en exhibición</h2>
+      <div class="icon-btn" data-action="close-nueva-exh"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 6l12 12M18 6L6 18"/></svg></div>
+    </div>
+    <div class="drawer-body">
+      <div class="form-group">
+        <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Modelo del catálogo</label>
+        <select id="neModelo" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px"></select>
+      </div>
+      <div class="form-row" style="margin-bottom:14px">
+        <div class="field"><label>Alto (m)</label><input type="number" step="0.01" id="neAlto" value="1"></div>
+        <div class="field"><label>Ancho (m)</label><input type="number" step="0.01" id="neAncho" value="1"></div>
+      </div>
+      <div class="form-group"><label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Color</label><input type="text" id="neColor" placeholder="Blanco / Negro" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px"></div>
+      <div class="form-group"><label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Precio de venta</label><input type="number" id="nePrecio" placeholder="0" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px"></div>
+      <button class="btn-primary" style="width:100%" data-action="guardar-nueva-exh">Guardar en exhibición</button>
     </div>
   </div>
 
@@ -816,7 +900,7 @@ async function cargarDatosIniciales(){
 
 /* ============ SESIÓN PERSISTENTE ============ */
 const SESSION_KEY = 'artesanos-sesion';
-const SESSION_MS = 12 * 60 * 60 * 1000; // 12 horas
+const SESSION_MS = 30 * 24 * 60 * 60 * 1000; // 30 días
 
 function almacenSesion(){
   try{ if(window.localStorage) return window.localStorage; }catch(e){}
@@ -1079,10 +1163,12 @@ function fechaCorta(iso){
 }
 
 /* ============ DRAWER DETALLE ============ */
-function abrirDrawer(id){
+function poblarDetalle(id){
   const p = pedidos.find(x=>x.id===id);
   if(!p) return;
   state.openPedidoId = id;
+  state.itemSeleccionado = null;
+  ultimoTapItem = { index: null, tiempo: 0 };
   document.getElementById('detCodigo').textContent = '#' + p.codigo;
   document.getElementById('detCliente').textContent = p.cliente.nombre;
   document.getElementById('detClienteMeta').textContent = [p.cliente.cedula, p.cliente.telefono].filter(Boolean).join(' · ');
@@ -1097,7 +1183,7 @@ function abrirDrawer(id){
   }).join('');
 
   document.getElementById('detItems').innerHTML = p.items.map((it,i)=>`
-    <div class="item-row">
+    <div class="item-row" data-action="toggle-select-item" data-index="${i}">
       <div><div class="item-name">${it.nombreModelo || it.tipo}${it.cantidad>1 ? ' ×'+it.cantidad : ''}</div><div class="item-spec">${especTexto(it)}</div></div>
       <div class="item-actions">
         <div class="item-price">${money(it.precio*it.cantidad)}</div>
@@ -1110,7 +1196,9 @@ function abrirDrawer(id){
   document.getElementById('detAbono').textContent = money(p.abono);
   document.getElementById('detSaldo').textContent = money(saldo);
   document.getElementById('inputAbono').value = '';
-
+}
+function abrirDrawer(id){
+  poblarDetalle(id);
   document.getElementById('scrim').classList.add('open');
   document.getElementById('drawerDetalle').classList.add('open');
 }
@@ -1121,6 +1209,62 @@ function cerrarTodo(){
   cerrarItemDrawer();
   state.openPedidoId = null;
   state.itemTarget = 'nuevo';
+  state.itemSeleccionado = null;
+}
+
+/* ============ SELECCIÓN Y EDICIÓN DE UN ÍTEM DEL PEDIDO ============ */
+let ultimoTapItem = { index: null, tiempo: 0 };
+function actualizarResaltadoItems(){
+  document.querySelectorAll('#detItems .item-row').forEach(row=>{
+    row.classList.toggle('selected', Number(row.dataset.index) === state.itemSeleccionado);
+  });
+}
+function manejarTapItem(idx){
+  const ahora = Date.now();
+  if(state.itemSeleccionado === idx && (ahora - ultimoTapItem.tiempo) < 400){
+    ultimoTapItem = { index: null, tiempo: 0 };
+    state.itemSeleccionado = null;
+    abrirEditarItem(idx);
+  } else {
+    state.itemSeleccionado = idx;
+    ultimoTapItem = { index: idx, tiempo: ahora };
+    actualizarResaltadoItems();
+  }
+}
+function abrirEditarItem(idx){
+  const p = pedidos.find(x=>x.id===state.openPedidoId);
+  if(!p) return;
+  const item = p.items[idx];
+  abrirItemDrawer(p.id);
+  state.itemEditIndex = idx;
+  document.getElementById('itemDrawerTitulo').textContent = 'Editar ítem';
+  document.getElementById('itemDrawerOpciones').classList.add('hidden');
+  document.getElementById('btnAgregarItemLabel').textContent = 'Guardar cambios';
+  mostrarFormPersonalizado();
+  const tipoKey = { Ventana:'ventana', 'Portón':'porton', Puerta:'puerta', Combo:'combo' }[item.tipo] || 'puerta';
+  document.getElementById('npTipoProducto').value = tipoKey;
+  renderCamposDinamicos();
+  precargarEspecificaciones(item.especificaciones);
+  document.getElementById('npPrecioFinal').value = item.precio;
+  document.getElementById('npPrecioSugerido').textContent = item.nombreModelo ? ('Editando: ' + item.nombreModelo) : 'Editando ítem personalizado';
+}
+async function guardarEdicionItem(itemNuevo){
+  const p = pedidos.find(x=>x.id===state.openPedidoId);
+  if(!p || state.itemEditIndex == null) return;
+  const idx = state.itemEditIndex;
+  const respaldo = p.items[idx];
+  itemNuevo.nombreModelo = respaldo.nombreModelo;
+  itemNuevo.exhibicionId = respaldo.exhibicionId;
+  p.items[idx] = itemNuevo;
+  state.itemEditIndex = null;
+  cerrarItemDrawer();
+  abrirDrawer(p.id);
+  renderLista();
+  if(!MODO_DEMO){
+    try{ await llamarBackend('updatePedido', { id: p.id, items: p.items }); }
+    catch(err){ p.items[idx] = respaldo; abrirDrawer(p.id); return; }
+  }
+  showToast('Ítem actualizado', 'success');
 }
 
 async function cambiarEstado(estado){
@@ -1311,6 +1455,7 @@ function agregarPiezaDesdeSeleccion(){
   agregarItemComun(item, 'Pieza de exhibición agregada al pedido');
   irAScreen('ventas', 'Ventas');
   mostrarDrawerNuevoOExistente();
+  abrirItemDrawer(state.itemTarget);
 }
 
 /* ============ CATÁLOGO (pantalla independiente) ============ */
@@ -1368,6 +1513,99 @@ function cerrarCatDrawer(){
   document.getElementById('drawerCat').classList.remove('open');
   state.openCatId = null;
 }
+
+/* ============ CREAR MODELO DE CATÁLOGO ============ */
+function abrirNuevoModelo(){
+  document.getElementById('nmNombre').value = '';
+  document.getElementById('nmTipo').value = 'Puerta';
+  document.getElementById('nmAlto').value = 2.10;
+  document.getElementById('nmAncho').value = 0.90;
+  document.getElementById('nmColor').value = '';
+  document.getElementById('nmFoto').value = '';
+  document.getElementById('nmPrecio').value = '';
+  document.getElementById('scrim5').classList.add('open');
+  document.getElementById('drawerNuevoModelo').classList.add('open');
+}
+function cerrarNuevoModelo(){
+  document.getElementById('scrim5').classList.remove('open');
+  document.getElementById('drawerNuevoModelo').classList.remove('open');
+}
+async function guardarNuevoModelo(){
+  const nombre = document.getElementById('nmNombre').value.trim();
+  const precio = parseFloat(document.getElementById('nmPrecio').value);
+  if(!nombre){ showToast('Ponle un nombre al modelo', 'error'); return; }
+  if(!precio || precio <= 0){ showToast('Ingresa un precio base válido', 'error'); return; }
+  const modelo = {
+    nombre,
+    tipo: document.getElementById('nmTipo').value,
+    foto: document.getElementById('nmFoto').value.trim() || null,
+    especificaciones_base: {
+      alto: parseFloat(document.getElementById('nmAlto').value) || 1,
+      ancho: parseFloat(document.getElementById('nmAncho').value) || 1,
+      color: document.getElementById('nmColor').value.trim() || 'Blanco'
+    },
+    precio_base: precio
+  };
+  if(MODO_DEMO){
+    modelo.id = catalogo.reduce((max,c)=>Math.max(max,c.id),0) + 1;
+    catalogo.push(modelo);
+  } else {
+    try{
+      const resultado = await llamarBackend('saveCatalogoModelo', modelo);
+      modelo.id = resultado.id;
+      catalogo.push(modelo);
+    } catch(err){ return; }
+  }
+  cerrarNuevoModelo();
+  renderCatalogo();
+  showToast('Modelo "' + nombre + '" agregado al catálogo', 'success');
+}
+
+/* ============ CREAR PIEZA EN EXHIBICIÓN ============ */
+function abrirNuevaExh(){
+  const sel = document.getElementById('neModelo');
+  sel.innerHTML = catalogo.map(m=>`<option value="${m.id}">${m.nombre} (${m.tipo})</option>`).join('');
+  document.getElementById('neAlto').value = 1;
+  document.getElementById('neAncho').value = 1;
+  document.getElementById('neColor').value = '';
+  document.getElementById('nePrecio').value = '';
+  document.getElementById('scrim6').classList.add('open');
+  document.getElementById('drawerNuevaExh').classList.add('open');
+}
+function cerrarNuevaExh(){
+  document.getElementById('scrim6').classList.remove('open');
+  document.getElementById('drawerNuevaExh').classList.remove('open');
+}
+async function guardarNuevaExh(){
+  const catalogoId = parseInt(document.getElementById('neModelo').value);
+  const precio = parseFloat(document.getElementById('nePrecio').value);
+  if(!catalogoId){ showToast('Elige un modelo del catálogo', 'error'); return; }
+  if(!precio || precio <= 0){ showToast('Ingresa un precio de venta válido', 'error'); return; }
+  const pieza = {
+    catalogo_id: catalogoId,
+    especificaciones: {
+      alto: parseFloat(document.getElementById('neAlto').value) || 1,
+      ancho: parseFloat(document.getElementById('neAncho').value) || 1,
+      color: document.getElementById('neColor').value.trim() || 'Blanco'
+    },
+    precio,
+    estado: 'Disponible'
+  };
+  if(MODO_DEMO){
+    pieza.id = exhibicion.reduce((max,x)=>Math.max(max,x.id),0) + 1;
+    exhibicion.push(pieza);
+  } else {
+    try{
+      const resultado = await llamarBackend('saveExhibicionPieza', pieza);
+      pieza.id = resultado.id;
+      exhibicion.push(pieza);
+    } catch(err){ return; }
+  }
+  cerrarNuevaExh();
+  renderExhibicion();
+  showToast('Pieza agregada a exhibición', 'success');
+}
+
 function precargarEspecificaciones(e){
   const g = id => document.getElementById(id);
   if(g('npAlto') && e.alto) g('npAlto').value = e.alto;
@@ -1403,13 +1641,32 @@ function usarModeloCatalogo(){
   state.modoSeleccion = null;
   irAScreen('ventas', 'Ventas');
   mostrarDrawerNuevoOExistente();
-  const tipoKey = { Ventana:'ventana', Portón:'porton', Puerta:'puerta', Combo:'combo' }[m.tipo];
   abrirItemDrawer(state.itemTarget);
+  mostrarFormConModelo(m);
+}
+function mostrarFormConModelo(m){
+  const tipoKey = { Ventana:'ventana', 'Portón':'porton', Puerta:'puerta', Combo:'combo' }[m.tipo] || 'puerta';
+  document.getElementById('itemDrawerOpciones').classList.add('hidden');
+  document.getElementById('npModeloHeader').classList.remove('hidden');
+  document.getElementById('npModeloHeaderFoto').innerHTML = m.foto
+    ? `<img src="${m.foto}" alt="${m.nombre}" style="width:100%;height:100%;object-fit:cover">`
+    : `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>`;
+  document.getElementById('npModeloHeaderNombre').textContent = m.nombre;
+  document.getElementById('npFormWrap').classList.remove('hidden');
   document.getElementById('npTipoProducto').value = tipoKey;
   renderCamposDinamicos();
   precargarEspecificaciones(m.especificaciones_base);
   document.getElementById('npPrecioFinal').value = m.precio_base;
   document.getElementById('npPrecioSugerido').textContent = `Precargado desde "${m.nombre}", ajusta si el cliente pidió algo distinto`;
+  state.modeloElegidoNombre = m.nombre;
+}
+function mostrarFormPersonalizado(){
+  document.getElementById('itemDrawerOpciones').classList.add('hidden');
+  document.getElementById('npModeloHeader').classList.add('hidden');
+  document.getElementById('npFormWrap').classList.remove('hidden');
+  document.getElementById('npTipoProducto').value = 'puerta';
+  renderCamposDinamicos();
+  state.modeloElegidoNombre = null;
 }
 
 /* ============ MODO SELECCIÓN (elegir catálogo/exhibición desde un pedido) ============ */
@@ -1589,20 +1846,31 @@ function leerCamposActuales(){
     e.proteccion = e.variante === 'Con protección en puerta';
   }
 
-  return { tipo: tipoLabel, especificaciones: e, precio: parseFloat(g('npPrecioFinal').value) || 0, cantidad: 1 };
+  return { tipo: tipoLabel, nombreModelo: state.modeloElegidoNombre || null, especificaciones: e, precio: parseFloat(g('npPrecioFinal').value) || 0, cantidad: 1 };
 }
 
 /* ---- Drawer compartido de ítem (catálogo/exhibición + personalizado) ---- */
+function resetItemDrawerASeleccion(){
+  document.getElementById('itemDrawerOpciones').classList.remove('hidden');
+  document.getElementById('npModeloHeader').classList.add('hidden');
+  document.getElementById('npFormWrap').classList.add('hidden');
+  document.getElementById('itemDrawerTitulo').textContent = 'Agregar ítem';
+  document.getElementById('btnAgregarItemLabel').textContent = '+ Agregar este ítem';
+  state.itemEditIndex = null;
+  state.modeloElegidoNombre = null;
+  const body = document.querySelector('#drawerItem .drawer-body');
+  if(body) body.scrollTop = 0;
+}
 function abrirItemDrawer(target){
   state.itemTarget = target;
-  document.getElementById('npTipoProducto').value = 'puerta';
-  renderCamposDinamicos();
+  resetItemDrawerASeleccion();
   document.getElementById('scrim2').classList.add('open');
   document.getElementById('drawerItem').classList.add('open');
 }
 function cerrarItemDrawer(){
   document.getElementById('scrim2').classList.remove('open');
   document.getElementById('drawerItem').classList.remove('open');
+  resetItemDrawerASeleccion();
 }
 async function agregarItemComun(item, mensaje){
   if(typeof state.itemTarget === 'number'){
@@ -1612,8 +1880,7 @@ async function agregarItemComun(item, mensaje){
       const x = exhibicion.find(e=>e.id===item.exhibicionId);
       if(x) x.estado = 'Vendido';
     }
-    cerrarItemDrawer();
-    abrirDrawer(p.id);
+    poblarDetalle(p.id);
     renderLista();
     if(!MODO_DEMO){
       try{
@@ -1622,7 +1889,7 @@ async function agregarItemComun(item, mensaje){
       } catch(err){
         p.items.pop();
         if(item.exhibicionId){ const x = exhibicion.find(e=>e.id===item.exhibicionId); if(x) x.estado = 'Disponible'; }
-        abrirDrawer(p.id);
+        poblarDetalle(p.id);
         renderLista();
         return;
       }
@@ -1635,20 +1902,21 @@ async function agregarItemComun(item, mensaje){
     document.getElementById('drawerNuevo').classList.add('open');
   }
   showToast(mensaje, 'success');
+  resetItemDrawerASeleccion();
 }
 function agregarItem(){
   const item = leerCamposActuales();
   if(!item.precio || item.precio <= 0){ showToast('Ingresa un precio válido', 'error'); return; }
+
+  if(state.itemEditIndex != null){
+    guardarEdicionItem(item);
+    return;
+  }
+
   agregarItemComun(item, 'Ítem agregado');
   if(item.tipo === 'Combo'){
     const extra = { tipo:'Ventana', especificaciones:{ alto:1, ancho:1, color:item.especificaciones.color, proteccion:true, marco_decorativo:false }, precio:0, cantidad:2, autoGenerado:true };
-    if(typeof state.itemTarget === 'number'){
-      pedidos.find(x=>x.id===state.itemTarget).items.push(extra);
-      abrirDrawer(state.itemTarget);
-    } else {
-      state.npItems.push(extra);
-      renderAddedItems();
-    }
+    agregarItemComun(extra, 'Ventanas del combo incluidas');
   }
 }
 function quitarItem(idx){
@@ -1674,12 +1942,23 @@ function actualizarTotalNuevo(){
   document.getElementById('npTotal').value = money(Math.max(0, sub - desc));
 }
 
+function sumarDiasHabiles(fechaInicio, dias){
+  const d = new Date(fechaInicio);
+  let agregados = 0;
+  while(agregados < dias){
+    d.setDate(d.getDate() + 1);
+    const diaSemana = d.getDay();
+    if(diaSemana !== 0 && diaSemana !== 6) agregados++;
+  }
+  return d.toISOString().slice(0,10);
+}
+
 function abrirNuevoPedido(itemPrecargado){
   state.npItems = itemPrecargado ? [itemPrecargado] : [];
   document.getElementById('npNombre').value = '';
   document.getElementById('npTelefono').value = '';
   document.getElementById('npCedula').value = '';
-  document.getElementById('npFechaEntrega').value = '';
+  document.getElementById('npFechaEntrega').value = sumarDiasHabiles(new Date(), 10);
   document.getElementById('npDescuento').value = 0;
   document.getElementById('npClienteHint').classList.remove('show');
   renderAddedItems();
@@ -1772,6 +2051,8 @@ function irAScreen(name, label){
   document.getElementById('placeholderTitle').textContent = label;
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active', n.dataset.screen===name && n.dataset.label===label));
   document.getElementById('btnNuevoPedido').classList.toggle('hidden', name!=='ventas');
+  document.getElementById('btnNuevaExh').classList.toggle('hidden', name!=='exhibicion' || state.modoSeleccion);
+  document.getElementById('btnNuevoModelo').classList.toggle('hidden', name!=='catalogo' || state.modoSeleccion);
   actualizarBannerSeleccion();
   if(name === 'exhibicion') renderExhibicion();
   if(name === 'catalogo') renderCatalogo();
@@ -1824,7 +2105,6 @@ document.getElementById('searchInput').addEventListener('input', e=>{
   renderLista();
 });
 
-document.getElementById('btnNuevoPedido').addEventListener('click', ()=>abrirNuevoPedido());
 document.getElementById('npTipoProducto').addEventListener('change', renderCamposDinamicos);
 document.getElementById('npDescuento').addEventListener('input', actualizarTotalNuevo);
 document.getElementById('npTelefono').addEventListener('input', chequearClienteExistente);
@@ -1894,6 +2174,15 @@ document.body.addEventListener('click', e=>{
   else if(action === 'close-cat-drawer') cerrarCatDrawer();
   else if(action === 'usar-modelo-catalogo') usarModeloCatalogo();
   else if(action === 'ir-seleccion-catalogo') irASeleccionCatalogo();
+  else if(action === 'mostrar-form-personalizado') mostrarFormPersonalizado();
+  else if(action === 'toggle-select-item') manejarTapItem(parseInt(el.dataset.index));
+  else if(action === 'abrir-nuevo-pedido') abrirNuevoPedido();
+  else if(action === 'abrir-nueva-exh') abrirNuevaExh();
+  else if(action === 'close-nueva-exh') cerrarNuevaExh();
+  else if(action === 'guardar-nueva-exh') guardarNuevaExh();
+  else if(action === 'abrir-nuevo-modelo') abrirNuevoModelo();
+  else if(action === 'close-nuevo-modelo') cerrarNuevoModelo();
+  else if(action === 'guardar-nuevo-modelo') guardarNuevoModelo();
   else if(action === 'ir-seleccion-exhibicion') irASeleccionExhibicion();
   else if(action === 'cancelar-seleccion') cancelarSeleccion();
   else if(action === 'toggle-avatar-menu') toggleAvatarMenu();
@@ -1916,6 +2205,25 @@ document.addEventListener('click', e=>{
     menu.classList.add('hidden');
   }
 });
+
+/* ============ PWA: anclar a inicio ============ */
+(function agregarManifest(){
+  const icono = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' fill='%23111'/%3E%3Ctext x='96' y='120' text-anchor='middle' font-family='Georgia,serif' font-weight='700' font-size='76' fill='%23C9A96E'%3EHA%3C/text%3E%3C/svg%3E";
+  const manifest = {
+    name: 'Herrería Artesanos',
+    short_name: 'Artesanos',
+    start_url: '.',
+    display: 'standalone',
+    background_color: '#0A0A0A',
+    theme_color: '#0A0A0A',
+    icons: [{ src: icono, sizes: '192x192', type: 'image/svg+xml' }]
+  };
+  const blob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+  const link = document.createElement('link');
+  link.rel = 'manifest';
+  link.href = URL.createObjectURL(blob);
+  document.head.appendChild(link);
+})();
 
 /* ============ INIT ============ */
 document.getElementById('demoBanner').classList.toggle('hidden', !MODO_DEMO);
