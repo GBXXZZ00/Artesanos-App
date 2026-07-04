@@ -85,7 +85,8 @@
   /* ---------- LOGIN ---------- */
   .login-screen{
     position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
-    gap:26px; padding:32px; background:var(--bg); z-index:50;
+    gap:26px; padding:32px; padding-top:calc(32px + env(safe-area-inset-top)); padding-bottom:calc(32px + env(safe-area-inset-bottom));
+    background:var(--bg); z-index:50;
     transition: opacity .4s var(--ease-out), transform .4s var(--ease-out); overflow:hidden;
   }
   .login-screen.hidden{ opacity:0; transform:scale(0.98); pointer-events:none; display:flex; }
@@ -146,7 +147,8 @@
   /* ---------- APP SHELL ---------- */
   .app{ display:flex; flex-direction:column; height:100%; }
   .topbar{
-    height:var(--topbar-h); flex-shrink:0; display:flex; align-items:center; gap:10px; padding:0 14px;
+    height:calc(var(--topbar-h) + env(safe-area-inset-top)); padding-top:env(safe-area-inset-top);
+    flex-shrink:0; display:flex; align-items:center; gap:10px; padding-left:14px; padding-right:14px;
     border-bottom:1px solid var(--border); background:var(--surface); position:sticky; top:0; z-index:10;
   }
   .topbar .logo-mark{ width:26px; height:26px; }
@@ -273,7 +275,7 @@
   }
   .fab:active{ transform:scale(0.93); }
 
-  .bottom-nav{ position:sticky; bottom:0; display:flex; background:var(--surface); border-top:1px solid var(--border); padding:6px 4px 8px; z-index:10; flex-shrink:0; }
+  .bottom-nav{ position:sticky; bottom:0; display:flex; background:var(--surface); border-top:1px solid var(--border); padding:6px 4px calc(8px + env(safe-area-inset-bottom)); z-index:10; flex-shrink:0; }
   .nav-item{ flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; padding:6px 2px; color:var(--text3); cursor:pointer; transition: color .15s var(--ease-out), transform .12s var(--ease-out); }
   .nav-item:active{ transform:scale(0.94); }
   .nav-item.active{ color:var(--gold); }
@@ -365,7 +367,8 @@
   .item-row.selected{ background:var(--gold-dim); margin:0 -10px; padding-left:10px; padding-right:10px; }
   .item-row .item-actions{ display:flex; align-items:center; gap:10px; }
   .item-delete-btn{ color:var(--red); background:none; border:none; font-size:17px; cursor:pointer; padding:2px 4px; line-height:1; }
-  .btn-add-item-existing{ width:100%; margin-top:12px; padding:11px; background:var(--surface2); border:1px dashed var(--border2); color:var(--text2); border-radius:var(--radius-sm); font-weight:700; font-size:13px; cursor:pointer; transition:transform .12s var(--ease-out); }
+  .btn-add-item-existing{ width:100%; margin-top:12px; padding:12px; background:var(--gold); border:none; color:#1A1409; border-radius:var(--radius-sm); font-weight:700; font-size:13.5px; cursor:pointer; transition:transform .12s var(--ease-out); }
+  .btn-add-item-existing:active{ transform:scale(0.97); }
   .btn-add-item-existing:active{ transform:scale(0.97); }
 
   .catalog-search-box{ margin-bottom:10px; }
@@ -484,7 +487,7 @@
     <div class="resume-avatar" id="resumeAvatar">V</div>
     <div class="resume-text">Entrando como <strong id="resumeNombre">—</strong></div>
     <div class="resume-sub">Tu sesión sigue activa en este dispositivo</div>
-    <button class="btn-ghost" style="width:220px" data-action="cambiar-usuario">No soy yo, cambiar usuario</button>
+    <button class="btn-ghost" style="width:240px;flex:none" data-action="cambiar-usuario">No soy yo, cambiar usuario</button>
   </div>
 
   <!-- APP -->
@@ -621,6 +624,7 @@
     </div>
     <div class="drawer-body">
       <div class="stepper" id="detStepper"></div>
+      <button class="btn-primary hidden" id="btnConfirmarPedido" style="width:100%;margin-bottom:18px" data-action="confirmar-pedido">Confirmar pedido</button>
       <div class="section-label">Ítems del pedido</div>
       <div id="detItems"></div>
       <button class="btn-add-item-existing" data-action="agregar-item-existente">+ Agregar ítem a este pedido</button>
@@ -671,9 +675,13 @@
       <button class="btn-add-item-existing" style="margin-top:0;margin-bottom:22px" data-action="abrir-item-nuevo">+ Agregar ítem</button>
 
       <div class="section-label">Total y descuento</div>
-      <div class="form-row" style="margin-bottom:20px">
+      <div class="form-row" style="margin-bottom:14px">
         <div class="field"><label>Descuento</label><input type="number" id="npDescuento" value="0" placeholder="0"></div>
         <div class="field"><label>Total estimado</label><input type="text" id="npTotal" value="$0" disabled style="opacity:.7"></div>
+      </div>
+      <div class="form-group" style="margin-bottom:20px">
+        <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Abono inicial (opcional)</label>
+        <input type="number" id="npAbonoInicial" value="0" placeholder="0" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px">
       </div>
 
       <button class="btn-primary" style="width:100%" data-action="guardar-pedido">Guardar pedido</button>
@@ -695,7 +703,7 @@
           <div class="option-text"><b>Desde Catálogo</b><span>Elige un modelo y mándalo a fabricar a medida</span></div>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
         </div>
-        <div class="option-card" data-action="ir-seleccion-exhibicion">
+        <div class="option-card" id="optCardExhibicion" data-action="ir-seleccion-exhibicion">
           <div class="option-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></div>
           <div class="option-text"><b>Desde Exhibición</b><span>Ya está fabricada y disponible ahora</span></div>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
@@ -733,7 +741,7 @@
           <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Precio final (editable)</label>
           <input type="number" id="npPrecioFinal" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px">
         </div>
-        <button class="btn-sm" style="width:100%;margin-bottom:10px" data-action="add-item"><span id="btnAgregarItemLabel">+ Agregar este ítem</span></button>
+        <button class="btn-sm" id="btnAgregarItemAccion" style="width:100%;margin-bottom:10px" data-action="add-item"><span id="btnAgregarItemLabel">+ Agregar este ítem</span></button>
       </div>
     </div>
   </div>
@@ -817,26 +825,16 @@
     </div>
   </div>
 
-  <!-- SCRIM 6 + DRAWER NUEVA PIEZA EN EXHIBICIÓN -->
-  <div class="scrim3" id="scrim6" data-action="close-nueva-exh"></div>
-  <div class="drawer-exh" id="drawerNuevaExh">
+  <!-- MODAL DE CONFIRMACIÓN (reutilizable, bloqueante) -->
+  <div class="scrim3" id="scrimConfirm" style="z-index:80" data-action="cerrar-confirm"></div>
+  <div class="drawer-exh" id="drawerConfirm" style="z-index:81; max-height:none">
     <div class="drawer-handle"></div>
-    <div class="drawer-head">
-      <h2>Nueva pieza en exhibición</h2>
-      <div class="icon-btn" data-action="close-nueva-exh"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 6l12 12M18 6L6 18"/></svg></div>
-    </div>
-    <div class="drawer-body">
-      <div class="form-group">
-        <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Modelo del catálogo</label>
-        <select id="neModelo" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px"></select>
+    <div class="drawer-body" style="padding-top:10px">
+      <div id="confirmMensaje" style="font-size:15px; text-align:center; line-height:1.5; margin-bottom:22px"></div>
+      <div class="drawer-actions" style="margin-top:0">
+        <button class="btn-ghost" data-action="cerrar-confirm">Cancelar</button>
+        <button class="btn-primary" style="flex:1" data-action="aceptar-confirm">Confirmar</button>
       </div>
-      <div class="form-row" style="margin-bottom:14px">
-        <div class="field"><label>Alto (m)</label><input type="number" step="0.01" id="neAlto" value="1"></div>
-        <div class="field"><label>Ancho (m)</label><input type="number" step="0.01" id="neAncho" value="1"></div>
-      </div>
-      <div class="form-group"><label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Color</label><input type="text" id="neColor" placeholder="Blanco / Negro" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px"></div>
-      <div class="form-group"><label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Precio de venta</label><input type="number" id="nePrecio" placeholder="0" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px"></div>
-      <button class="btn-primary" style="width:100%" data-action="guardar-nueva-exh">Guardar en exhibición</button>
     </div>
   </div>
 
@@ -1105,8 +1103,17 @@ function especTexto(item){
   if(e.alto && e.ancho) parts.push(`${e.alto}×${e.ancho}m`);
   if(e.color) parts.push(e.color);
   if(item.tipo==='Combo' && e.variante) parts.push(e.variante);
+  if(e.sentido) parts.push('abre ' + e.sentido.toLowerCase());
+  if(e.posicion) parts.push(e.posicion.toLowerCase());
+  if(e.bloque) parts.push('bloque ' + e.bloque);
   if(e.proteccion) parts.push('con protección');
+  if(e.proteccion_sentido) parts.push('protección abre ' + e.proteccion_sentido.toLowerCase());
+  if(e.vidrio_o_farquilla) parts.push(e.vidrio_o_farquilla + (e.color_vidrio ? ' ' + e.color_vidrio.toLowerCase() : ''));
+  if(e.manillon) parts.push('manillón ' + (e.manillon_tipo || ''));
   if(e.marco_decorativo) parts.push('marco decorativo');
+  if(e.papel_ahumado) parts.push('papel ahumado');
+  if(e.mas_hojas) parts.push('más de 2 hojas');
+  if(e.instalacion) parts.push('instalación incluida');
   return parts.join(' · ');
 }
 
@@ -1181,6 +1188,7 @@ function poblarDetalle(id){
     const cls = idxEs < idxActual ? 'done' : (idxEs === idxActual ? 'now' : '');
     return `<div class="step ${cls}" data-action="set-estado" data-estado="${es}"><div class="step-line"></div><div class="step-dot"></div><small>${ESTADO_LABEL[es]}</small></div>`;
   }).join('');
+  document.getElementById('btnConfirmarPedido').classList.toggle('hidden', p.estado !== 'cotizacion');
 
   document.getElementById('detItems').innerHTML = p.items.map((it,i)=>`
     <div class="item-row" data-action="toggle-select-item" data-index="${i}">
@@ -1221,7 +1229,7 @@ function actualizarResaltadoItems(){
 }
 function manejarTapItem(idx){
   const ahora = Date.now();
-  if(state.itemSeleccionado === idx && (ahora - ultimoTapItem.tiempo) < 400){
+  if(state.itemSeleccionado === idx && (ahora - ultimoTapItem.tiempo) < 900){
     ultimoTapItem = { index: null, tiempo: 0 };
     state.itemSeleccionado = null;
     abrirEditarItem(idx);
@@ -1267,9 +1275,28 @@ async function guardarEdicionItem(itemNuevo){
   showToast('Ítem actualizado', 'success');
 }
 
+/* ============ MODAL DE CONFIRMACIÓN ============ */
+function confirmar(mensaje){
+  return new Promise(resolve=>{
+    document.getElementById('confirmMensaje').textContent = mensaje;
+    document.getElementById('scrimConfirm').classList.add('open');
+    document.getElementById('drawerConfirm').classList.add('open');
+    state.confirmResolver = resolve;
+  });
+}
+function cerrarConfirm(resultado){
+  document.getElementById('scrimConfirm').classList.remove('open');
+  document.getElementById('drawerConfirm').classList.remove('open');
+  if(state.confirmResolver){ state.confirmResolver(resultado); state.confirmResolver = null; }
+}
+
 async function cambiarEstado(estado){
   const p = pedidos.find(x=>x.id===state.openPedidoId);
   if(!p) return;
+  if((estado === 'confirmado' || estado === 'produccion') && p.estado !== estado && p.abono <= 0){
+    const ok = await confirmar('Este pedido no tiene abono registrado. ¿Confirmar de todas formas?');
+    if(!ok) return;
+  }
   const anterior = p.estado;
   p.estado = estado;
   abrirDrawer(p.id);
@@ -1452,10 +1479,8 @@ function agregarPiezaDesdeSeleccion(){
   cerrarExhDrawer();
   const item = construirItemDesdeExhibicion(x);
   state.modoSeleccion = null;
-  agregarItemComun(item, 'Pieza de exhibición agregada al pedido');
   irAScreen('ventas', 'Ventas');
-  mostrarDrawerNuevoOExistente();
-  abrirItemDrawer(state.itemTarget);
+  agregarItemComun(item, 'Pieza de exhibición agregada al pedido');
 }
 
 /* ============ CATÁLOGO (pantalla independiente) ============ */
@@ -1562,48 +1587,8 @@ async function guardarNuevoModelo(){
 }
 
 /* ============ CREAR PIEZA EN EXHIBICIÓN ============ */
-function abrirNuevaExh(){
-  const sel = document.getElementById('neModelo');
-  sel.innerHTML = catalogo.map(m=>`<option value="${m.id}">${m.nombre} (${m.tipo})</option>`).join('');
-  document.getElementById('neAlto').value = 1;
-  document.getElementById('neAncho').value = 1;
-  document.getElementById('neColor').value = '';
-  document.getElementById('nePrecio').value = '';
-  document.getElementById('scrim6').classList.add('open');
-  document.getElementById('drawerNuevaExh').classList.add('open');
-}
-function cerrarNuevaExh(){
-  document.getElementById('scrim6').classList.remove('open');
-  document.getElementById('drawerNuevaExh').classList.remove('open');
-}
-async function guardarNuevaExh(){
-  const catalogoId = parseInt(document.getElementById('neModelo').value);
-  const precio = parseFloat(document.getElementById('nePrecio').value);
-  if(!catalogoId){ showToast('Elige un modelo del catálogo', 'error'); return; }
-  if(!precio || precio <= 0){ showToast('Ingresa un precio de venta válido', 'error'); return; }
-  const pieza = {
-    catalogo_id: catalogoId,
-    especificaciones: {
-      alto: parseFloat(document.getElementById('neAlto').value) || 1,
-      ancho: parseFloat(document.getElementById('neAncho').value) || 1,
-      color: document.getElementById('neColor').value.trim() || 'Blanco'
-    },
-    precio,
-    estado: 'Disponible'
-  };
-  if(MODO_DEMO){
-    pieza.id = exhibicion.reduce((max,x)=>Math.max(max,x.id),0) + 1;
-    exhibicion.push(pieza);
-  } else {
-    try{
-      const resultado = await llamarBackend('saveExhibicionPieza', pieza);
-      pieza.id = resultado.id;
-      exhibicion.push(pieza);
-    } catch(err){ return; }
-  }
-  cerrarNuevaExh();
-  renderExhibicion();
-  showToast('Pieza agregada a exhibición', 'success');
+function abrirNuevaPiezaExhibicion(){
+  abrirItemDrawer('exhibicion-nueva');
 }
 
 function precargarEspecificaciones(e){
@@ -1659,6 +1644,7 @@ function mostrarFormConModelo(m){
   document.getElementById('npPrecioFinal').value = m.precio_base;
   document.getElementById('npPrecioSugerido').textContent = `Precargado desde "${m.nombre}", ajusta si el cliente pidió algo distinto`;
   state.modeloElegidoNombre = m.nombre;
+  state.catalogoIdElegido = m.id;
 }
 function mostrarFormPersonalizado(){
   document.getElementById('itemDrawerOpciones').classList.add('hidden');
@@ -1854,10 +1840,14 @@ function resetItemDrawerASeleccion(){
   document.getElementById('itemDrawerOpciones').classList.remove('hidden');
   document.getElementById('npModeloHeader').classList.add('hidden');
   document.getElementById('npFormWrap').classList.add('hidden');
-  document.getElementById('itemDrawerTitulo').textContent = 'Agregar ítem';
+  document.getElementById('itemDrawerTitulo').textContent = state.itemTarget === 'exhibicion-nueva' ? 'Nueva pieza en exhibición' : 'Agregar ítem';
   document.getElementById('btnAgregarItemLabel').textContent = '+ Agregar este ítem';
+  document.getElementById('optCardExhibicion').classList.toggle('hidden', state.itemTarget === 'exhibicion-nueva');
+  const btn = document.getElementById('btnAgregarItemAccion');
+  if(btn) btn.disabled = false;
   state.itemEditIndex = null;
   state.modeloElegidoNombre = null;
+  state.catalogoIdElegido = null;
   const body = document.querySelector('#drawerItem .drawer-body');
   if(body) body.scrollTop = 0;
 }
@@ -1880,7 +1870,8 @@ async function agregarItemComun(item, mensaje){
       const x = exhibicion.find(e=>e.id===item.exhibicionId);
       if(x) x.estado = 'Vendido';
     }
-    poblarDetalle(p.id);
+    cerrarItemDrawer();
+    abrirDrawer(p.id);
     renderLista();
     if(!MODO_DEMO){
       try{
@@ -1889,7 +1880,7 @@ async function agregarItemComun(item, mensaje){
       } catch(err){
         p.items.pop();
         if(item.exhibicionId){ const x = exhibicion.find(e=>e.id===item.exhibicionId); if(x) x.estado = 'Disponible'; }
-        poblarDetalle(p.id);
+        abrirDrawer(p.id);
         renderLista();
         return;
       }
@@ -1898,18 +1889,50 @@ async function agregarItemComun(item, mensaje){
     state.npItems.push(item);
     renderAddedItems();
     actualizarTotalNuevo();
+    cerrarItemDrawer();
     document.getElementById('scrim').classList.add('open');
     document.getElementById('drawerNuevo').classList.add('open');
   }
   showToast(mensaje, 'success');
-  resetItemDrawerASeleccion();
+}
+async function guardarNuevaPiezaDesdeForm(item){
+  const btn = document.getElementById('btnAgregarItemAccion');
+  const pieza = { catalogo_id: state.catalogoIdElegido || null, especificaciones: item.especificaciones, precio: item.precio, estado: 'Disponible' };
+  if(MODO_DEMO){
+    pieza.id = exhibicion.reduce((max,x)=>Math.max(max,x.id),0) + 1;
+    exhibicion.push(pieza);
+  } else {
+    try{
+      const resultado = await llamarBackend('saveExhibicionPieza', pieza);
+      pieza.id = resultado.id;
+      exhibicion.push(pieza);
+    } catch(err){
+      if(btn) btn.disabled = false;
+      return;
+    }
+  }
+  cerrarItemDrawer();
+  renderExhibicion();
+  showToast('Pieza agregada a exhibición', 'success');
 }
 function agregarItem(){
+  const btn = document.getElementById('btnAgregarItemAccion');
+  if(btn && btn.disabled) return;
+  if(btn) btn.disabled = true;
+
   const item = leerCamposActuales();
-  if(!item.precio || item.precio <= 0){ showToast('Ingresa un precio válido', 'error'); return; }
+  if(!item.precio || item.precio <= 0){
+    showToast('Ingresa un precio válido', 'error');
+    if(btn) btn.disabled = false;
+    return;
+  }
 
   if(state.itemEditIndex != null){
     guardarEdicionItem(item);
+    return;
+  }
+  if(state.itemTarget === 'exhibicion-nueva'){
+    guardarNuevaPiezaDesdeForm(item);
     return;
   }
 
@@ -1960,6 +1983,7 @@ function abrirNuevoPedido(itemPrecargado){
   document.getElementById('npCedula').value = '';
   document.getElementById('npFechaEntrega').value = sumarDiasHabiles(new Date(), 10);
   document.getElementById('npDescuento').value = 0;
+  document.getElementById('npAbonoInicial').value = 0;
   document.getElementById('npClienteHint').classList.remove('show');
   renderAddedItems();
   actualizarTotalNuevo();
@@ -1994,6 +2018,7 @@ async function guardarPedido(){
   };
   const fecha_entrega = document.getElementById('npFechaEntrega').value;
   const descuento = parseFloat(document.getElementById('npDescuento').value) || 0;
+  const abonoInicial = parseFloat(document.getElementById('npAbonoInicial').value) || 0;
   const items = state.npItems;
 
   const btn = document.querySelector('[data-action="guardar-pedido"]');
@@ -2005,7 +2030,7 @@ async function guardarPedido(){
     codigoNuevo = 'PED-' + String(nextCodigo++).padStart(4,'0');
   } else {
     try{
-      const resultado = await llamarBackend('savePedido', { cliente, fecha_entrega, descuento, items });
+      const resultado = await llamarBackend('savePedido', { cliente, fecha_entrega, descuento, abono: abonoInicial, items });
       idNuevo = resultado.id;
       codigoNuevo = resultado.codigo;
     } catch(err){
@@ -2030,7 +2055,7 @@ async function guardarPedido(){
     fecha_entrega,
     estado: 'cotizacion',
     descuento,
-    abono: 0,
+    abono: abonoInicial,
     items
   };
   pedidos.unshift(nuevo);
@@ -2153,6 +2178,9 @@ document.body.addEventListener('click', e=>{
     renderExhibicion();
   }
   else if(action === 'set-estado') cambiarEstado(el.dataset.estado);
+  else if(action === 'confirmar-pedido') cambiarEstado('confirmado');
+  else if(action === 'aceptar-confirm') cerrarConfirm(true);
+  else if(action === 'cerrar-confirm') cerrarConfirm(false);
   else if(action === 'registrar-abono') registrarAbono();
   else if(action === 'wa-cliente') abrirWhatsapp();
   else if(action === 'print-pedido') imprimirPedido();
@@ -2177,9 +2205,7 @@ document.body.addEventListener('click', e=>{
   else if(action === 'mostrar-form-personalizado') mostrarFormPersonalizado();
   else if(action === 'toggle-select-item') manejarTapItem(parseInt(el.dataset.index));
   else if(action === 'abrir-nuevo-pedido') abrirNuevoPedido();
-  else if(action === 'abrir-nueva-exh') abrirNuevaExh();
-  else if(action === 'close-nueva-exh') cerrarNuevaExh();
-  else if(action === 'guardar-nueva-exh') guardarNuevaExh();
+  else if(action === 'abrir-nueva-exh') abrirNuevaPiezaExhibicion();
   else if(action === 'abrir-nuevo-modelo') abrirNuevoModelo();
   else if(action === 'close-nuevo-modelo') cerrarNuevoModelo();
   else if(action === 'guardar-nuevo-modelo') guardarNuevoModelo();
