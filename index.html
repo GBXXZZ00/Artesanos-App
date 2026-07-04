@@ -218,6 +218,11 @@
   .placeholder-screen strong{ color:var(--text); font-size:15px; }
 
   .tabs{ display:flex; gap:6px; background:var(--surface2); padding:4px; border-radius:10px; margin-bottom:14px; }
+
+  .chip-row{ display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; margin-bottom:14px; -ms-overflow-style:none; scrollbar-width:none; }
+  .chip-row::-webkit-scrollbar{ display:none; }
+  .chip{ flex-shrink:0; padding:8px 14px; background:var(--surface2); border:1px solid var(--border); border-radius:20px; font-size:12.5px; font-weight:600; color:var(--text2); cursor:pointer; white-space:nowrap; transition: background .15s var(--ease-out), color .15s var(--ease-out), border-color .15s var(--ease-out); }
+  .chip.active{ background:var(--gold-dim); border-color:var(--gold); color:var(--gold); }
   .tab{
     flex:1; text-align:center; padding:8px 0; font-size:13.5px; font-weight:600; color:var(--text2);
     border-radius:8px; cursor:pointer; transition: background .18s var(--ease-out), color .18s var(--ease-out);
@@ -558,6 +563,7 @@
           <span>Elige un modelo para fabricar a medida</span>
           <button data-action="cancelar-seleccion">Cancelar</button>
         </div>
+        <div class="chip-row" id="catTipoChips"></div>
         <div class="search">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7A8790" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
           <input type="text" id="catSearchInput" placeholder="Buscar modelo...">
@@ -733,6 +739,7 @@
             <option value="ventana">Ventana</option>
             <option value="porton">Portón</option>
             <option value="puerta" selected>Puerta</option>
+            <option value="puerta_multilock">Puerta Multilock</option>
             <option value="combo">Combo (Puerta + 2 Ventanas)</option>
           </select>
         </div>
@@ -814,19 +821,33 @@
           <option value="Ventana">Ventana</option>
           <option value="Portón">Portón</option>
           <option value="Puerta" selected>Puerta</option>
+          <option value="Puerta Multilock">Puerta Multilock</option>
           <option value="Combo">Combo</option>
         </select>
       </div>
       <div class="form-row" style="margin-bottom:14px">
-        <div class="field"><label>Alto (m)</label><input type="number" step="0.01" id="nmAlto" value="2.10"></div>
-        <div class="field"><label>Ancho (m)</label><input type="number" step="0.01" id="nmAncho" value="0.90"></div>
+        <div class="field"><label>Alto (m)</label><input type="number" step="0.01" id="nmAlto" value="2"></div>
+        <div class="field"><label>Ancho (m)</label><input type="number" step="0.01" id="nmAncho" value="1"></div>
       </div>
-      <div class="form-group"><label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Color</label><input type="text" id="nmColor" placeholder="Blanco / Negro" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px"></div>
       <div class="form-group">
-        <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Foto (opcional)</label>
-        <input type="file" id="nmFoto" accept="image/*" style="width:100%;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:13px">
-        <div id="nmFotoPreviewWrap" class="hidden" style="margin-top:8px;width:70px;height:70px;border-radius:8px;overflow:hidden;border:1px solid var(--border)">
-          <img id="nmFotoPreview" style="width:100%;height:100%;object-fit:cover">
+        <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Color por defecto (sugerido al usar el modelo)</label>
+        <select id="nmColor" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px">
+          <option value="Blanco">Blanco</option>
+          <option value="Negro">Negro</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Foto Blanco (opcional)</label>
+        <input type="file" id="nmFotoBlanco" accept="image/*" style="width:100%;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:13px">
+        <div id="nmFotoBlancoPreviewWrap" class="hidden" style="margin-top:8px;width:70px;height:70px;border-radius:8px;overflow:hidden;border:1px solid var(--border)">
+          <img id="nmFotoBlancoPreview" style="width:100%;height:100%;object-fit:cover">
+        </div>
+      </div>
+      <div class="form-group">
+        <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Foto Negro (opcional)</label>
+        <input type="file" id="nmFotoNegro" accept="image/*" style="width:100%;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:13px">
+        <div id="nmFotoNegroPreviewWrap" class="hidden" style="margin-top:8px;width:70px;height:70px;border-radius:8px;overflow:hidden;border:1px solid var(--border)">
+          <img id="nmFotoNegroPreview" style="width:100%;height:100%;object-fit:cover">
         </div>
       </div>
       <div class="form-group"><label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Precio base</label><input type="number" id="nmPrecio" placeholder="0" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px"></div>
@@ -939,16 +960,19 @@ function leerSesionGuardada(){
   } catch(e){ return null; }
 }
 async function retomarSesion(sesion){
+  state.cancelarRetomo = false;
   document.getElementById('resumeNombre').textContent = sesion.nombre;
   document.getElementById('resumeAvatar').textContent = sesion.nombre.trim().slice(0,1).toUpperCase();
   document.getElementById('resumeScreen').classList.remove('hidden');
   document.getElementById('avatarInitials').textContent = sesion.nombre.trim().slice(0,2).toUpperCase();
   document.getElementById('demoBanner').classList.toggle('hidden', !MODO_DEMO);
   await cargarDatosIniciales();
+  if(state.cancelarRetomo) return;
   document.getElementById('resumeScreen').classList.add('hidden');
   document.getElementById('loginScreen').classList.add('hidden');
 }
 function cambiarUsuario(){
+  state.cancelarRetomo = true;
   limpiarSesion();
   document.getElementById('resumeScreen').classList.add('hidden');
   document.getElementById('loginScreen').classList.remove('hidden');
@@ -1042,11 +1066,11 @@ let nextId = 5;
 let nextCodigo = 143;
 
 let catalogo = [
-  { id:1, nombre:'Puerta Toscana Doble Panel', tipo:'Puerta', foto:null, especificaciones_base:{ alto:2.10, ancho:0.90, color:'Negro', sentido:'Derecha', posicion:'Afuera', bloque:'15', marco_decorativo:true, proteccion:true, proteccion_sentido:'Derecha', vidrio_o_farquilla:'Farquilla', color_vidrio:'Negro', manillon:true, manillon_tipo:'Luna' }, precio_base:340 },
-  { id:2, nombre:'Ventana Ecobel Clásica', tipo:'Ventana', foto:null, especificaciones_base:{ alto:1, ancho:1, color:'Blanco', proteccion:true, marco_decorativo:false, papel_ahumado:false }, precio_base:210 },
-  { id:3, nombre:'Portón Doble Tubo', tipo:'Portón', foto:null, especificaciones_base:{ alto:2.20, ancho:3.00, color:'Blanco', sentido:'Izquierda', posicion:'Afuera', vidrio_o_farquilla:'Vidrio', color_vidrio:'Espejo', manillon:true, manillon_tipo:'H', bloque:'Tubo', instalacion:true }, precio_base:540 },
-  { id:4, nombre:'Ventana Panorámica Ahumada', tipo:'Ventana', foto:null, especificaciones_base:{ alto:1.2, ancho:1, color:'Blanco', papel_ahumado:true, proteccion:false }, precio_base:130 },
-  { id:5, nombre:'Combo Familiar Clásico', tipo:'Combo', foto:null, especificaciones_base:{ variante:'Con protección en puerta', alto:2.10, ancho:0.90, color:'Blanco', sentido:'Derecha', posicion:'Afuera', bloque:'10' }, precio_base:680 }
+  { id:1, nombre:'Puerta Toscana Doble Panel', tipo:'Puerta', fotos:{}, especificaciones_base:{ alto:2, ancho:1, color:'Negro', sentido:'Derecha', posicion:'Afuera', bloque:'15', marco_decorativo:true, proteccion:true, proteccion_sentido:'Derecha', vidrio_o_farquilla:'Farquilla', color_vidrio:'Negro', manillon:true, manillon_tipo:'Luna' }, precio_base:340 },
+  { id:2, nombre:'Ventana Ecobel Clásica', tipo:'Ventana', fotos:{}, especificaciones_base:{ alto:1, ancho:1, color:'Blanco', proteccion:true, marco_decorativo:false, papel_ahumado:false }, precio_base:210 },
+  { id:3, nombre:'Portón Doble Tubo', tipo:'Portón', fotos:{}, especificaciones_base:{ alto:2.20, ancho:3.00, color:'Blanco', sentido:'Izquierda', posicion:'Afuera', vidrio_o_farquilla:'Vidrio', color_vidrio:'Espejo', manillon:true, manillon_tipo:'H', bloque:'Tubo', instalacion:true }, precio_base:540 },
+  { id:4, nombre:'Ventana Panorámica Ahumada', tipo:'Ventana', fotos:{}, especificaciones_base:{ alto:1.2, ancho:1, color:'Blanco', papel_ahumado:true, proteccion:false }, precio_base:130 },
+  { id:5, nombre:'Combo Familiar Clásico', tipo:'Combo', fotos:{}, especificaciones_base:{ variante:'Con protección en puerta', alto:2, ancho:1, color:'Blanco', sentido:'Derecha', posicion:'Afuera', bloque:'10' }, precio_base:680 }
 ];
 
 let exhibicion = [
@@ -1059,12 +1083,16 @@ let exhibicion = [
 /* ============ ESTADO UI ============ */
 const ESTADOS = ['cotizacion','confirmado','produccion','listo','entregado'];
 const ESTADO_LABEL = { cotizacion:'Cotización', confirmado:'Confirmado', produccion:'En Producción', listo:'Listo', entregado:'Entregado' };
-let state = { tab:'activos', search:'', openPedidoId:null, npItems:[], itemTarget:'nuevo', exhTab:'disponibles', exhSearch:'', catSearch:'', openExhId:null, openCatId:null, modoSeleccion:null };
+let state = { tab:'activos', search:'', openPedidoId:null, npItems:[], itemTarget:'nuevo', exhTab:'disponibles', exhSearch:'', catSearch:'', catTipoFiltro:'Todos', openExhId:null, openCatId:null, openCatColor:null, modoSeleccion:null };
 
 function getModelo(catalogoId){ return catalogo.find(c=>c.id===catalogoId) || null; }
+function fotoModeloPorColor(modelo, color){
+  if(!modelo || !modelo.fotos) return null;
+  return modelo.fotos[color] || modelo.fotos.Blanco || modelo.fotos.Negro || null;
+}
 function getInfoExhibicion(x){
   const m = getModelo(x.catalogo_id);
-  return { nombre: m ? m.nombre : 'Pieza personalizada', tipo: m ? m.tipo : (x.tipo || 'Producto'), foto: m ? m.foto : null };
+  return { nombre: m ? m.nombre : 'Pieza personalizada', tipo: m ? m.tipo : (x.tipo || 'Producto'), foto: m ? fotoModeloPorColor(m, x.especificaciones.color) : null };
 }
 function reveal(el){
   if(!el) return;
@@ -1073,7 +1101,7 @@ function reveal(el){
   el.classList.add('list-reveal');
 }
 
-function labelTipo(tipo){ return { ventana:'Ventana', porton:'Portón', puerta:'Puerta', combo:'Combo' }[tipo]; }
+function labelTipo(tipo){ return { ventana:'Ventana', porton:'Portón', puerta:'Puerta', puerta_multilock:'Puerta Multilock', combo:'Combo' }[tipo]; }
 function buscarClienteExistente(valor){
   if(!valor || valor.trim().length < 6) return null;
   const v = valor.trim();
@@ -1110,7 +1138,7 @@ function iconoGenericoTipo(){
   return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>`;
 }
 function miniaturaItem(item){
-  const foto = item.catalogoId ? (getModelo(item.catalogoId)?.foto || null) : null;
+  const foto = item.catalogoId ? fotoModeloPorColor(getModelo(item.catalogoId), item.especificaciones?.color) : null;
   return foto
     ? `<img src="${foto}" alt="" style="width:100%;height:100%;object-fit:cover">`
     : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--gold)">${iconoGenericoTipo()}</div>`;
@@ -1270,7 +1298,7 @@ function abrirEditarItem(idx){
   document.getElementById('itemDrawerOpciones').classList.add('hidden');
   document.getElementById('btnAgregarItemLabel').textContent = 'Guardar cambios';
   mostrarFormPersonalizado();
-  const tipoKey = { Ventana:'ventana', 'Portón':'porton', Puerta:'puerta', Combo:'combo' }[item.tipo] || 'puerta';
+  const tipoKey = { Ventana:'ventana', 'Portón':'porton', Puerta:'puerta', 'Puerta Multilock':'puerta_multilock', Combo:'combo' }[item.tipo] || 'puerta';
   document.getElementById('npTipoProducto').value = tipoKey;
   renderCamposDinamicos();
   precargarEspecificaciones(item.especificaciones);
@@ -1553,44 +1581,66 @@ function agregarPiezaDesdeSeleccion(){
 }
 
 /* ============ CATÁLOGO (pantalla independiente) ============ */
+const TIPOS_CATALOGO = ['Puerta', 'Puerta Multilock', 'Ventana', 'Portón', 'Combo'];
+function renderChipsCatalogo(){
+  const cont = document.getElementById('catTipoChips');
+  const chips = ['Todos', ...TIPOS_CATALOGO];
+  cont.innerHTML = chips.map(t=>`<div class="chip ${state.catTipoFiltro===t ? 'active' : ''}" data-action="filtrar-tipo-catalogo" data-tipo="${t}">${t}</div>`).join('');
+}
+function tarjetasCatalogo(){
+  const tarjetas = [];
+  catalogo.forEach(m=>{
+    const colores = Object.keys(m.fotos || {}).filter(c=>m.fotos[c]);
+    if(colores.length === 0){
+      tarjetas.push({ modelo: m, color: null, foto: null });
+    } else {
+      colores.forEach(color=>tarjetas.push({ modelo: m, color, foto: m.fotos[color] }));
+    }
+  });
+  return tarjetas;
+}
 function renderCatalogo(){
+  renderChipsCatalogo();
   const cont = document.getElementById('catGrid');
-  const filtrados = catalogo.filter(m=>{
+  const filtrados = tarjetasCatalogo().filter(t=>{
+    if(state.catTipoFiltro && state.catTipoFiltro !== 'Todos' && t.modelo.tipo !== state.catTipoFiltro) return false;
     if(!state.catSearch) return true;
     const q = state.catSearch.toLowerCase();
-    return m.nombre.toLowerCase().includes(q) || m.tipo.toLowerCase().includes(q);
+    return t.modelo.nombre.toLowerCase().includes(q) || t.modelo.tipo.toLowerCase().includes(q);
   });
   if(filtrados.length === 0){
     cont.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
       <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v6"/></svg>
-      <strong>Sin resultados</strong><span>Prueba con otro nombre.</span>
+      <strong>Sin resultados</strong><span>Prueba con otro nombre o tipo.</span>
     </div>`;
     return;
   }
-  cont.innerHTML = filtrados.map((m,i)=>`
-    <div class="exh-card" style="--i:${i}" data-action="open-cat-drawer" data-id="${m.id}">
+  cont.innerHTML = filtrados.map((t,i)=>`
+    <div class="exh-card" style="--i:${i}" data-action="open-cat-drawer" data-id="${t.modelo.id}" data-color="${t.color || ''}">
       <div class="exh-thumb">
-        ${m.foto ? `<img src="${m.foto}" alt="${m.nombre}" style="width:100%;height:100%;object-fit:cover">` : `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>`}
+        ${t.foto ? `<img src="${t.foto}" alt="${t.modelo.nombre}" style="width:100%;height:100%;object-fit:cover">` : `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>`}
       </div>
-      <div class="exh-name">${m.nombre}</div>
-      <div class="exh-spec">${m.tipo}</div>
-      <div class="exh-price">Desde ${money(m.precio_base)}</div>
+      <div class="exh-name">${t.modelo.nombre}${t.color ? ' ' + t.color : ''}</div>
+      <div class="exh-spec">${t.modelo.tipo}</div>
+      <div class="exh-price">Desde ${money(t.modelo.precio_base)}</div>
     </div>`).join('');
   reveal(cont);
 }
-function abrirCatDrawer(id){
+function abrirCatDrawer(id, color){
   const m = catalogo.find(c=>c.id===id);
   if(!m) return;
   state.openCatId = id;
+  state.openCatColor = color || null;
+  const foto = state.openCatColor ? (m.fotos[state.openCatColor] || null) : null;
   document.getElementById('catTipo').textContent = m.tipo;
-  document.getElementById('catNombre').textContent = m.nombre;
-  document.getElementById('catFoto').innerHTML = m.foto
-    ? `<img src="${m.foto}" alt="${m.nombre}" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius)">`
+  document.getElementById('catNombre').textContent = m.nombre + (state.openCatColor ? ' ' + state.openCatColor : '');
+  document.getElementById('catFoto').innerHTML = foto
+    ? `<img src="${foto}" alt="${m.nombre}" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius)">`
     : `<svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>`;
   const e = m.especificaciones_base;
   const chips = [];
   if(e.alto && e.ancho) chips.push(['Medidas típicas', `${e.alto}×${e.ancho} m`]);
-  if(e.color) chips.push(['Color', e.color]);
+  chips.push(['Color', state.openCatColor || e.color || 'No definido']);
   if('proteccion' in e) chips.push(['Protección', e.proteccion ? 'Sí' : 'No']);
   if('marco_decorativo' in e) chips.push(['Marco decorativo', e.marco_decorativo ? 'Sí' : 'No']);
   if(e.bloque) chips.push(['Bloque', e.bloque]);
@@ -1606,18 +1656,21 @@ function cerrarCatDrawer(){
   document.getElementById('scrim4').classList.remove('open');
   document.getElementById('drawerCat').classList.remove('open');
   state.openCatId = null;
+  state.openCatColor = null;
 }
 
 /* ============ CREAR MODELO DE CATÁLOGO ============ */
 function abrirNuevoModelo(){
   document.getElementById('nmNombre').value = '';
   document.getElementById('nmTipo').value = 'Puerta';
-  document.getElementById('nmAlto').value = 2.10;
-  document.getElementById('nmAncho').value = 0.90;
-  document.getElementById('nmColor').value = '';
-  document.getElementById('nmFoto').value = '';
+  document.getElementById('nmAlto').value = 2;
+  document.getElementById('nmAncho').value = 1;
+  document.getElementById('nmColor').value = 'Blanco';
+  document.getElementById('nmFotoBlanco').value = '';
+  document.getElementById('nmFotoNegro').value = '';
   document.getElementById('nmPrecio').value = '';
-  document.getElementById('nmFotoPreviewWrap').classList.add('hidden');
+  document.getElementById('nmFotoBlancoPreviewWrap').classList.add('hidden');
+  document.getElementById('nmFotoNegroPreviewWrap').classList.add('hidden');
   document.getElementById('scrim5').classList.add('open');
   document.getElementById('drawerNuevoModelo').classList.add('open');
 }
@@ -1659,21 +1712,29 @@ async function guardarNuevoModelo(){
   const modelo = {
     nombre,
     tipo: document.getElementById('nmTipo').value,
-    foto: null,
+    fotos: {},
     especificaciones_base: {
       alto: parseFloat(document.getElementById('nmAlto').value) || 1,
       ancho: parseFloat(document.getElementById('nmAncho').value) || 1,
-      color: document.getElementById('nmColor').value.trim() || 'Blanco'
+      color: document.getElementById('nmColor').value || 'Blanco'
     },
     precio_base: precio
   };
 
-  const archivoFoto = document.getElementById('nmFoto').files[0];
-  if(archivoFoto && !MODO_DEMO){
+  const archivoBlanco = document.getElementById('nmFotoBlanco').files[0];
+  const archivoNegro = document.getElementById('nmFotoNegro').files[0];
+  if((archivoBlanco || archivoNegro) && !MODO_DEMO){
     try{
-      const base64 = await comprimirImagen(archivoFoto, 800);
-      const resultadoFoto = await llamarBackend('subirFoto', { base64, mimeType: 'image/jpeg', nombreProducto: nombre });
-      modelo.foto = resultadoFoto.url;
+      if(archivoBlanco){
+        const base64 = await comprimirImagen(archivoBlanco, 800);
+        const r = await llamarBackend('subirFoto', { base64, mimeType: 'image/jpeg', nombreProducto: nombre + ' Blanco' });
+        modelo.fotos.Blanco = r.url;
+      }
+      if(archivoNegro){
+        const base64 = await comprimirImagen(archivoNegro, 800);
+        const r = await llamarBackend('subirFoto', { base64, mimeType: 'image/jpeg', nombreProducto: nombre + ' Negro' });
+        modelo.fotos.Negro = r.url;
+      }
     } catch(err){
       btn.disabled = false;
       document.getElementById('btnGuardarModeloLabel').textContent = 'Guardar modelo';
@@ -1739,28 +1800,31 @@ function precargarEspecificaciones(e){
 function usarModeloCatalogo(){
   const m = catalogo.find(c=>c.id===state.openCatId);
   if(!m) return;
+  const colorElegido = state.openCatColor;
   cerrarCatDrawer();
   state.modoSeleccion = null;
   irAScreen('ventas', 'Ventas');
   mostrarDrawerNuevoOExistente();
   abrirItemDrawer(state.itemTarget);
-  mostrarFormConModelo(m);
+  mostrarFormConModelo(m, colorElegido);
 }
-function mostrarFormConModelo(m){
-  const tipoKey = { Ventana:'ventana', 'Portón':'porton', Puerta:'puerta', Combo:'combo' }[m.tipo] || 'puerta';
+function mostrarFormConModelo(m, colorElegido){
+  const tipoKey = { Ventana:'ventana', 'Portón':'porton', Puerta:'puerta', 'Puerta Multilock':'puerta_multilock', Combo:'combo' }[m.tipo] || 'puerta';
+  const foto = colorElegido ? (m.fotos[colorElegido] || null) : fotoModeloPorColor(m, m.especificaciones_base.color);
   document.getElementById('itemDrawerOpciones').classList.add('hidden');
   document.getElementById('npModeloHeader').classList.remove('hidden');
-  document.getElementById('npModeloHeaderFoto').innerHTML = m.foto
-    ? `<img src="${m.foto}" alt="${m.nombre}" style="width:100%;height:100%;object-fit:cover">`
+  document.getElementById('npModeloHeaderFoto').innerHTML = foto
+    ? `<img src="${foto}" alt="${m.nombre}" style="width:100%;height:100%;object-fit:cover">`
     : `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>`;
-  document.getElementById('npModeloHeaderNombre').textContent = m.nombre;
+  document.getElementById('npModeloHeaderNombre').textContent = m.nombre + (colorElegido ? ' ' + colorElegido : '');
   document.getElementById('npFormWrap').classList.remove('hidden');
   document.getElementById('npTipoProducto').value = tipoKey;
   renderCamposDinamicos();
-  precargarEspecificaciones(m.especificaciones_base);
+  const specsConColor = colorElegido ? { ...m.especificaciones_base, color: colorElegido } : m.especificaciones_base;
+  precargarEspecificaciones(specsConColor);
   document.getElementById('npPrecioFinal').value = m.precio_base;
   document.getElementById('npPrecioSugerido').textContent = `Precargado desde "${m.nombre}", ajusta si el cliente pidió algo distinto`;
-  state.modeloElegidoNombre = m.nombre;
+  state.modeloElegidoNombre = m.nombre + (colorElegido ? ' ' + colorElegido : '');
   state.catalogoIdElegido = m.id;
 }
 function mostrarFormPersonalizado(){
@@ -1827,8 +1891,8 @@ function campoRadio(name, label, opciones, seleccion){
 }
 function campoMedidas(){
   return `<div class="form-row" style="margin-bottom:12px">
-    <div class="field"><label>Alto (m)</label><input type="number" step="0.01" id="npAlto" value="2.10"></div>
-    <div class="field"><label>Ancho (m)</label><input type="number" step="0.01" id="npAncho" value="0.90"></div>
+    <div class="field"><label>Alto (m)</label><input type="number" step="0.01" id="npAlto" value="2"></div>
+    <div class="field"><label>Ancho (m)</label><input type="number" step="0.01" id="npAncho" value="1"></div>
   </div>`;
 }
 
@@ -1857,7 +1921,7 @@ function renderCamposDinamicos(){
     html += `<div id="npSubManillon" class="subfields hidden">${campoRadio('manillon_tipo','Tipo de manillón', ['H','S','Luna'], 'H')}</div>`;
     html += campoToggle('npInstalacion', 'Instalación incluida (precio adicional)');
   }
-  else if(tipo === 'puerta'){
+  else if(tipo === 'puerta' || tipo === 'puerta_multilock'){
     html += campoMedidas();
     html += campoRadio('color','Color', ['Blanco','Negro'], 'Negro');
     html += campoRadio('sentido','Sentido de apertura', ['Derecha','Izquierda'], 'Derecha');
@@ -1897,7 +1961,7 @@ function actualizarSubfields(){
   if(manillon && subManillon) subManillon.classList.toggle('hidden', !manillon.checked);
 }
 
-const PRECIO_BASE = { ventana:90, porton:150, puerta:200, combo:380 };
+const PRECIO_BASE = { ventana:90, porton:150, puerta:200, puerta_multilock:260, combo:380 };
 function actualizarPrecioSugerido(){
   const tipo = document.getElementById('npTipoProducto').value;
   const alto = parseFloat(document.getElementById('npAlto')?.value) || 1;
@@ -1911,7 +1975,7 @@ function actualizarPrecioSugerido(){
 
 function leerCamposActuales(){
   const tipo = document.getElementById('npTipoProducto').value;
-  const tipoLabel = { ventana:'Ventana', porton:'Portón', puerta:'Puerta', combo:'Combo' }[tipo];
+  const tipoLabel = { ventana:'Ventana', porton:'Portón', puerta:'Puerta', puerta_multilock:'Puerta Multilock', combo:'Combo' }[tipo];
   const e = {};
   const g = id => document.getElementById(id);
   const radioVal = name => { const el = document.querySelector(`.radio-opt.selected[data-radio-name="${name}"]`); return el ? el.dataset.radioVal : null; };
@@ -1932,7 +1996,7 @@ function leerCamposActuales(){
     e.manillon = g('npManillon')?.checked || false;
     e.manillon_tipo = e.manillon ? radioVal('manillon_tipo') : null;
     e.instalacion = g('npInstalacion')?.checked || false;
-  } else if(tipo==='puerta'){
+  } else if(tipo==='puerta' || tipo==='puerta_multilock'){
     e.sentido = radioVal('sentido'); e.posicion = radioVal('posicion'); e.bloque = radioVal('bloque');
     e.marco_decorativo = g('npMarcoDecorativo')?.checked || false;
     e.proteccion = g('npProteccion')?.checked || false;
@@ -2251,17 +2315,21 @@ document.getElementById('searchInput').addEventListener('input', e=>{
 });
 
 document.getElementById('npTipoProducto').addEventListener('change', renderCamposDinamicos);
-document.getElementById('nmFoto').addEventListener('change', e=>{
-  const archivo = e.target.files[0];
-  const wrap = document.getElementById('nmFotoPreviewWrap');
-  if(!archivo){ wrap.classList.add('hidden'); return; }
-  const lector = new FileReader();
-  lector.onload = () => {
-    document.getElementById('nmFotoPreview').src = lector.result;
-    wrap.classList.remove('hidden');
-  };
-  lector.readAsDataURL(archivo);
-});
+function wireFotoPreview(inputId, wrapId, imgId){
+  document.getElementById(inputId).addEventListener('change', e=>{
+    const archivo = e.target.files[0];
+    const wrap = document.getElementById(wrapId);
+    if(!archivo){ wrap.classList.add('hidden'); return; }
+    const lector = new FileReader();
+    lector.onload = () => {
+      document.getElementById(imgId).src = lector.result;
+      wrap.classList.remove('hidden');
+    };
+    lector.readAsDataURL(archivo);
+  });
+}
+wireFotoPreview('nmFotoBlanco', 'nmFotoBlancoPreviewWrap', 'nmFotoBlancoPreview');
+wireFotoPreview('nmFotoNegro', 'nmFotoNegroPreviewWrap', 'nmFotoNegroPreview');
 document.getElementById('npDescuento').addEventListener('input', actualizarTotalNuevo);
 document.getElementById('npTelefono').addEventListener('input', chequearClienteExistente);
 document.getElementById('npCedula').addEventListener('input', chequearClienteExistente);
@@ -2330,7 +2398,8 @@ document.body.addEventListener('click', e=>{
   else if(action === 'close-exh-drawer') cerrarExhDrawer();
   else if(action === 'vender-pieza') venderPiezaExhibicion();
   else if(action === 'agregar-exh-seleccion') agregarPiezaDesdeSeleccion();
-  else if(action === 'open-cat-drawer') abrirCatDrawer(parseInt(el.dataset.id));
+  else if(action === 'open-cat-drawer') abrirCatDrawer(parseInt(el.dataset.id), el.dataset.color || null);
+  else if(action === 'filtrar-tipo-catalogo'){ state.catTipoFiltro = el.dataset.tipo; renderCatalogo(); }
   else if(action === 'close-cat-drawer') cerrarCatDrawer();
   else if(action === 'usar-modelo-catalogo') usarModeloCatalogo();
   else if(action === 'ir-seleccion-catalogo') irASeleccionCatalogo();
