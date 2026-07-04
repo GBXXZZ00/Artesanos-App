@@ -766,7 +766,7 @@ const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbyW2936dQsIgvwOhnxi
 const NUMERO_NEGOCIO = '584220167079';
 
 /* ============ CONEXIÓN AL BACKEND ============ */
-async function llamarBackend(accion, payload){
+async function llamarBackend(accion, payload, silencioso){
   try{
     const res = await fetch(BACKEND_URL, {
       method: 'POST',
@@ -777,7 +777,7 @@ async function llamarBackend(accion, payload){
     if(!json.ok) throw new Error(json.error || 'Error del servidor');
     return json.data;
   } catch(err){
-    showToast('Error de conexión: ' + err.message, 'error');
+    if(!silencioso) showToast('Error de conexión: ' + err.message, 'error');
     throw err;
   }
 }
@@ -871,7 +871,7 @@ async function cargarListaUsuarios(){
     return;
   }
   try{
-    USUARIOS_DD = await llamarBackend('getUsuarios');
+    USUARIOS_DD = await llamarBackend('getUsuarios', {}, true);
   } catch(err){
     USUARIOS_DD = [];
   }
