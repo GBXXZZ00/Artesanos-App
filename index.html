@@ -125,13 +125,13 @@
   .user-dd-item small{ display:block; color:var(--text2); font-size:11px; margin-top:1px; }
   .user-dd-empty{ padding:10px 14px; font-size:12px; color:var(--text3); }
 
-  /* spinner del botón de login */
+  /* spinner genérico: usa currentColor, funciona en cualquier botón (dorado, verde, fantasma, gris) */
   .btn-spin{
-    width:14px; height:14px; border:2px solid rgba(26,20,9,.35); border-top-color:#1A1409;
+    width:14px; height:14px; border:2px solid currentColor; border-top-color:transparent; opacity:.85;
     border-radius:50%; display:none; flex-shrink:0; animation:spin .6s linear infinite;
   }
-  .btn-primary.loading{ display:flex; align-items:center; justify-content:center; gap:8px; }
-  .btn-primary.loading .btn-spin{ display:inline-block; }
+  button.loading{ display:flex; align-items:center; justify-content:center; gap:8px; pointer-events:none; opacity:.85; }
+  button.loading .btn-spin{ display:inline-block; }
   @keyframes spin{ to{ transform:rotate(360deg); } }
 
   /* pantalla de sesión activa (retomar sesión) */
@@ -208,7 +208,7 @@
     padding:6px; letter-spacing:.3px; border-bottom:1px solid var(--border);
   }
 
-  .content{ flex:1; overflow-y:auto; padding:14px 14px 90px; position:relative; }
+  .content{ flex:1; overflow-y:auto; overflow-x:hidden; padding:14px 14px 90px; position:relative; }
   .screen{ display:none; }
   .screen.active{ display:block; animation:fadeIn .25s var(--ease-out); }
   @keyframes fadeIn{ from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:translateY(0);} }
@@ -260,13 +260,35 @@
   .order-top{ display:flex; justify-content:space-between; align-items:baseline; gap:8px; }
   .order-code{ font-size:12.5px; color:var(--text3); font-weight:600; }
   .order-client{ font-size:15px; font-weight:700; margin-top:1px; }
-  .order-meta{ font-size:12.5px; color:var(--text2); margin-top:3px; }
+  .order-bottom{ display:flex; justify-content:space-between; align-items:flex-end; gap:8px; margin-top:3px; }
+  .order-meta{ font-size:12.5px; color:var(--text2); min-width:0; }
+  .order-saldo{ font-size:13px; font-weight:800; color:var(--gold); flex-shrink:0; white-space:nowrap; }
+  .order-saldo.paid{ color:var(--text3); font-weight:600; font-size:11.5px; }
+
+  /* ---------- BENTO DE MÉTRICAS (Ventas) ---------- */
+  .bento-ventas{ display:grid; grid-template-columns:1.3fr 1fr; gap:10px; margin-bottom:16px; }
+  .bento-card-lg{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px;
+    display:flex; flex-direction:column; justify-content:center; gap:6px; cursor:pointer; transition:transform .12s var(--ease-out);
+  }
+  .bento-card-lg:active{ transform:scale(0.98); }
+  .bento-card-lg span{ font-size:11.5px; color:var(--text2); font-weight:600; }
+  .bento-card-lg strong{ font-size:23px; font-weight:800; color:var(--gold); line-height:1.15; }
+  .bento-col{ display:flex; flex-direction:column; gap:10px; }
+  .bento-card-sm{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:10px 12px;
+    display:flex; flex-direction:column; justify-content:center; gap:2px; flex:1; cursor:pointer; transition:transform .12s var(--ease-out);
+  }
+  .bento-card-sm:active{ transform:scale(0.97); }
+  .bento-card-sm span{ font-size:10px; color:var(--text2); font-weight:600; line-height:1.2; }
+  .bento-card-sm strong{ font-size:16.5px; font-weight:800; }
   .badge{ font-size:11px; font-weight:700; padding:3px 9px; border-radius:20px; white-space:nowrap; flex-shrink:0; }
   .badge.cotizacion{ background:var(--surface3); color:var(--text2); }
   .badge.confirmado{ background:var(--blue-dim); color:var(--blue); }
   .badge.produccion{ background:var(--amber-dim); color:var(--amber); }
   .badge.listo{ background:var(--green-dim); color:var(--green); }
   .badge.entregado{ background:var(--surface3); color:var(--text3); }
+  .badge.cancelado{ background:var(--red-dim); color:var(--red); }
 
   .empty-state{ display:flex; flex-direction:column; align-items:center; text-align:center; padding:50px 20px; gap:8px; color:var(--text2); }
   .empty-state svg{ opacity:.45; margin-bottom:4px; }
@@ -298,7 +320,7 @@
   .drawer-handle{ width:36px; height:4px; background:var(--border2); border-radius:4px; margin:10px auto 4px; flex-shrink:0; }
   .drawer-head{ padding:6px 18px 14px; border-bottom:1px solid var(--border); flex-shrink:0; display:flex; justify-content:space-between; align-items:flex-start; }
   .drawer-head h2{ font-size:19px; font-weight:800; margin-top:2px; }
-  .drawer-body{ padding:16px 18px 26px; overflow-y:auto; }
+  .drawer-body{ padding:16px 18px 26px; overflow-y:auto; overflow-x:hidden; }
 
   .stepper{ display:flex; align-items:center; margin-bottom:20px; }
   .step{ display:flex; flex-direction:column; align-items:center; gap:6px; flex:1; position:relative; cursor:pointer; }
@@ -424,6 +446,12 @@
     display:flex; align-items:center; justify-content:center; color:var(--gold); position:relative; overflow:hidden;
   }
   .exh-thumb .badge{ position:absolute; top:6px; right:6px; }
+  .card-delete-btn{
+    position:absolute; top:6px; left:6px; width:24px; height:24px; border-radius:50%; background:rgba(0,0,0,.55);
+    color:#fff; border:none; display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:2;
+    transition:transform .12s var(--ease-out);
+  }
+  .card-delete-btn:active{ transform:scale(0.88); }
   .exh-name{ font-size:12.5px; font-weight:700; line-height:1.25; margin-bottom:3px; }
   .exh-spec{ font-size:10.5px; color:var(--text2); margin-bottom:6px; }
   .exh-price{ font-size:14px; font-weight:800; color:var(--gold); }
@@ -528,6 +556,7 @@
 
       <!-- SCREEN: VENTAS -->
       <div class="screen active" id="screen-ventas">
+        <div class="bento-ventas" id="bentoVentas"></div>
         <div class="tabs">
           <div class="tab" data-action="set-tab" data-tab="cotizaciones">Cotizaciones</div>
           <div class="tab active" data-action="set-tab" data-tab="activos">Activos</div>
@@ -623,7 +652,7 @@
           <input type="text" id="editClienteTelefono" placeholder="Teléfono">
           <input type="date" id="editFechaEntrega">
           <div class="client-edit-actions">
-            <button class="btn-sm" data-action="guardar-cliente" style="background:var(--gold);color:#1A1409">Guardar</button>
+            <button class="btn-sm" id="btnGuardarCliente" data-action="guardar-cliente" style="background:var(--gold);color:#1A1409"><span class="btn-spin"></span><span id="btnGuardarClienteLabel">Guardar</span></button>
             <button class="btn-ghost" data-action="cancelar-editar-cliente">Cancelar</button>
           </div>
         </div>
@@ -632,7 +661,8 @@
     </div>
     <div class="drawer-body">
       <div class="stepper" id="detStepper"></div>
-      <button class="btn-primary hidden" id="btnConfirmarPedido" style="width:100%;margin-bottom:18px" data-action="confirmar-pedido">Confirmar pedido</button>
+      <button class="btn-primary hidden" id="btnConfirmarPedido" style="width:100%;margin-bottom:18px" data-action="confirmar-pedido"><span class="btn-spin"></span><span id="btnConfirmarPedidoLabel">Confirmar pedido</span></button>
+      <button class="btn-ghost" id="btnCancelarPedido" style="width:100%;margin-bottom:18px;color:var(--red);border-color:var(--red)" data-action="cancelar-pedido"><span class="btn-spin"></span><span id="btnCancelarPedidoLabel">Cancelar pedido</span></button>
       <div class="section-label">Ítems del pedido</div>
       <div id="detItems"></div>
       <button class="btn-add-item-existing" data-action="agregar-item-existente">+ Agregar ítem a este pedido</button>
@@ -642,13 +672,13 @@
       </div>
       <div class="abono-row">
         <input type="number" id="inputAbono" placeholder="Monto a abonar">
-        <button class="btn-sm" data-action="registrar-abono" style="background:var(--gold);color:#1A1409">Registrar abono</button>
+        <button class="btn-sm" id="btnRegistrarAbono" data-action="registrar-abono" style="background:var(--gold);color:#1A1409"><span class="btn-spin"></span><span id="btnRegistrarAbonoLabel">Registrar abono</span></button>
       </div>
       <div class="drawer-actions">
         <button class="btn-wa" data-action="wa-cliente">WhatsApp cliente</button>
-        <button class="btn-ghost" id="btnVerPresupuesto" data-action="ver-presupuesto"><span id="btnVerPresupuestoLabel">Ver presupuesto</span></button>
+        <button class="btn-ghost" id="btnVerPresupuesto" data-action="ver-presupuesto"><span class="btn-spin"></span><span id="btnVerPresupuestoLabel">Ver presupuesto</span></button>
       </div>
-      <button class="btn-add-item-existing" id="btnEnviarNota" data-action="enviar-nota" style="margin-top:10px"><span id="btnEnviarNotaLabel">Enviar nota por WhatsApp</span></button>
+      <button class="btn-add-item-existing" id="btnEnviarNota" data-action="enviar-nota" style="margin-top:10px"><span class="btn-spin"></span><span id="btnEnviarNotaLabel">Enviar nota por WhatsApp</span></button>
     </div>
   </div>
 
@@ -693,7 +723,7 @@
         <input type="number" id="npAbonoInicial" value="0" placeholder="0" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px">
       </div>
 
-      <button class="btn-primary" style="width:100%" data-action="guardar-pedido">Guardar pedido</button>
+      <button class="btn-primary" style="width:100%" data-action="guardar-pedido"><span class="btn-spin"></span><span id="btnGuardarPedidoLabel">Guardar pedido</span></button>
     </div>
   </div>
 
@@ -751,7 +781,7 @@
           <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Precio final (editable)</label>
           <input type="number" id="npPrecioFinal" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px">
         </div>
-        <button class="btn-primary" id="btnAgregarItemAccion" style="width:100%;margin-bottom:10px" data-action="add-item"><span id="btnAgregarItemLabel">+ Agregar este ítem</span></button>
+        <button class="btn-primary" id="btnAgregarItemAccion" style="width:100%;margin-bottom:10px" data-action="add-item"><span class="btn-spin"></span><span id="btnAgregarItemLabel">+ Agregar este ítem</span></button>
       </div>
     </div>
   </div>
@@ -777,7 +807,7 @@
         <span class="badge" id="exhEstadoBadge"></span>
       </div>
       <button class="btn-primary" style="width:100%;margin-top:18px" id="btnVenderPieza" data-action="vender-pieza">Vender esta pieza</button>
-      <button class="btn-primary" style="width:100%;margin-top:18px" id="btnAgregarPiezaPedido" data-action="agregar-exh-seleccion">Agregar a este pedido</button>
+      <button class="btn-primary" style="width:100%;margin-top:18px" id="btnAgregarPiezaPedido" data-action="agregar-exh-seleccion"><span class="btn-spin"></span><span id="btnAgregarPiezaPedidoLabel">Agregar a este pedido</span></button>
     </div>
   </div>
 
@@ -825,17 +855,7 @@
           <option value="Combo">Combo</option>
         </select>
       </div>
-      <div class="form-row" style="margin-bottom:14px">
-        <div class="field"><label>Alto (m)</label><input type="number" step="0.01" id="nmAlto" value="2"></div>
-        <div class="field"><label>Ancho (m)</label><input type="number" step="0.01" id="nmAncho" value="1"></div>
-      </div>
-      <div class="form-group">
-        <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Color por defecto (sugerido al usar el modelo)</label>
-        <select id="nmColor" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px">
-          <option value="Blanco">Blanco</option>
-          <option value="Negro">Negro</option>
-        </select>
-      </div>
+      <div id="nmCamposDinamicos"></div>
       <div class="form-group">
         <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Foto Blanco (opcional)</label>
         <input type="file" id="nmFotoBlanco" accept="image/*" style="width:100%;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:13px">
@@ -851,7 +871,7 @@
         </div>
       </div>
       <div class="form-group"><label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Precio base</label><input type="number" id="nmPrecio" placeholder="0" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px"></div>
-      <button class="btn-primary" id="btnGuardarModelo" style="width:100%" data-action="guardar-nuevo-modelo"><span id="btnGuardarModeloLabel">Guardar modelo</span></button>
+      <button class="btn-primary" id="btnGuardarModelo" style="width:100%" data-action="guardar-nuevo-modelo"><span class="btn-spin"></span><span id="btnGuardarModeloLabel">Guardar modelo</span></button>
     </div>
   </div>
 
@@ -868,14 +888,37 @@
     </div>
   </div>
 
+  <!-- SCRIM 6 + DRAWER VISTA PREVIA DE NOTA (iframe + descarga) -->
+  <div class="scrim3" id="scrim6" style="z-index:82" data-action="close-nota-preview"></div>
+  <div class="drawer-exh" id="drawerNotaPreview" style="z-index:83; max-height:92%">
+    <div class="drawer-handle"></div>
+    <div class="drawer-head">
+      <h2>Nota de entrega</h2>
+      <div class="icon-btn" data-action="close-nota-preview"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 6l12 12M18 6L6 18"/></svg></div>
+    </div>
+    <div class="drawer-body" style="padding:0;flex:1;display:flex;flex-direction:column">
+      <div id="notaPreviewWrap" style="flex:1;min-height:360px;background:var(--surface2)"></div>
+      <div style="padding:14px 18px">
+        <a class="btn-primary" id="notaDescargarLink" href="#" target="_blank" rel="noopener" style="width:100%;display:block;text-align:center;text-decoration:none;box-sizing:border-box">Descargar PDF</a>
+      </div>
+    </div>
+  </div>
+
   <div class="toast-container" id="toastContainer"></div>
 </div>
 
 <script>
 /* ============ CONFIG ============ */
 const MODO_DEMO = false;
-const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbydk_Vf_Hjr6C2haa4HHPAA-O6aRWhFO1VUecnlCJ5TCPt_NuoukQ4LMUm1Vmv7CdsQ/exec';
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbxVhFEKUDMxW4cahqGnWzKPsVPT6RcVDBNGB-dgm0sFnK0oOyI_NrsnQPCY69WCXX10/exec';
 const NUMERO_NEGOCIO = '584220167079';
+
+/* ============ SPINNER GENÉRICO PARA BOTONES ============ */
+function setCargando(btn, cargando){
+  if(!btn) return;
+  btn.disabled = cargando;
+  btn.classList.toggle('loading', cargando);
+}
 
 /* ============ CONEXIÓN AL BACKEND ============ */
 async function llamarBackend(accion, payload, silencioso){
@@ -961,6 +1004,7 @@ function leerSesionGuardada(){
 }
 async function retomarSesion(sesion){
   state.cancelarRetomo = false;
+  state.rol = sesion.rol || null;
   document.getElementById('resumeNombre').textContent = sesion.nombre;
   document.getElementById('resumeAvatar').textContent = sesion.nombre.trim().slice(0,1).toUpperCase();
   document.getElementById('resumeScreen').classList.remove('hidden');
@@ -1082,8 +1126,8 @@ let exhibicion = [
 
 /* ============ ESTADO UI ============ */
 const ESTADOS = ['cotizacion','confirmado','produccion','listo','entregado'];
-const ESTADO_LABEL = { cotizacion:'Cotización', confirmado:'Confirmado', produccion:'En Producción', listo:'Listo', entregado:'Entregado' };
-let state = { tab:'activos', search:'', openPedidoId:null, npItems:[], itemTarget:'nuevo', exhTab:'disponibles', exhSearch:'', catSearch:'', catTipoFiltro:'Todos', openExhId:null, openCatId:null, openCatColor:null, modoSeleccion:null };
+const ESTADO_LABEL = { cotizacion:'Cotización', confirmado:'Confirmado', produccion:'En Producción', listo:'Listo', entregado:'Entregado', cancelado:'Cancelado' };
+let state = { tab:'activos', search:'', openPedidoId:null, npItems:[], itemTarget:'nuevo', exhTab:'disponibles', exhSearch:'', catSearch:'', catTipoFiltro:'Todos', openExhId:null, openCatId:null, openCatColor:null, modoSeleccion:null, rol:null };
 
 function getModelo(catalogoId){ return catalogo.find(c=>c.id===catalogoId) || null; }
 function fotoModeloPorColor(modelo, color){
@@ -1165,11 +1209,13 @@ function especTexto(item){
 
 /* ============ RENDER LISTA VENTAS ============ */
 function renderLista(){
+  renderBentoVentas();
   const cont = document.getElementById('listaPedidos');
   let base;
   if(state.tab === 'cotizaciones') base = pedidos.filter(p=>p.estado==='cotizacion');
   else if(state.tab === 'activos') base = pedidos.filter(p=>['confirmado','produccion','listo'].includes(p.estado));
   else base = pedidos.filter(p=>p.estado==='entregado');
+  // los pedidos cancelados nunca aparecen en las vistas activas, pero el registro se conserva
 
   const filtrados = base.filter(p=>{
     if(!state.search) return true;
@@ -1193,7 +1239,9 @@ function renderLista(){
     return;
   }
 
-  cont.innerHTML = filtrados.map((p,i)=>`
+  cont.innerHTML = filtrados.map((p,i)=>{
+    const saldo = Math.max(0, totalPedido(p) - (p.abono||0));
+    return `
     <div class="order-card ${urgenciaClase(p)}" style="--i:${i}" data-action="open-drawer" data-id="${p.id}">
       <div class="order-icon">
         <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
@@ -1204,15 +1252,78 @@ function renderLista(){
           <span class="badge ${p.estado}">${ESTADO_LABEL[p.estado]}</span>
         </div>
         <div class="order-client">${p.cliente.nombre}</div>
-        <div class="order-meta">${p.items.map(it=>it.tipo).join(' + ')} · ${p.fecha_entrega ? 'Entrega ' + fechaCorta(p.fecha_entrega) : 'Sin fecha'}</div>
+        <div class="order-bottom">
+          <div class="order-meta">${p.items.map(it=>it.tipo).join(' + ')} · ${p.fecha_entrega ? 'Entrega ' + fechaCorta(p.fecha_entrega) : 'Sin fecha'}</div>
+          <div class="order-saldo ${saldo<=0 ? 'paid' : ''}">${saldo>0 ? money(saldo) : 'Pagado'}</div>
+        </div>
       </div>
     </div>
-  `).join('');
+  `;}).join('');
   reveal(cont);
 }
 function fechaCorta(iso){
   const d = new Date(iso + 'T00:00:00');
   return d.toLocaleDateString('es-VE', {day:'numeric', month:'short'});
+}
+
+/* ============ BENTO DE MÉTRICAS (contextual por pestaña y por rol) ============ */
+function calcularMetricasVentas(){
+  const hoy = new Date();
+  const en7dias = new Date(hoy.getTime() + 7*86400000);
+  const hace7dias = new Date(hoy.getTime() - 7*86400000);
+  const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+
+  const cotizaciones = pedidos.filter(p=>p.estado==='cotizacion');
+  const activos = pedidos.filter(p=>['confirmado','produccion','listo'].includes(p.estado));
+  const completados = pedidos.filter(p=>p.estado==='entregado');
+
+  const valorCotizado = cotizaciones.reduce((a,p)=>a+totalPedido(p),0);
+  const sinRespuesta7d = cotizaciones.filter(p=>p.fecha && (hoy - new Date(p.fecha))/86400000 > 7).length;
+
+  const saldoPorCobrar = activos.reduce((a,p)=>a + Math.max(0, totalPedido(p)-(p.abono||0)), 0);
+  const entregasSemana = activos.filter(p=>p.fecha_entrega && new Date(p.fecha_entrega) >= hoy && new Date(p.fecha_entrega) <= en7dias).length;
+  const sinAbono = activos.filter(p=>!p.abono || p.abono<=0).length;
+
+  const completadosMes = completados.filter(p=>p.fecha_entrega && new Date(p.fecha_entrega) >= inicioMes);
+  const facturadoMes = completadosMes.reduce((a,p)=>a+totalPedido(p),0);
+  const entregadosSemana = completados.filter(p=>p.fecha_entrega && new Date(p.fecha_entrega) >= hace7dias).length;
+  const conSaldoEnCompletados = completados.filter(p=>Math.max(0, totalPedido(p)-(p.abono||0)) > 0).length;
+
+  return {
+    cotizaciones: { valorCotizado, abiertas: cotizaciones.length, sinRespuesta7d },
+    activos: { saldoPorCobrar, entregasSemana, sinAbono },
+    completados: { facturadoMes, entregadosMes: completadosMes.length, entregadosSemana, conSaldoEnCompletados }
+  };
+}
+function renderBentoVentas(){
+  const cont = document.getElementById('bentoVentas');
+  if(!cont) return;
+  const m = calcularMetricasVentas();
+  let big, sm1, sm2;
+  if(state.tab === 'cotizaciones'){
+    big = { label:'Valor total cotizado', valor: money(m.cotizaciones.valorCotizado), tab:null };
+    sm1 = { label:'Cotizaciones abiertas', valor: m.cotizaciones.abiertas };
+    sm2 = { label:'Sin respuesta +7 días', valor: m.cotizaciones.sinRespuesta7d };
+  } else if(state.tab === 'activos'){
+    big = { label:'Saldo por cobrar', valor: money(m.activos.saldoPorCobrar) };
+    sm1 = { label:'Entregas esta semana', valor: m.activos.entregasSemana };
+    sm2 = { label:'Sin abono registrado', valor: m.activos.sinAbono };
+  } else {
+    const esAdmin = state.rol === 'admin';
+    big = esAdmin
+      ? { label:'Facturado este mes', valor: money(m.completados.facturadoMes) }
+      : { label:'Entregados este mes', valor: m.completados.entregadosMes };
+    sm1 = esAdmin
+      ? { label:'Entregados este mes', valor: m.completados.entregadosMes }
+      : { label:'Entregados esta semana', valor: m.completados.entregadosSemana };
+    sm2 = { label:'Saldo pendiente (pedidos)', valor: m.completados.conSaldoEnCompletados };
+  }
+  cont.innerHTML = `
+    <div class="bento-card-lg"><span>${big.label}</span><strong>${big.valor}</strong></div>
+    <div class="bento-col">
+      <div class="bento-card-sm"><span>${sm1.label}</span><strong>${sm1.valor}</strong></div>
+      <div class="bento-card-sm"><span>${sm2.label}</span><strong>${sm2.valor}</strong></div>
+    </div>`;
 }
 
 /* ============ DRAWER DETALLE ============ */
@@ -1235,6 +1346,7 @@ function poblarDetalle(id){
     return `<div class="step ${cls}" data-action="set-estado" data-estado="${es}"><div class="step-line"></div><div class="step-dot"></div><small>${ESTADO_LABEL[es]}</small></div>`;
   }).join('');
   document.getElementById('btnConfirmarPedido').classList.toggle('hidden', p.estado !== 'cotizacion');
+  document.getElementById('btnCancelarPedido').classList.toggle('hidden', p.estado === 'entregado' || p.estado === 'cancelado');
 
   document.getElementById('detItems').innerHTML = p.items.map((it,i)=>`
     <div class="item-row" data-action="toggle-select-item" data-index="${i}">
@@ -1356,20 +1468,34 @@ async function cambiarEstado(estado){
   }
   showToast('Estado actualizado a "' + ESTADO_LABEL[estado] + '"', 'success');
 }
+async function cancelarPedido(){
+  const p = pedidos.find(x=>x.id===state.openPedidoId);
+  if(!p) return;
+  const ok = await confirmar('¿Cancelar este pedido? Se saca de las vistas activas, pero el registro se conserva.');
+  if(!ok) return;
+  const btn = document.getElementById('btnCancelarPedido');
+  if(btn) btn.classList.add('loading');
+  await cambiarEstado('cancelado');
+  if(btn) btn.classList.remove('loading');
+  cerrarTodo();
+}
 
 async function registrarAbono(){
   const p = pedidos.find(x=>x.id===state.openPedidoId);
   if(!p) return;
   const val = parseFloat(document.getElementById('inputAbono').value);
   if(!val || val<=0){ showToast('Ingresa un monto válido', 'error'); return; }
+  const btn = document.getElementById('btnRegistrarAbono');
+  setCargando(btn, true);
   const anterior = p.abono;
   p.abono += val;
   abrirDrawer(p.id);
   renderLista();
   if(!MODO_DEMO){
     try{ await llamarBackend('updatePedido', { id: p.id, abono: p.abono }); }
-    catch(err){ p.abono = anterior; abrirDrawer(p.id); renderLista(); return; }
+    catch(err){ p.abono = anterior; abrirDrawer(p.id); renderLista(); setCargando(document.getElementById('btnRegistrarAbono'), false); return; }
   }
+  setCargando(document.getElementById('btnRegistrarAbono'), false);
   showToast('Abono de ' + money(val) + ' registrado', 'success');
 }
 
@@ -1411,8 +1537,19 @@ async function generarNotaPdf(p){
   }
   try{
     const resultado = await llamarBackend('generarNota', construirDatosNota(p));
-    return resultado.url;
+    return resultado; // { url, preview_url }
   } catch(err){ return null; }
+}
+function abrirNotaPreview(){
+  document.getElementById('notaPreviewWrap').innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text3);font-size:13px">Generando nota...</div>`;
+  document.getElementById('notaDescargarLink').setAttribute('href', '#');
+  document.getElementById('scrim6').classList.add('open');
+  document.getElementById('drawerNotaPreview').classList.add('open');
+}
+function cerrarNotaPreview(){
+  document.getElementById('scrim6').classList.remove('open');
+  document.getElementById('drawerNotaPreview').classList.remove('open');
+  document.getElementById('notaPreviewWrap').innerHTML = '';
 }
 async function verPresupuesto(){
   const p = pedidos.find(x=>x.id===state.openPedidoId);
@@ -1420,11 +1557,14 @@ async function verPresupuesto(){
   const btn = document.getElementById('btnVerPresupuesto');
   if(btn.disabled) return;
   btn.disabled = true;
-  document.getElementById('btnVerPresupuestoLabel').textContent = 'Generando...';
-  const url = await generarNotaPdf(p);
+  btn.classList.add('loading');
+  abrirNotaPreview();
+  const resultado = await generarNotaPdf(p);
   btn.disabled = false;
-  document.getElementById('btnVerPresupuestoLabel').textContent = 'Ver presupuesto';
-  if(url) window.open(url, '_blank');
+  btn.classList.remove('loading');
+  if(!resultado){ cerrarNotaPreview(); return; }
+  document.getElementById('notaPreviewWrap').innerHTML = `<iframe src="${resultado.preview_url}" style="width:100%;height:100%;min-height:360px;border:none" allow="autoplay"></iframe>`;
+  document.getElementById('notaDescargarLink').setAttribute('href', resultado.url);
 }
 async function enviarNotaWhatsapp(){
   const p = pedidos.find(x=>x.id===state.openPedidoId);
@@ -1432,14 +1572,19 @@ async function enviarNotaWhatsapp(){
   const btn = document.getElementById('btnEnviarNota');
   if(btn.disabled) return;
   btn.disabled = true;
-  document.getElementById('btnEnviarNotaLabel').textContent = 'Generando...';
-  const url = await generarNotaPdf(p);
+  btn.classList.add('loading');
+  // Safari bloquea window.open() si ocurre después de un await; se abre la pestaña
+  // en blanco de forma síncrona (dentro del gesto del clic) y se redirige después.
+  const ventana = window.open('', '_blank');
+  const resultado = await generarNotaPdf(p);
   btn.disabled = false;
-  document.getElementById('btnEnviarNotaLabel').textContent = 'Enviar nota por WhatsApp';
-  if(!url) return;
+  btn.classList.remove('loading');
+  if(!resultado){ if(ventana) ventana.close(); return; }
   const numero = (p.cliente.telefono || '').replace(/\D/g,'');
-  const texto = encodeURIComponent(`Hola ${p.cliente.nombre}, aquí tienes la nota de tu pedido #${p.codigo}: ${url}`);
-  window.open(`https://wa.me/${numero}?text=${texto}`, '_blank');
+  const texto = encodeURIComponent(`Hola ${p.cliente.nombre}, aquí tienes la nota de tu pedido #${p.codigo}: ${resultado.url}`);
+  const destino = `https://wa.me/${numero}?text=${texto}`;
+  if(ventana) ventana.location.href = destino;
+  else window.open(destino, '_blank');
 }
 
 /* ============ EDITAR CLIENTE Y ÍTEMS DE UN PEDIDO EXISTENTE ============ */
@@ -1462,6 +1607,8 @@ async function guardarDatosCliente(){
   if(!p) return;
   const nombre = document.getElementById('editClienteNombre').value.trim();
   if(!nombre){ showToast('El cliente necesita un nombre', 'error'); return; }
+  const btn = document.getElementById('btnGuardarCliente');
+  setCargando(btn, true);
   const respaldo = { cliente: {...p.cliente}, fecha_entrega: p.fecha_entrega };
   p.cliente.nombre = nombre;
   p.cliente.cedula = document.getElementById('editClienteCedula').value.trim();
@@ -1471,8 +1618,9 @@ async function guardarDatosCliente(){
   renderLista();
   if(!MODO_DEMO){
     try{ await llamarBackend('updatePedido', { id: p.id, cliente: p.cliente, fecha_entrega: p.fecha_entrega }); }
-    catch(err){ p.cliente = respaldo.cliente; p.fecha_entrega = respaldo.fecha_entrega; abrirDrawer(p.id); renderLista(); return; }
+    catch(err){ p.cliente = respaldo.cliente; p.fecha_entrega = respaldo.fecha_entrega; abrirDrawer(p.id); renderLista(); setCargando(document.getElementById('btnGuardarCliente'), false); return; }
   }
+  setCargando(document.getElementById('btnGuardarCliente'), false);
   showToast('Datos del cliente actualizados', 'success');
 }
 async function quitarItemExistente(idx){
@@ -1515,6 +1663,9 @@ function renderExhibicion(){
     <div class="exh-card ${x.estado==='Vendido' ? 'vendido' : ''}" style="--i:${i}" data-action="open-exh-drawer" data-id="${x.id}">
       <div class="exh-thumb">
         ${info.foto ? `<img src="${info.foto}" alt="${info.nombre}" style="width:100%;height:100%;object-fit:cover">` : `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>`}
+        <button class="card-delete-btn" data-action="eliminar-exh-pieza" data-id="${x.id}" title="Eliminar pieza">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m2 0v14a2 2 0 01-2 2H8a2 2 0 01-2-2V6h12z"/></svg>
+        </button>
         ${x.estado==='Vendido' ? `<span class="badge entregado">Vendido</span>` : ''}
       </div>
       <div class="exh-name">${info.nombre}</div>
@@ -1558,6 +1709,18 @@ function cerrarExhDrawer(){
   document.getElementById('drawerExh').classList.remove('open');
   state.openExhId = null;
 }
+async function eliminarPiezaExhibicion(id){
+  const ok = await confirmar('¿Eliminar esta pieza de exhibición? Esta acción no se puede deshacer.');
+  if(!ok) return;
+  const respaldo = exhibicion.slice();
+  exhibicion = exhibicion.filter(x=>x.id!==id);
+  renderExhibicion();
+  if(!MODO_DEMO){
+    try{ await llamarBackend('deleteExhibicionPieza', { id }); }
+    catch(err){ exhibicion = respaldo; renderExhibicion(); return; }
+  }
+  showToast('Pieza eliminada', 'success');
+}
 function construirItemDesdeExhibicion(x){
   const info = getInfoExhibicion(x);
   return { tipo:info.tipo, nombreModelo:info.nombre, catalogoId:x.catalogo_id || null, especificaciones:x.especificaciones, precio:x.precio, cantidad:1, exhibicionId:x.id };
@@ -1573,11 +1736,13 @@ function venderPiezaExhibicion(){
 function agregarPiezaDesdeSeleccion(){
   const x = exhibicion.find(e=>e.id===state.openExhId);
   if(!x || x.estado !== 'Disponible') return;
+  const btn = document.getElementById('btnAgregarPiezaPedido');
+  setCargando(btn, true);
   cerrarExhDrawer();
   const item = construirItemDesdeExhibicion(x);
   state.modoSeleccion = null;
   irAScreen('ventas', 'Ventas');
-  agregarItemComun(item, 'Pieza de exhibición agregada al pedido');
+  agregarItemComun(item, 'Pieza de exhibición agregada al pedido').finally(()=>setCargando(document.getElementById('btnAgregarPiezaPedido'), false));
 }
 
 /* ============ CATÁLOGO (pantalla independiente) ============ */
@@ -1588,16 +1753,13 @@ function renderChipsCatalogo(){
   cont.innerHTML = chips.map(t=>`<div class="chip ${state.catTipoFiltro===t ? 'active' : ''}" data-action="filtrar-tipo-catalogo" data-tipo="${t}">${t}</div>`).join('');
 }
 function tarjetasCatalogo(){
-  const tarjetas = [];
-  catalogo.forEach(m=>{
+  // Catálogo interno: un solo card por modelo (ambos colores viven adentro, vía el color del pedido).
+  // Separar por color es exclusivo del futuro Catálogo Público (Fase 5), no de esta vista.
+  return catalogo.map(m=>{
     const colores = Object.keys(m.fotos || {}).filter(c=>m.fotos[c]);
-    if(colores.length === 0){
-      tarjetas.push({ modelo: m, color: null, foto: null });
-    } else {
-      colores.forEach(color=>tarjetas.push({ modelo: m, color, foto: m.fotos[color] }));
-    }
+    const foto = colores.length ? m.fotos[colores[0]] : null;
+    return { modelo: m, color: null, foto };
   });
-  return tarjetas;
 }
 function renderCatalogo(){
   renderChipsCatalogo();
@@ -1619,6 +1781,9 @@ function renderCatalogo(){
     <div class="exh-card" style="--i:${i}" data-action="open-cat-drawer" data-id="${t.modelo.id}" data-color="${t.color || ''}">
       <div class="exh-thumb">
         ${t.foto ? `<img src="${t.foto}" alt="${t.modelo.nombre}" style="width:100%;height:100%;object-fit:cover">` : `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>`}
+        <button class="card-delete-btn" data-action="eliminar-modelo-catalogo" data-id="${t.modelo.id}" title="Eliminar modelo">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m2 0v14a2 2 0 01-2 2H8a2 2 0 01-2-2V6h12z"/></svg>
+        </button>
       </div>
       <div class="exh-name">${t.modelo.nombre}${t.color ? ' ' + t.color : ''}</div>
       <div class="exh-spec">${t.modelo.tipo}</div>
@@ -1663,9 +1828,7 @@ function cerrarCatDrawer(){
 function abrirNuevoModelo(){
   document.getElementById('nmNombre').value = '';
   document.getElementById('nmTipo').value = 'Puerta';
-  document.getElementById('nmAlto').value = 2;
-  document.getElementById('nmAncho').value = 1;
-  document.getElementById('nmColor').value = 'Blanco';
+  renderCamposDinamicosModelo();
   document.getElementById('nmFotoBlanco').value = '';
   document.getElementById('nmFotoNegro').value = '';
   document.getElementById('nmPrecio').value = '';
@@ -1706,18 +1869,15 @@ async function guardarNuevoModelo(){
 
   const btn = document.getElementById('btnGuardarModelo');
   if(btn.disabled) return;
-  btn.disabled = true;
-  document.getElementById('btnGuardarModeloLabel').textContent = 'Guardando...';
+  setCargando(btn, true);
 
+  const tipoLabel = document.getElementById('nmTipo').value;
+  const tipoKey = TIPO_LABEL_A_KEY[tipoLabel] || 'puerta';
   const modelo = {
     nombre,
-    tipo: document.getElementById('nmTipo').value,
+    tipo: tipoLabel,
     fotos: {},
-    especificaciones_base: {
-      alto: parseFloat(document.getElementById('nmAlto').value) || 1,
-      ancho: parseFloat(document.getElementById('nmAncho').value) || 1,
-      color: document.getElementById('nmColor').value || 'Blanco'
-    },
+    especificaciones_base: leerEspecificacionesGenerico(tipoKey, 'nm', 'nm'),
     precio_base: precio
   };
 
@@ -1736,8 +1896,7 @@ async function guardarNuevoModelo(){
         modelo.fotos.Negro = r.url;
       }
     } catch(err){
-      btn.disabled = false;
-      document.getElementById('btnGuardarModeloLabel').textContent = 'Guardar modelo';
+      setCargando(btn, false);
       return;
     }
   }
@@ -1751,17 +1910,27 @@ async function guardarNuevoModelo(){
       modelo.id = resultado.id;
       catalogo.push(modelo);
     } catch(err){
-      btn.disabled = false;
-      document.getElementById('btnGuardarModeloLabel').textContent = 'Guardar modelo';
+      setCargando(btn, false);
       return;
     }
   }
 
-  btn.disabled = false;
-  document.getElementById('btnGuardarModeloLabel').textContent = 'Guardar modelo';
+  setCargando(btn, false);
   cerrarNuevoModelo();
   renderCatalogo();
   showToast('Modelo "' + nombre + '" agregado al catálogo', 'success');
+}
+async function eliminarModeloCatalogo(id){
+  const ok = await confirmar('¿Eliminar este modelo del catálogo? Esta acción no se puede deshacer.');
+  if(!ok) return;
+  const respaldo = catalogo.slice();
+  catalogo = catalogo.filter(c=>c.id!==id);
+  renderCatalogo();
+  if(!MODO_DEMO){
+    try{ await llamarBackend('deleteCatalogoModelo', { id }); }
+    catch(err){ catalogo = respaldo; renderCatalogo(); return; }
+  }
+  showToast('Modelo eliminado', 'success');
 }
 
 /* ============ CREAR PIEZA EN EXHIBICIÓN ============ */
@@ -1803,9 +1972,7 @@ function usarModeloCatalogo(){
   const colorElegido = state.openCatColor;
   cerrarCatDrawer();
   state.modoSeleccion = null;
-  irAScreen('ventas', 'Ventas');
-  mostrarDrawerNuevoOExistente();
-  abrirItemDrawer(state.itemTarget);
+  volverAOrigenItem();
   mostrarFormConModelo(m, colorElegido);
 }
 function mostrarFormConModelo(m, colorElegido){
@@ -1851,6 +2018,18 @@ function mostrarDrawerNuevoOExistente(){
     document.getElementById('drawerNuevo').classList.add('open');
   }
 }
+/* Vuelve al lugar correcto según de dónde venía la selección de catálogo/exhibición:
+   pedido existente, pedido nuevo, o una pieza nueva de exhibición (que no es un pedido). */
+function volverAOrigenItem(){
+  if(state.itemTarget === 'exhibicion-nueva'){
+    irAScreen('exhibicion', 'Exhibición');
+    abrirItemDrawer('exhibicion-nueva');
+    return;
+  }
+  irAScreen('ventas', 'Ventas');
+  mostrarDrawerNuevoOExistente();
+  abrirItemDrawer(state.itemTarget);
+}
 function actualizarBannerSeleccion(){
   document.querySelectorAll('.seleccion-banner').forEach(b=>b.classList.toggle('hidden', !state.modoSeleccion));
 }
@@ -1866,9 +2045,7 @@ function irASeleccionExhibicion(){
 }
 function cancelarSeleccion(){
   state.modoSeleccion = null;
-  irAScreen('ventas', 'Ventas');
-  mostrarDrawerNuevoOExistente();
-  abrirItemDrawer(state.itemTarget);
+  volverAOrigenItem();
 }
 
 /* ============ MENÚ DE AVATAR ============ */
@@ -1879,85 +2056,105 @@ function cerrarAvatarMenu(){
   document.getElementById('avatarMenu').classList.add('hidden');
 }
 
-/* ============ FORMULARIO NUEVO PEDIDO ============ */
+/* ============ FORMULARIO NUEVO PEDIDO (motor de campos dinámicos, reusado por Nuevo Modelo) ============ */
 function campoToggle(id, label){
   return `<div class="field-toggle"><span>${label}</span><label class="switch"><input type="checkbox" id="${id}"><span class="slider"></span></label></div>`;
 }
-function campoRadio(name, label, opciones, seleccion){
+function campoRadio(name, label, opciones, seleccion, radioPrefix){
+  const radioName = (radioPrefix || '') + name;
   return `<div class="form-group"><label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">${label}</label>
-    <div class="radio-group" data-radio="${name}">
-      ${opciones.map(o=>`<div class="radio-opt ${o===seleccion?'selected':''}" data-radio-name="${name}" data-radio-val="${o}">${o}</div>`).join('')}
+    <div class="radio-group" data-radio="${radioName}">
+      ${opciones.map(o=>`<div class="radio-opt ${o===seleccion?'selected':''}" data-radio-name="${radioName}" data-radio-val="${o}">${o}</div>`).join('')}
     </div></div>`;
 }
-function campoMedidas(){
+function campoMedidas(idPrefix){
+  const p = idPrefix || '';
   return `<div class="form-row" style="margin-bottom:12px">
-    <div class="field"><label>Alto (m)</label><input type="number" step="0.01" id="npAlto" value="2"></div>
-    <div class="field"><label>Ancho (m)</label><input type="number" step="0.01" id="npAncho" value="1"></div>
+    <div class="field"><label>Alto (m)</label><input type="number" step="0.01" id="${p}Alto" value="2"></div>
+    <div class="field"><label>Ancho (m)</label><input type="number" step="0.01" id="${p}Ancho" value="1"></div>
   </div>`;
+}
+
+/* Motor genérico: renderiza los campos según tipo, con ids/radios namespaced por prefijo
+   para que el formulario de ítem (prefijo "np") y el de Nuevo Modelo (prefijo "nm") convivan sin chocar. */
+function renderCamposDinamicosGenerico(tipo, contId, idPrefix, radioPrefix){
+  const cont = document.getElementById(contId);
+  if(!cont) return;
+  const CT = (id, label) => campoToggle(idPrefix + id, label);
+  const CR = (name, label, opciones, sel) => campoRadio(name, label, opciones, sel, radioPrefix);
+  const CM = () => campoMedidas(idPrefix);
+  const SUB = (id, inner) => `<div id="${idPrefix}Sub${id}" class="subfields hidden">${inner}</div>`;
+  let html = '';
+
+  if(tipo === 'ventana'){
+    html += CM();
+    html += CR('color','Color', ['Blanco','Negro'], 'Blanco');
+    html += CT('PapelAhumado', 'Papel ahumado (+$20)');
+    html += CT('Proteccion', 'Protección');
+    html += SUB('Proteccion', CT('MarcoDecorativo','Marco decorativo en protección'));
+    html += CT('MasHojas', 'Más de 2 hojas');
+  }
+  else if(tipo === 'porton'){
+    html += CM();
+    html += CR('color','Color', ['Blanco','Negro'], 'Blanco');
+    html += CR('sentido','Sentido de apertura', ['Derecha','Izquierda'], 'Derecha');
+    html += CR('posicion','Posición de instalación', ['Adentro','Afuera'], 'Afuera');
+    html += CR('vidrio_o_farquilla','Vidrio o Farquilla', ['Vidrio','Farquilla'], 'Vidrio');
+    html += CR('color_vidrio','Color vidrio / farquilla', ['Azul','Espejo','Negro','Plateado'], 'Espejo');
+    html += CR('bloque','Tipo de bloque', ['10','15','Tubo'], '15');
+    html += CT('Manillon', 'Manillón');
+    html += SUB('Manillon', CR('manillon_tipo','Tipo de manillón', ['H','S','Luna'], 'H'));
+    html += CT('Instalacion', 'Instalación incluida (precio adicional)');
+  }
+  else if(tipo === 'puerta' || tipo === 'puerta_multilock'){
+    html += CM();
+    html += CR('color','Color', ['Blanco','Negro'], 'Negro');
+    html += CR('sentido','Sentido de apertura', ['Derecha','Izquierda'], 'Derecha');
+    html += CR('posicion','Posición de apertura', ['Adentro','Afuera'], 'Afuera');
+    html += CR('bloque','Tipo de bloque', ['10','15','Tubo'], '15');
+    html += CT('MarcoDecorativo', 'Marco decorativo (precio editable)');
+    html += CT('Proteccion', 'Protección');
+    html += SUB('Proteccion', `
+      ${CR('proteccion_sentido','Sentido apertura protección', ['Derecha','Izquierda'], 'Derecha')}
+      ${CR('vidrio_o_farquilla','Vidrio o Farquilla', ['Vidrio','Farquilla'], 'Farquilla')}
+      ${CR('color_vidrio','Color vidrio / farquilla', ['Azul','Espejo','Negro','Plateado'], 'Negro')}
+      ${CT('Manillon', 'Manillón')}
+      ${SUB('Manillon', CR('manillon_tipo','Tipo de manillón', ['H','S','Luna'], 'Luna'))}
+    `);
+  }
+  else if(tipo === 'combo'){
+    html += CR('variante','Variante del combo', ['Sin protección en puerta','Con protección en puerta'], 'Con protección en puerta');
+    html += `<div style="font-size:12px;color:var(--text2);margin-bottom:14px;padding:10px 12px;background:var(--surface3);border-radius:var(--radius-sm)">Las 2 ventanas del combo se agregan automáticamente en 1×1 m con protección. Sin marco decorativo en ninguna pieza.</div>`;
+    html += CM();
+    html += CR('color','Color puerta', ['Blanco','Negro'], 'Blanco');
+    html += CR('sentido','Sentido de apertura', ['Derecha','Izquierda'], 'Derecha');
+    html += CR('posicion','Posición de apertura', ['Adentro','Afuera'], 'Afuera');
+    html += CR('bloque','Tipo de bloque', ['10','15','Tubo'], '10');
+  }
+
+  cont.innerHTML = html;
 }
 
 function renderCamposDinamicos(){
   const tipo = document.getElementById('npTipoProducto').value;
-  const cont = document.getElementById('npCamposDinamicos');
-  let html = '';
-
-  if(tipo === 'ventana'){
-    html += campoMedidas();
-    html += campoRadio('color','Color', ['Blanco','Negro'], 'Blanco');
-    html += campoToggle('npPapelAhumado', 'Papel ahumado (+$20)');
-    html += campoToggle('npProteccion', 'Protección');
-    html += `<div id="npSubProteccion" class="subfields hidden">${campoToggle('npMarcoDecorativo','Marco decorativo en protección')}</div>`;
-    html += campoToggle('npMasHojas', 'Más de 2 hojas');
-  }
-  else if(tipo === 'porton'){
-    html += campoMedidas();
-    html += campoRadio('color','Color', ['Blanco','Negro'], 'Blanco');
-    html += campoRadio('sentido','Sentido de apertura', ['Derecha','Izquierda'], 'Derecha');
-    html += campoRadio('posicion','Posición de instalación', ['Adentro','Afuera'], 'Afuera');
-    html += campoRadio('vidrio_o_farquilla','Vidrio o Farquilla', ['Vidrio','Farquilla'], 'Vidrio');
-    html += campoRadio('color_vidrio','Color vidrio / farquilla', ['Azul','Espejo','Negro','Plateado'], 'Espejo');
-    html += campoRadio('bloque','Tipo de bloque', ['10','15','Tubo'], '15');
-    html += campoToggle('npManillon', 'Manillón');
-    html += `<div id="npSubManillon" class="subfields hidden">${campoRadio('manillon_tipo','Tipo de manillón', ['H','S','Luna'], 'H')}</div>`;
-    html += campoToggle('npInstalacion', 'Instalación incluida (precio adicional)');
-  }
-  else if(tipo === 'puerta' || tipo === 'puerta_multilock'){
-    html += campoMedidas();
-    html += campoRadio('color','Color', ['Blanco','Negro'], 'Negro');
-    html += campoRadio('sentido','Sentido de apertura', ['Derecha','Izquierda'], 'Derecha');
-    html += campoRadio('posicion','Posición de apertura', ['Adentro','Afuera'], 'Afuera');
-    html += campoRadio('bloque','Tipo de bloque', ['10','15','Tubo'], '15');
-    html += campoToggle('npMarcoDecorativo', 'Marco decorativo (precio editable)');
-    html += campoToggle('npProteccion', 'Protección');
-    html += `<div id="npSubProteccion" class="subfields hidden">
-      ${campoRadio('proteccion_sentido','Sentido apertura protección', ['Derecha','Izquierda'], 'Derecha')}
-      ${campoRadio('vidrio_o_farquilla','Vidrio o Farquilla', ['Vidrio','Farquilla'], 'Farquilla')}
-      ${campoRadio('color_vidrio','Color vidrio / farquilla', ['Azul','Espejo','Negro','Plateado'], 'Negro')}
-      ${campoToggle('npManillon', 'Manillón')}
-      <div id="npSubManillon" class="subfields hidden">${campoRadio('manillon_tipo','Tipo de manillón', ['H','S','Luna'], 'Luna')}</div>
-    </div>`;
-  }
-  else if(tipo === 'combo'){
-    html += campoRadio('variante','Variante del combo', ['Sin protección en puerta','Con protección en puerta'], 'Con protección en puerta');
-    html += `<div style="font-size:12px;color:var(--text2);margin-bottom:14px;padding:10px 12px;background:var(--surface3);border-radius:var(--radius-sm)">Las 2 ventanas del combo se agregan automáticamente en 1×1 m con protección. Sin marco decorativo en ninguna pieza.</div>`;
-    html += campoMedidas();
-    html += campoRadio('color','Color puerta', ['Blanco','Negro'], 'Blanco');
-    html += campoRadio('sentido','Sentido de apertura', ['Derecha','Izquierda'], 'Derecha');
-    html += campoRadio('posicion','Posición de apertura', ['Adentro','Afuera'], 'Afuera');
-    html += campoRadio('bloque','Tipo de bloque', ['10','15','Tubo'], '10');
-  }
-
-  cont.innerHTML = html;
+  renderCamposDinamicosGenerico(tipo, 'npCamposDinamicos', 'np', '');
   actualizarPrecioSugerido();
 }
 
-function actualizarSubfields(){
-  const proteccion = document.getElementById('npProteccion');
-  const subProteccion = document.getElementById('npSubProteccion');
+const TIPO_LABEL_A_KEY = { Ventana:'ventana', 'Portón':'porton', Puerta:'puerta', 'Puerta Multilock':'puerta_multilock', Combo:'combo' };
+function renderCamposDinamicosModelo(){
+  const tipoKey = TIPO_LABEL_A_KEY[document.getElementById('nmTipo').value] || 'puerta';
+  renderCamposDinamicosGenerico(tipoKey, 'nmCamposDinamicos', 'nm', 'nm');
+}
+
+function actualizarSubfields(prefix){
+  const p = prefix || 'np';
+  const proteccion = document.getElementById(p + 'Proteccion');
+  const subProteccion = document.getElementById(p + 'SubProteccion');
   if(proteccion && subProteccion) subProteccion.classList.toggle('hidden', !proteccion.checked);
 
-  const manillon = document.getElementById('npManillon');
-  const subManillon = document.getElementById('npSubManillon');
+  const manillon = document.getElementById(p + 'Manillon');
+  const subManillon = document.getElementById(p + 'SubManillon');
   if(manillon && subManillon) subManillon.classList.toggle('hidden', !manillon.checked);
 }
 
@@ -1973,38 +2170,37 @@ function actualizarPrecioSugerido(){
   document.getElementById('npPrecioFinal').value = sugerido;
 }
 
-function leerCamposActuales(){
-  const tipo = document.getElementById('npTipoProducto').value;
-  const tipoLabel = { ventana:'Ventana', porton:'Portón', puerta:'Puerta', puerta_multilock:'Puerta Multilock', combo:'Combo' }[tipo];
+/* Lee las especificaciones de cualquiera de los dos formularios (prefijo "np" o "nm") */
+function leerEspecificacionesGenerico(tipo, idPrefix, radioPrefix){
+  const g = id => document.getElementById(idPrefix + id);
+  const radioVal = name => { const el = document.querySelector(`.radio-opt.selected[data-radio-name="${radioPrefix}${name}"]`); return el ? el.dataset.radioVal : null; };
   const e = {};
-  const g = id => document.getElementById(id);
-  const radioVal = name => { const el = document.querySelector(`.radio-opt.selected[data-radio-name="${name}"]`); return el ? el.dataset.radioVal : null; };
 
-  if(g('npAlto')) e.alto = parseFloat(g('npAlto').value);
-  if(g('npAncho')) e.ancho = parseFloat(g('npAncho').value);
+  if(g('Alto')) e.alto = parseFloat(g('Alto').value);
+  if(g('Ancho')) e.ancho = parseFloat(g('Ancho').value);
   e.color = radioVal('color');
 
   if(tipo==='ventana'){
-    e.papel_ahumado = g('npPapelAhumado')?.checked || false;
-    e.proteccion = g('npProteccion')?.checked || false;
-    e.marco_decorativo = g('npMarcoDecorativo')?.checked || false;
-    e.mas_hojas = g('npMasHojas')?.checked || false;
+    e.papel_ahumado = g('PapelAhumado')?.checked || false;
+    e.proteccion = g('Proteccion')?.checked || false;
+    e.marco_decorativo = g('MarcoDecorativo')?.checked || false;
+    e.mas_hojas = g('MasHojas')?.checked || false;
   } else if(tipo==='porton'){
     e.sentido = radioVal('sentido'); e.posicion = radioVal('posicion');
     e.vidrio_o_farquilla = radioVal('vidrio_o_farquilla'); e.color_vidrio = radioVal('color_vidrio');
     e.bloque = radioVal('bloque');
-    e.manillon = g('npManillon')?.checked || false;
+    e.manillon = g('Manillon')?.checked || false;
     e.manillon_tipo = e.manillon ? radioVal('manillon_tipo') : null;
-    e.instalacion = g('npInstalacion')?.checked || false;
+    e.instalacion = g('Instalacion')?.checked || false;
   } else if(tipo==='puerta' || tipo==='puerta_multilock'){
     e.sentido = radioVal('sentido'); e.posicion = radioVal('posicion'); e.bloque = radioVal('bloque');
-    e.marco_decorativo = g('npMarcoDecorativo')?.checked || false;
-    e.proteccion = g('npProteccion')?.checked || false;
+    e.marco_decorativo = g('MarcoDecorativo')?.checked || false;
+    e.proteccion = g('Proteccion')?.checked || false;
     if(e.proteccion){
       e.proteccion_sentido = radioVal('proteccion_sentido');
       e.vidrio_o_farquilla = radioVal('vidrio_o_farquilla');
       e.color_vidrio = radioVal('color_vidrio');
-      e.manillon = g('npManillon')?.checked || false;
+      e.manillon = g('Manillon')?.checked || false;
       e.manillon_tipo = e.manillon ? radioVal('manillon_tipo') : null;
     }
   } else if(tipo==='combo'){
@@ -2012,8 +2208,15 @@ function leerCamposActuales(){
     e.sentido = radioVal('sentido'); e.posicion = radioVal('posicion'); e.bloque = radioVal('bloque');
     e.proteccion = e.variante === 'Con protección en puerta';
   }
+  return e;
+}
 
-  return { tipo: tipoLabel, nombreModelo: state.modeloElegidoNombre || null, catalogoId: state.catalogoIdElegido || null, especificaciones: e, precio: parseFloat(g('npPrecioFinal').value) || 0, cantidad: 1 };
+function leerCamposActuales(){
+  const tipo = document.getElementById('npTipoProducto').value;
+  const tipoLabel = { ventana:'Ventana', porton:'Portón', puerta:'Puerta', puerta_multilock:'Puerta Multilock', combo:'Combo' }[tipo];
+  const e = leerEspecificacionesGenerico(tipo, 'np', '');
+  const precioFinal = parseFloat(document.getElementById('npPrecioFinal').value) || 0;
+  return { tipo: tipoLabel, nombreModelo: state.modeloElegidoNombre || null, catalogoId: state.catalogoIdElegido || null, especificaciones: e, precio: precioFinal, cantidad: 1 };
 }
 
 /* ---- Drawer compartido de ítem (catálogo/exhibición + personalizado) ---- */
@@ -2025,7 +2228,7 @@ function resetItemDrawerASeleccion(){
   document.getElementById('btnAgregarItemLabel').textContent = '+ Agregar este ítem';
   document.getElementById('optCardExhibicion').classList.toggle('hidden', state.itemTarget === 'exhibicion-nueva');
   const btn = document.getElementById('btnAgregarItemAccion');
-  if(btn) btn.disabled = false;
+  if(btn){ btn.disabled = false; btn.classList.remove('loading'); }
   state.itemEditIndex = null;
   state.modeloElegidoNombre = null;
   state.catalogoIdElegido = null;
@@ -2099,12 +2302,12 @@ async function guardarNuevaPiezaDesdeForm(item){
 function agregarItem(){
   const btn = document.getElementById('btnAgregarItemAccion');
   if(btn && btn.disabled) return;
-  if(btn) btn.disabled = true;
+  setCargando(btn, true);
 
   const item = leerCamposActuales();
   if(!item.precio || item.precio <= 0){
     showToast('Ingresa un precio válido', 'error');
-    if(btn) btn.disabled = false;
+    setCargando(btn, false);
     return;
   }
 
@@ -2206,7 +2409,7 @@ async function guardarPedido(){
   const items = state.npItems;
 
   const btn = document.querySelector('[data-action="guardar-pedido"]');
-  if(btn){ btn.disabled = true; btn.textContent = 'Guardando...'; }
+  setCargando(btn, true);
 
   let idNuevo, codigoNuevo;
   if(MODO_DEMO){
@@ -2218,7 +2421,7 @@ async function guardarPedido(){
       idNuevo = resultado.id;
       codigoNuevo = resultado.codigo;
     } catch(err){
-      if(btn){ btn.disabled = false; btn.textContent = 'Guardar pedido'; }
+      setCargando(btn, false);
       return;
     }
   }
@@ -2244,7 +2447,7 @@ async function guardarPedido(){
   };
   pedidos.unshift(nuevo);
 
-  if(btn){ btn.disabled = false; btn.textContent = 'Guardar pedido'; }
+  setCargando(btn, false);
   cerrarTodo();
   state.tab = 'cotizaciones';
   document.querySelectorAll('#screen-ventas .tab').forEach(t=>t.classList.toggle('active', t.dataset.tab==='cotizaciones'));
@@ -2278,6 +2481,7 @@ document.getElementById('btnLogin').addEventListener('click', async ()=>{
   document.getElementById('demoBanner').classList.toggle('hidden', !MODO_DEMO);
 
   if(MODO_DEMO){
+    state.rol = u.value.trim().toLowerCase().includes('admin') ? 'admin' : 'vendedor';
     document.getElementById('avatarInitials').textContent = u.value.trim().slice(0,2).toUpperCase();
     document.getElementById('loginScreen').classList.add('hidden');
     return;
@@ -2289,6 +2493,7 @@ document.getElementById('btnLogin').addEventListener('click', async ()=>{
   document.getElementById('btnLoginLabel').textContent = 'Ingresando...';
   try{
     const usuario = await llamarBackend('login', { usuario: u.value.trim(), password: p.value.trim() });
+    state.rol = usuario.rol || null;
     document.getElementById('avatarInitials').textContent = usuario.nombre.trim().slice(0,2).toUpperCase();
     guardarSesion(usuario);
     document.getElementById('loginScreen').classList.add('hidden');
@@ -2315,6 +2520,7 @@ document.getElementById('searchInput').addEventListener('input', e=>{
 });
 
 document.getElementById('npTipoProducto').addEventListener('change', renderCamposDinamicos);
+document.getElementById('nmTipo').addEventListener('change', renderCamposDinamicosModelo);
 function wireFotoPreview(inputId, wrapId, imgId){
   document.getElementById(inputId).addEventListener('change', e=>{
     const archivo = e.target.files[0];
@@ -2346,7 +2552,10 @@ document.body.addEventListener('input', e=>{
   if(e.target.id === 'npAlto' || e.target.id === 'npAncho') actualizarPrecioSugerido();
 });
 document.body.addEventListener('change', e=>{
-  if(e.target.id === 'npProteccion' || e.target.id === 'npManillon') actualizarSubfields();
+  const id = e.target.id;
+  if(/^(np|nm)(Proteccion|Manillon)$/.test(id)){
+    actualizarSubfields(id.slice(0,2));
+  }
 });
 
 document.body.addEventListener('click', e=>{
@@ -2377,7 +2586,10 @@ document.body.addEventListener('click', e=>{
     renderExhibicion();
   }
   else if(action === 'set-estado') cambiarEstado(el.dataset.estado);
-  else if(action === 'confirmar-pedido') cambiarEstado('confirmado');
+  else if(action === 'confirmar-pedido'){
+    setCargando(document.getElementById('btnConfirmarPedido'), true);
+    cambiarEstado('confirmado').finally(()=>setCargando(document.getElementById('btnConfirmarPedido'), false));
+  }
   else if(action === 'aceptar-confirm') cerrarConfirm(true);
   else if(action === 'cerrar-confirm') cerrarConfirm(false);
   else if(action === 'registrar-abono') registrarAbono();
@@ -2424,6 +2636,10 @@ document.body.addEventListener('click', e=>{
     document.getElementById('loginScreen').classList.remove('hidden');
   }
   else if(action === 'cambiar-usuario') cambiarUsuario();
+  else if(action === 'cancelar-pedido') cancelarPedido();
+  else if(action === 'close-nota-preview') cerrarNotaPreview();
+  else if(action === 'eliminar-modelo-catalogo') eliminarModeloCatalogo(parseInt(el.dataset.id));
+  else if(action === 'eliminar-exh-pieza') eliminarPiezaExhibicion(parseInt(el.dataset.id));
 });
 
 document.addEventListener('click', e=>{
