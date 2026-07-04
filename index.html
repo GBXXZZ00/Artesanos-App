@@ -101,6 +101,38 @@
   }
   .btn-primary:active{ transform:scale(0.97); }
   .login-hint{ font-size:11px; color:var(--text3); z-index:1; }
+  .login-hint.hidden{ display:none; }
+
+  /* dropdown de usuario en login */
+  .user-dd{
+    position:absolute; top:100%; left:0; right:0; margin-top:4px; background:var(--surface2);
+    border:1px solid var(--border); border-radius:var(--radius-sm); box-shadow:0 10px 28px rgba(0,0,0,.35);
+    max-height:190px; overflow-y:auto; z-index:60; display:none;
+  }
+  .user-dd.open{ display:block; }
+  .user-dd-item{ padding:10px 14px; font-size:13.5px; color:var(--text); cursor:pointer; transition:background .12s var(--ease-out); }
+  .user-dd-item:hover, .user-dd-item.dd-active{ background:var(--surface3); }
+  .user-dd-item small{ display:block; color:var(--text2); font-size:11px; margin-top:1px; }
+  .user-dd-empty{ padding:10px 14px; font-size:12px; color:var(--text3); }
+
+  /* spinner del botón de login */
+  .btn-spin{
+    width:14px; height:14px; border:2px solid rgba(26,20,9,.35); border-top-color:#1A1409;
+    border-radius:50%; display:none; flex-shrink:0; animation:spin .6s linear infinite;
+  }
+  .btn-primary.loading{ display:flex; align-items:center; justify-content:center; gap:8px; }
+  .btn-primary.loading .btn-spin{ display:inline-block; }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+
+  /* pantalla de sesión activa (retomar sesión) */
+  .resume-avatar{
+    width:56px; height:56px; border-radius:50%; background:var(--surface3); border:1px solid var(--border);
+    display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:700; color:var(--gold);
+    margin:4px auto 16px;
+  }
+  .resume-text{ font-size:14.5px; text-align:center; }
+  .resume-text strong{ color:var(--text); }
+  .resume-sub{ font-size:12px; color:var(--text3); text-align:center; margin-top:4px; margin-bottom:20px; }
 
   /* ---------- APP SHELL ---------- */
   .app{ display:flex; flex-direction:column; height:100%; min-height:100vh; }
@@ -411,22 +443,38 @@
     </svg>
     <div class="brand-block">
       <div class="brand-name">Herrería Artesanos</div>
-      <div class="brand-sub">Herrería &amp; Carpintería</div>
+      <div class="brand-sub">Creando con distinción</div>
     </div>
     <div class="login-form">
-      <div class="field" id="fieldUsuario">
+      <div class="field" id="fieldUsuario" style="position:relative">
         <label>Usuario</label>
-        <input type="text" id="inputUsuario" value="vendedor1">
+        <input type="text" id="inputUsuario" autocomplete="off" placeholder="Escribe o selecciona tu nombre">
+        <div class="user-dd" id="userDd"></div>
         <div class="field-error">Ingresa tu usuario</div>
       </div>
       <div class="field" id="fieldPassword">
-        <label>Contraseña</label>
-        <input type="password" id="inputPassword" value="demo1234">
-        <div class="field-error">Ingresa tu contraseña</div>
+        <label>PIN</label>
+        <input type="password" id="inputPassword" inputmode="numeric" maxlength="6" placeholder="••••">
+        <div class="field-error">Ingresa tu PIN</div>
       </div>
-      <button class="btn-primary" id="btnLogin">Ingresar</button>
+      <button class="btn-primary" id="btnLogin">
+        <span class="btn-spin"></span>
+        <span id="btnLoginLabel">Ingresar</span>
+      </button>
     </div>
-    <div class="login-hint">Modo demo · usuario: vendedor1 / admin1</div>
+    <div class="login-hint" id="loginHint">Modo demo · usuario: vendedor1 / admin1</div>
+  </div>
+
+  <!-- PANTALLA DE SESIÓN ACTIVA (retomar sesión guardada) -->
+  <div class="login-screen hidden" id="resumeScreen">
+    <svg class="logo-mark" viewBox="0 0 76 76" fill="none">
+      <rect width="76" height="76" rx="14" fill="var(--surface3)" stroke="var(--gold)" stroke-width="1"/>
+      <text x="38" y="47" text-anchor="middle" font-family="Cormorant Garamond, serif" font-weight="700" font-size="28" fill="var(--gold)">HA</text>
+    </svg>
+    <div class="resume-avatar" id="resumeAvatar">V</div>
+    <div class="resume-text">Entrando como <strong id="resumeNombre">—</strong></div>
+    <div class="resume-sub">Tu sesión sigue activa en este dispositivo</div>
+    <button class="btn-ghost" style="width:220px" data-action="cambiar-usuario">No soy yo, cambiar usuario</button>
   </div>
 
   <!-- APP -->
@@ -765,6 +813,99 @@ async function cargarDatosIniciales(){
   }
   renderLista();
 }
+
+/* ============ SESIÓN PERSISTENTE ============ */
+const SESSION_KEY = 'artesanos-sesion';
+const SESSION_MS = 12 * 60 * 60 * 1000; // 12 horas
+
+function almacenSesion(){
+  try{ if(window.localStorage) return window.localStorage; }catch(e){}
+  try{ if(window.sessionStorage) return window.sessionStorage; }catch(e){}
+  return null;
+}
+function guardarSesion(usuario){
+  const store = almacenSesion();
+  if(!store) return;
+  try{
+    store.setItem(SESSION_KEY, JSON.stringify({ usuario: usuario.usuario, nombre: usuario.nombre, rol: usuario.rol, ts: Date.now() }));
+  } catch(e){}
+}
+function limpiarSesion(){
+  const store = almacenSesion();
+  if(!store) return;
+  try{ store.removeItem(SESSION_KEY); } catch(e){}
+}
+function leerSesionGuardada(){
+  const store = almacenSesion();
+  if(!store) return null;
+  try{
+    const raw = store.getItem(SESSION_KEY);
+    if(!raw) return null;
+    const data = JSON.parse(raw);
+    if(!data || !data.usuario || !data.ts) return null;
+    if(Date.now() - data.ts > SESSION_MS){ limpiarSesion(); return null; }
+    return data;
+  } catch(e){ return null; }
+}
+async function retomarSesion(sesion){
+  document.getElementById('resumeNombre').textContent = sesion.nombre;
+  document.getElementById('resumeAvatar').textContent = sesion.nombre.trim().slice(0,1).toUpperCase();
+  document.getElementById('resumeScreen').classList.remove('hidden');
+  document.getElementById('avatarInitials').textContent = sesion.nombre.trim().slice(0,2).toUpperCase();
+  document.getElementById('demoBanner').classList.toggle('hidden', !MODO_DEMO);
+  await cargarDatosIniciales();
+  document.getElementById('resumeScreen').classList.add('hidden');
+  document.getElementById('loginScreen').classList.add('hidden');
+}
+function cambiarUsuario(){
+  limpiarSesion();
+  document.getElementById('resumeScreen').classList.add('hidden');
+  document.getElementById('loginScreen').classList.remove('hidden');
+}
+
+/* ============ BUSCADOR DE USUARIO (login) ============ */
+let USUARIOS_DD = [];
+async function cargarListaUsuarios(){
+  if(MODO_DEMO){
+    USUARIOS_DD = [{ usuario:'vendedor1', nombre:'Vendedor Uno' }, { usuario:'admin1', nombre:'Admin' }];
+    return;
+  }
+  try{
+    USUARIOS_DD = await llamarBackend('getUsuarios');
+  } catch(err){
+    USUARIOS_DD = [];
+  }
+}
+function renderUserDropdown(filtro){
+  const dd = document.getElementById('userDd');
+  const q = (filtro || '').trim().toLowerCase();
+  const coincidencias = USUARIOS_DD.filter(u => !q || u.nombre.toLowerCase().includes(q) || u.usuario.toLowerCase().includes(q));
+  if(coincidencias.length === 0){
+    dd.innerHTML = `<div class="user-dd-empty">Sin coincidencias</div>`;
+  } else {
+    dd.innerHTML = coincidencias.map(u => `<div class="user-dd-item" data-usuario="${u.usuario}"><span>${u.nombre}</span><small>${u.usuario}</small></div>`).join('');
+  }
+  dd.classList.add('open');
+}
+function cerrarUserDropdown(){
+  document.getElementById('userDd').classList.remove('open');
+}
+document.getElementById('inputUsuario').addEventListener('focus', ()=>{
+  if(USUARIOS_DD.length) renderUserDropdown(document.getElementById('inputUsuario').value);
+});
+document.getElementById('inputUsuario').addEventListener('input', ()=>{
+  renderUserDropdown(document.getElementById('inputUsuario').value);
+});
+document.getElementById('userDd').addEventListener('click', e=>{
+  const item = e.target.closest('.user-dd-item');
+  if(!item) return;
+  document.getElementById('inputUsuario').value = item.dataset.usuario;
+  cerrarUserDropdown();
+  document.getElementById('inputPassword').focus();
+});
+document.addEventListener('click', e=>{
+  if(!e.target.closest('#fieldUsuario')) cerrarUserDropdown();
+});
 
 
 /* ============ DATOS DEMO (en memoria) ============ */
@@ -1653,19 +1794,22 @@ document.getElementById('btnLogin').addEventListener('click', async ()=>{
   }
 
   const btn = document.getElementById('btnLogin');
+  btn.classList.add('loading');
   btn.disabled = true;
-  btn.textContent = 'Ingresando...';
+  document.getElementById('btnLoginLabel').textContent = 'Ingresando...';
   try{
     const usuario = await llamarBackend('login', { usuario: u.value.trim(), password: p.value.trim() });
     document.getElementById('avatarInitials').textContent = usuario.nombre.trim().slice(0,2).toUpperCase();
+    guardarSesion(usuario);
     document.getElementById('loginScreen').classList.add('hidden');
     await cargarDatosIniciales();
   } catch(err){
     document.getElementById('fieldPassword').classList.add('error');
-    document.querySelector('#fieldPassword .field-error').textContent = 'Usuario o contraseña incorrectos';
+    document.querySelector('#fieldPassword .field-error').textContent = 'Usuario o PIN incorrecto';
   } finally {
+    btn.classList.remove('loading');
     btn.disabled = false;
-    btn.textContent = 'Ingresar';
+    document.getElementById('btnLoginLabel').textContent = 'Ingresar';
   }
 });
 
@@ -1758,8 +1902,12 @@ document.body.addEventListener('click', e=>{
   else if(action === 'cerrar-sesion'){
     cerrarAvatarMenu();
     cerrarTodo();
+    limpiarSesion();
+    document.getElementById('inputUsuario').value = '';
+    document.getElementById('inputPassword').value = '';
     document.getElementById('loginScreen').classList.remove('hidden');
   }
+  else if(action === 'cambiar-usuario') cambiarUsuario();
 });
 
 document.addEventListener('click', e=>{
@@ -1771,7 +1919,13 @@ document.addEventListener('click', e=>{
 
 /* ============ INIT ============ */
 document.getElementById('demoBanner').classList.toggle('hidden', !MODO_DEMO);
+document.getElementById('loginHint').classList.toggle('hidden', !MODO_DEMO);
 renderLista();
+cargarListaUsuarios();
+(function initSesion(){
+  const sesion = leerSesionGuardada();
+  if(sesion) retomarSesion(sesion);
+})();
 </script>
 </body>
 </html>
