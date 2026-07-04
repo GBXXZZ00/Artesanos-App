@@ -454,7 +454,7 @@
         </div>
       </div>
     </div>
-    <div class="demo-banner">● Modo Demo activo</div>
+    <div class="demo-banner" id="demoBanner">● Modo Demo activo</div>
 
     <div class="content" id="content">
 
@@ -717,6 +717,56 @@ const MODO_DEMO = false;
 const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbyW2936dQsIgvwOhnxiRXk38AcjiYhRHbadJsOPOdLNk_ayk3x7p-CRArFT4wqlUFEG/exec';
 const NUMERO_NEGOCIO = '584220167079';
 
+/* ============ CONEXIÓN AL BACKEND ============ */
+async function llamarBackend(accion, payload){
+  try{
+    const res = await fetch(BACKEND_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ accion, payload: payload || {} })
+    });
+    const json = await res.json();
+    if(!json.ok) throw new Error(json.error || 'Error del servidor');
+    return json.data;
+  } catch(err){
+    showToast('Error de conexión: ' + err.message, 'error');
+    throw err;
+  }
+}
+function skeletonPedidos(){
+  return Array.from({ length: 3 }).map((_, i) => `
+    <div class="order-card" style="--i:${i};pointer-events:none">
+      <div class="order-icon" style="background:var(--surface3)"></div>
+      <div class="order-body">
+        <div style="height:10px;width:70px;background:var(--surface3);border-radius:4px;margin-bottom:8px"></div>
+        <div style="height:14px;width:130px;background:var(--surface3);border-radius:4px;margin-bottom:6px"></div>
+        <div style="height:10px;width:100px;background:var(--surface3);border-radius:4px"></div>
+      </div>
+    </div>`).join('');
+}
+async function cargarDatosIniciales(){
+  document.getElementById('listaPedidos').innerHTML = skeletonPedidos();
+  try{
+    const [pedidosData, catalogoData, exhibicionData] = await Promise.all([
+      llamarBackend('getPedidos'),
+      llamarBackend('getCatalogo'),
+      llamarBackend('getExhibicion')
+    ]);
+    pedidos = pedidosData;
+    catalogo = catalogoData;
+    exhibicion = exhibicionData;
+    nextId = pedidos.reduce((max, p) => Math.max(max, p.id), 0) + 1;
+    nextCodigo = pedidos.reduce((max, p) => {
+      const n = parseInt(String(p.codigo || '').replace('PED-', ''), 10);
+      return isNaN(n) ? max : Math.max(max, n);
+    }, 142) + 1;
+  } catch(err){
+    // el toast de error ya lo muestra llamarBackend
+  }
+  renderLista();
+}
+
+
 /* ============ DATOS DEMO (en memoria) ============ */
 let pedidos = [
   {
@@ -932,23 +982,33 @@ function cerrarTodo(){
   state.itemTarget = 'nuevo';
 }
 
-function cambiarEstado(estado){
+async function cambiarEstado(estado){
   const p = pedidos.find(x=>x.id===state.openPedidoId);
   if(!p) return;
+  const anterior = p.estado;
   p.estado = estado;
   abrirDrawer(p.id);
   renderLista();
+  if(!MODO_DEMO){
+    try{ await llamarBackend('updatePedido', { id: p.id, estado }); }
+    catch(err){ p.estado = anterior; abrirDrawer(p.id); renderLista(); return; }
+  }
   showToast('Estado actualizado a "' + ESTADO_LABEL[estado] + '"', 'success');
 }
 
-function registrarAbono(){
+async function registrarAbono(){
   const p = pedidos.find(x=>x.id===state.openPedidoId);
   if(!p) return;
   const val = parseFloat(document.getElementById('inputAbono').value);
   if(!val || val<=0){ showToast('Ingresa un monto válido', 'error'); return; }
+  const anterior = p.abono;
   p.abono += val;
   abrirDrawer(p.id);
   renderLista();
+  if(!MODO_DEMO){
+    try{ await llamarBackend('updatePedido', { id: p.id, abono: p.abono }); }
+    catch(err){ p.abono = anterior; abrirDrawer(p.id); renderLista(); return; }
+  }
   showToast('Abono de ' + money(val) + ' registrado', 'success');
 }
 
@@ -988,26 +1048,36 @@ function cancelarEditarCliente(){
   document.getElementById('detClienteView').classList.remove('hidden');
   document.getElementById('detClienteEdit').classList.add('hidden');
 }
-function guardarDatosCliente(){
+async function guardarDatosCliente(){
   const p = pedidos.find(x=>x.id===state.openPedidoId);
   if(!p) return;
   const nombre = document.getElementById('editClienteNombre').value.trim();
   if(!nombre){ showToast('El cliente necesita un nombre', 'error'); return; }
+  const respaldo = { cliente: {...p.cliente}, fecha_entrega: p.fecha_entrega };
   p.cliente.nombre = nombre;
   p.cliente.cedula = document.getElementById('editClienteCedula').value.trim();
   p.cliente.telefono = document.getElementById('editClienteTelefono').value.trim();
   p.fecha_entrega = document.getElementById('editFechaEntrega').value;
   abrirDrawer(p.id);
   renderLista();
+  if(!MODO_DEMO){
+    try{ await llamarBackend('updatePedido', { id: p.id, cliente: p.cliente, fecha_entrega: p.fecha_entrega }); }
+    catch(err){ p.cliente = respaldo.cliente; p.fecha_entrega = respaldo.fecha_entrega; abrirDrawer(p.id); renderLista(); return; }
+  }
   showToast('Datos del cliente actualizados', 'success');
 }
-function quitarItemExistente(idx){
+async function quitarItemExistente(idx){
   const p = pedidos.find(x=>x.id===state.openPedidoId);
   if(!p) return;
   if(p.items.length <= 1){ showToast('El pedido necesita al menos un ítem', 'error'); return; }
+  const respaldo = p.items.slice();
   p.items.splice(idx,1);
   abrirDrawer(p.id);
   renderLista();
+  if(!MODO_DEMO){
+    try{ await llamarBackend('updatePedido', { id: p.id, items: p.items }); }
+    catch(err){ p.items = respaldo; abrirDrawer(p.id); renderLista(); return; }
+  }
   showToast('Ítem eliminado', 'success');
 }
 
@@ -1393,7 +1463,7 @@ function cerrarItemDrawer(){
   document.getElementById('scrim2').classList.remove('open');
   document.getElementById('drawerItem').classList.remove('open');
 }
-function agregarItemComun(item, mensaje){
+async function agregarItemComun(item, mensaje){
   if(typeof state.itemTarget === 'number'){
     const p = pedidos.find(x=>x.id===state.itemTarget);
     p.items.push(item);
@@ -1404,6 +1474,18 @@ function agregarItemComun(item, mensaje){
     cerrarItemDrawer();
     abrirDrawer(p.id);
     renderLista();
+    if(!MODO_DEMO){
+      try{
+        await llamarBackend('updatePedido', { id: p.id, items: p.items });
+        if(item.exhibicionId) await llamarBackend('updateExhibicion', { id: item.exhibicionId, estado: 'Vendido' });
+      } catch(err){
+        p.items.pop();
+        if(item.exhibicionId){ const x = exhibicion.find(e=>e.id===item.exhibicionId); if(x) x.estado = 'Disponible'; }
+        abrirDrawer(p.id);
+        renderLista();
+        return;
+      }
+    }
   } else {
     state.npItems.push(item);
     renderAddedItems();
@@ -1480,37 +1562,63 @@ function chequearClienteExistente(){
   }
 }
 
-function guardarPedido(){
+async function guardarPedido(){
   const nombre = document.getElementById('npNombre').value.trim();
   if(!nombre){ showToast('El cliente necesita un nombre', 'error'); return; }
   if(state.npItems.length === 0){ showToast('Agrega al menos un ítem', 'error'); return; }
 
-  state.npItems.forEach(item=>{
+  const cliente = {
+    nombre,
+    cedula: document.getElementById('npCedula').value.trim(),
+    telefono: document.getElementById('npTelefono').value.trim()
+  };
+  const fecha_entrega = document.getElementById('npFechaEntrega').value;
+  const descuento = parseFloat(document.getElementById('npDescuento').value) || 0;
+  const items = state.npItems;
+
+  const btn = document.querySelector('[data-action="guardar-pedido"]');
+  if(btn){ btn.disabled = true; btn.textContent = 'Guardando...'; }
+
+  let idNuevo, codigoNuevo;
+  if(MODO_DEMO){
+    idNuevo = nextId++;
+    codigoNuevo = 'PED-' + String(nextCodigo++).padStart(4,'0');
+  } else {
+    try{
+      const resultado = await llamarBackend('savePedido', { cliente, fecha_entrega, descuento, items });
+      idNuevo = resultado.id;
+      codigoNuevo = resultado.codigo;
+    } catch(err){
+      if(btn){ btn.disabled = false; btn.textContent = 'Guardar pedido'; }
+      return;
+    }
+  }
+
+  items.forEach(item=>{
     if(item.exhibicionId){
       const x = exhibicion.find(e=>e.id===item.exhibicionId);
       if(x) x.estado = 'Vendido';
+      if(!MODO_DEMO) llamarBackend('updateExhibicion', { id: item.exhibicionId, estado: 'Vendido' }).catch(()=>{});
     }
   });
 
   const nuevo = {
-    id: nextId++,
-    codigo: 'PED-' + String(nextCodigo++).padStart(4,'0'),
-    cliente: {
-      nombre,
-      cedula: document.getElementById('npCedula').value.trim(),
-      telefono: document.getElementById('npTelefono').value.trim()
-    },
+    id: idNuevo,
+    codigo: codigoNuevo,
+    cliente,
     fecha: new Date().toISOString().slice(0,10),
-    fecha_entrega: document.getElementById('npFechaEntrega').value,
+    fecha_entrega,
     estado: 'cotizacion',
-    descuento: parseFloat(document.getElementById('npDescuento').value) || 0,
+    descuento,
     abono: 0,
-    items: state.npItems
+    items
   };
   pedidos.unshift(nuevo);
+
+  if(btn){ btn.disabled = false; btn.textContent = 'Guardar pedido'; }
   cerrarTodo();
-  state.tab = 'activos';
-  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.tab==='activos'));
+  state.tab = 'cotizaciones';
+  document.querySelectorAll('#screen-ventas .tab').forEach(t=>t.classList.toggle('active', t.dataset.tab==='cotizaciones'));
   renderLista();
   showToast('Pedido ' + nuevo.codigo + ' creado', 'success');
 }
@@ -1529,14 +1637,36 @@ function irAScreen(name, label){
 }
 
 /* ============ EVENTOS (delegación) ============ */
-document.getElementById('btnLogin').addEventListener('click', ()=>{
+document.getElementById('btnLogin').addEventListener('click', async ()=>{
   const u = document.getElementById('inputUsuario');
   const p = document.getElementById('inputPassword');
   document.getElementById('fieldUsuario').classList.toggle('error', !u.value.trim());
   document.getElementById('fieldPassword').classList.toggle('error', !p.value.trim());
   if(!u.value.trim() || !p.value.trim()) return;
-  document.getElementById('avatarInitials').textContent = u.value.trim().slice(0,2).toUpperCase();
-  document.getElementById('loginScreen').classList.add('hidden');
+
+  document.getElementById('demoBanner').classList.toggle('hidden', !MODO_DEMO);
+
+  if(MODO_DEMO){
+    document.getElementById('avatarInitials').textContent = u.value.trim().slice(0,2).toUpperCase();
+    document.getElementById('loginScreen').classList.add('hidden');
+    return;
+  }
+
+  const btn = document.getElementById('btnLogin');
+  btn.disabled = true;
+  btn.textContent = 'Ingresando...';
+  try{
+    const usuario = await llamarBackend('login', { usuario: u.value.trim(), password: p.value.trim() });
+    document.getElementById('avatarInitials').textContent = usuario.nombre.trim().slice(0,2).toUpperCase();
+    document.getElementById('loginScreen').classList.add('hidden');
+    await cargarDatosIniciales();
+  } catch(err){
+    document.getElementById('fieldPassword').classList.add('error');
+    document.querySelector('#fieldPassword .field-error').textContent = 'Usuario o contraseña incorrectos';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Ingresar';
+  }
 });
 
 document.getElementById('btnTheme').addEventListener('click', ()=>{
@@ -1640,6 +1770,7 @@ document.addEventListener('click', e=>{
 });
 
 /* ============ INIT ============ */
+document.getElementById('demoBanner').classList.toggle('hidden', !MODO_DEMO);
 renderLista();
 </script>
 </body>
