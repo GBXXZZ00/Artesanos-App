@@ -281,9 +281,9 @@
   .nav-item.active{ color:var(--gold); }
   .nav-item span{ font-size:10.5px; font-weight:600; }
 
-  /* ---------- SCRIM / DRAWER ---------- */
-  .scrim{ position:absolute; inset:0; background:rgba(0,0,0,.6); opacity:0; pointer-events:none; transition:opacity .28s var(--ease-out); z-index:20; }
-  .scrim.open{ opacity:1; pointer-events:auto; }
+  /* ---------- M / DRAWER ---------- */
+  .m{ position:absolute; inset:0; background:rgba(0,0,0,.6); opacity:0; pointer-events:none; transition:opacity .28s var(--ease-out); z-index:20; }
+  .m.open{ opacity:1; pointer-events:auto; }
   .drawer{
     position:absolute; left:0; right:0; bottom:0; max-height:90%; background:var(--surface);
     border-radius:18px 18px 0 0; border-top:1px solid var(--border); transform:translateY(100%);
@@ -387,16 +387,16 @@
   .catalog-divider::before, .catalog-divider::after{ content:''; flex:1; height:1px; background:var(--border); }
   .catalog-divider span{ font-size:11px; color:var(--text3); font-weight:600; text-transform:uppercase; letter-spacing:.5px; }
 
-  .scrim2{ position:absolute; inset:0; background:rgba(0,0,0,.65); opacity:0; pointer-events:none; transition:opacity .28s var(--ease-out); z-index:30; }
-  .scrim2.open{ opacity:1; pointer-events:auto; }
+  .m2{ position:absolute; inset:0; background:rgba(0,0,0,.65); opacity:0; pointer-events:none; transition:opacity .28s var(--ease-out); z-index:30; }
+  .m2.open{ opacity:1; pointer-events:auto; }
   .drawer-item{
     position:absolute; left:0; right:0; bottom:0; max-height:92%; background:var(--surface);
     border-radius:18px 18px 0 0; border-top:1px solid var(--border); transform:translateY(100%);
     transition: transform .32s var(--ease-drawer); z-index:31; display:flex; flex-direction:column; overflow:hidden;
   }
   .drawer-item.open{ transform:translateY(0); }
-  .scrim3{ position:absolute; inset:0; background:rgba(0,0,0,.65); opacity:0; pointer-events:none; transition:opacity .28s var(--ease-out); z-index:32; }
-  .scrim3.open{ opacity:1; pointer-events:auto; }
+  .m3{ position:absolute; inset:0; background:rgba(0,0,0,.65); opacity:0; pointer-events:none; transition:opacity .28s var(--ease-out); z-index:32; }
+  .m3.open{ opacity:1; pointer-events:auto; }
   .drawer-exh{
     position:absolute; left:0; right:0; bottom:0; max-height:90%; background:var(--surface);
     border-radius:18px 18px 0 0; border-top:1px solid var(--border); transform:translateY(100%);
@@ -461,7 +461,7 @@
     <div class="login-form">
       <div class="field" id="fieldUsuario" style="position:relative">
         <label>Usuario</label>
-        <input type="text" id="inputUsuario" autocomplete="off" placeholder="Escribe o selecciona tu nombre">
+        <input type="text" id="inputUsuario" autocomplete="off" placeholder="Ebe o selecciona tu nombre">
         <div class="user-dd" id="userDd"></div>
         <div class="field-error">Ingresa tu usuario</div>
       </div>
@@ -597,8 +597,8 @@
     </div>
   </div>
 
-  <!-- SCRIM + DRAWER DETALLE -->
-  <div class="scrim" id="scrim" data-action="close-all"></div>
+  <!-- M + DRAWER DETALLE -->
+  <div class="m" id="m" data-action="close-all"></div>
   <div class="drawer" id="drawerDetalle">
     <div class="drawer-handle"></div>
     <div class="drawer-head">
@@ -688,8 +688,8 @@
     </div>
   </div>
 
-  <!-- SCRIM 2 + DRAWER ÍTEM (compartido: nuevo pedido / agregar a pedido existente) -->
-  <div class="scrim2" id="scrim2" data-action="close-item-drawer"></div>
+  <!-- M 2 + DRAWER ÍTEM (compartido: nuevo pedido / agregar a pedido existente) -->
+  <div class="m2" id="m2" data-action="close-item-drawer"></div>
   <div class="drawer-item" id="drawerItem">
     <div class="drawer-handle"></div>
     <div class="drawer-head">
@@ -746,8 +746,8 @@
     </div>
   </div>
 
-  <!-- SCRIM 3 + DRAWER DETALLE DE PIEZA EN EXHIBICIÓN -->
-  <div class="scrim3" id="scrim3" data-action="close-exh-drawer"></div>
+  <!-- M 3 + DRAWER DETALLE DE PIEZA EN EXHIBICIÓN -->
+  <div class="m3" id="m3" data-action="close-exh-drawer"></div>
   <div class="drawer-exh" id="drawerExh">
     <div class="drawer-handle"></div>
     <div class="drawer-head">
@@ -771,8 +771,8 @@
     </div>
   </div>
 
-  <!-- SCRIM 4 + DRAWER DETALLE DE MODELO DE CATÁLOGO -->
-  <div class="scrim3" id="scrim4" data-action="close-cat-drawer"></div>
+  <!-- M 4 + DRAWER DETALLE DE MODELO DE CATÁLOGO -->
+  <div class="m3" id="m4" data-action="close-cat-drawer"></div>
   <div class="drawer-exh" id="drawerCat">
     <div class="drawer-handle"></div>
     <div class="drawer-head">
@@ -795,8 +795,8 @@
     </div>
   </div>
 
-  <!-- SCRIM 5 + DRAWER NUEVO MODELO DE CATÁLOGO -->
-  <div class="scrim3" id="scrim5" data-action="close-nuevo-modelo"></div>
+  <!-- M 5 + DRAWER NUEVO MODELO DE CATÁLOGO -->
+  <div class="m3" id="m5" data-action="close-nuevo-modelo"></div>
   <div class="drawer-exh" id="drawerNuevoModelo">
     <div class="drawer-handle"></div>
     <div class="drawer-head">
@@ -826,7 +826,7 @@
   </div>
 
   <!-- MODAL DE CONFIRMACIÓN (reutilizable, bloqueante) -->
-  <div class="scrim3" id="scrimConfirm" style="z-index:80" data-action="cerrar-confirm"></div>
+  <div class="m3" id="mConfirm" style="z-index:80" data-action="cerrar-confirm"></div>
   <div class="drawer-exh" id="drawerConfirm" style="z-index:81; max-height:none">
     <div class="drawer-handle"></div>
     <div class="drawer-body" style="padding-top:10px">
@@ -841,10 +841,10 @@
   <div class="toast-container" id="toastContainer"></div>
 </div>
 
-<script>
+<pt>
 /* ============ CONFIG ============ */
 const MODO_DEMO = false;
-const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbzep31EtLcBOB8xLvyr0yemKwp1KiJvntr6k-_6QK_B1XT4TSfSrY6I0GKSOY_CSLxq/exec';
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbxy2Czn_4UQQrICDZk2AF-hmx66wmA3hmd2atMAivcfQUBaIuE2RwDbvPihILKBpCpD/exec';
 const NUMERO_NEGOCIO = '584220167079';
 
 /* ============ CONEXIÓN AL BACKEND ============ */
@@ -1207,11 +1207,11 @@ function poblarDetalle(id){
 }
 function abrirDrawer(id){
   poblarDetalle(id);
-  document.getElementById('scrim').classList.add('open');
+  document.getElementById('m').classList.add('open');
   document.getElementById('drawerDetalle').classList.add('open');
 }
 function cerrarTodo(){
-  document.getElementById('scrim').classList.remove('open');
+  document.getElementById('m').classList.remove('open');
   document.getElementById('drawerDetalle').classList.remove('open');
   document.getElementById('drawerNuevo').classList.remove('open');
   cerrarItemDrawer();
@@ -1279,7 +1279,7 @@ async function guardarEdicionItem(itemNuevo){
 function confirmar(mensaje){
   return new Promise(resolve=>{
     document.getElementById('confirmMensaje').textContent = mensaje;
-    document.getElementById('scrimConfirm').classList.add('open');
+    document.getElementById('mConfirm').classList.add('open');
     document.getElementById('drawerConfirm').classList.add('open');
     state.confirmResolver = resolve;
   });
