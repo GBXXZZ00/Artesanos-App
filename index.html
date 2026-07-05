@@ -367,7 +367,7 @@
   .item-name{ font-size:14px; font-weight:600; }
   .item-origen{ font-size:9.5px; font-weight:800; text-transform:uppercase; letter-spacing:.03em; padding:2px 6px; border-radius:5px; vertical-align:middle; }
   .item-origen.exh{ background:var(--blue-dim); color:#3B82C4; }
-  .item-origen.fab{ background:var(--amber-dim); color:#B8860B; }
+  .item-origen.porfabricar{ background:var(--amber-dim); color:#B8860B; }
   .item-spec{ font-size:11.5px; color:var(--text2); margin-top:2px; }
   .item-price{ font-size:14px; font-weight:700; color:var(--gold); flex-shrink:0; margin-left:10px; }
 
@@ -1083,7 +1083,7 @@
 <script>
 /* ============ CONFIG ============ */
 const MODO_DEMO = false;
-const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbzCm9Bu2Z7g-T_DY8f8BwWYseNsfn6PinSKXWdkQOoiCN-ID8O6l77c0owp4MjpDn-c/exec';
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbyVu9yFUJCQCuK7H5UrHGlmghxXpcOhQKAtbuv_NKXEpuqEkA8fLRw3zdb_ujVFdAF0/exec';
 const NUMERO_NEGOCIO = '584220167079';
 
 /* ============ SPINNER GENÉRICO PARA BOTONES ============ */
@@ -1643,7 +1643,7 @@ function poblarDetalle(id){
       <div class="item-left">
         <div class="item-thumb">${miniaturaItem(it)}</div>
         <div>
-          <div class="item-name">${it.nombreModelo || it.tipo}${it.cantidad>1 ? ' ×'+it.cantidad : ''} <span class="item-origen ${it.exhibicionId ? 'exh' : 'fab'}">${it.exhibicionId ? 'Exhibición' : 'A fabricar'}</span></div>
+          <div class="item-name">${it.nombreModelo || it.tipo}${it.cantidad>1 ? ' ×'+it.cantidad : ''} <span class="item-origen ${it.exhibicionId ? 'exh' : 'porfabricar'}">${it.exhibicionId ? 'Exhibición' : 'Fabricación'}</span></div>
           <div class="item-spec">${especTexto(it)}</div>
         </div>
       </div>
@@ -1799,8 +1799,18 @@ async function cancelarPedido(){
       p.estado = anterior;
       renderLista();
       showToast('No se pudo cancelar el pedido, intenta de nuevo', 'error');
+      return;
     }
   }
+  // Las piezas de exhibición que traía este pedido vuelven a estar disponibles.
+  p.items.forEach(item=>{
+    if(item.exhibicionId){
+      const x = exhibicion.find(e=>e.id===item.exhibicionId);
+      if(x){ x.estado = 'Disponible'; x.pedido_id = null; }
+      if(!MODO_DEMO) llamarBackend('updateExhibicion', { id: item.exhibicionId, estado: 'Disponible' }).catch(()=>{});
+    }
+  });
+  renderExhibicion();
 }
 
 async function registrarAbono(){
@@ -1884,15 +1894,24 @@ function fechaHoraCorta(iso){
   return d.toLocaleDateString('es-VE', {day:'numeric', month:'short'}) + ' · ' + d.toLocaleTimeString('es-VE', {hour:'2-digit', minute:'2-digit'});
 }
 
-function mensajeWhatsapp(p){
-  const mensajes = {
-    cotizacion: `Hola ${p.cliente.nombre}, aquí tienes tu cotización #${p.codigo} de Herrería Artesanos.`,
-    confirmado: `Hola ${p.cliente.nombre}, tu pedido #${p.codigo} fue confirmado. ¡Gracias por tu compra!`,
-    produccion: `Hola ${p.cliente.nombre}, tu pedido #${p.codigo} está en proceso de producción.`,
-    listo: `Hola ${p.cliente.nombre}, tu pedido #${p.codigo} ya está listo para entrega.`,
-    entregado: `Hola ${p.cliente.nombre}, gracias por tu compra. Tu pedido #${p.codigo} fue entregado.`
-  };
-  return mensajes[p.estado] || `Hola ${p.cliente.nombre}, te escribimos sobre tu pedido #${p.codigo}.`;
+function mensajeWhatsappNota(p, urlNota){
+  const totalNum = totalPedido(p);
+  const saldoNum = Math.max(0, totalNum - p.abono);
+  const total = money(totalNum);
+  const saldo = money(saldoNum);
+  const abono50 = money(totalNum * 0.5);
+
+  if(p.estado === 'cotizacion'){
+    return `Hola ${p.cliente.nombre} 👋\nAquí tienes tu cotización de Herrería Artesanos:\n📄 Cotización #${p.codigo} — Total: ${total}\n\nPara comenzar a fabricar necesitamos un abono del 50% (${abono50}). Cualquier duda, quedamos atentos: ¿deseas continuar con el pedido?\n\n_Creando con distinción_ ✨\n\n${urlNota}`;
+  }
+  if(p.estado === 'listo'){
+    const lineaSaldo = saldoNum > 0 ? `\nRecuerda traer el saldo restante de ${saldo} para la entrega.` : '';
+    return `Hola ${p.cliente.nombre} 👋\n¡Tu pedido #${p.codigo} ya está listo! Puedes pasar a retirarlo.${lineaSaldo}\n\n${urlNota}`;
+  }
+  if(p.estado === 'entregado'){
+    return `Hola ${p.cliente.nombre} 👋\n¡Gracias por tu compra! Tu pedido #${p.codigo} fue entregado${saldoNum<=0 ? ' y el pago quedó completo ✅' : ''}.\nAdjunto tu nota de entrega.\n\n${urlNota}`;
+  }
+  return `Hola ${p.cliente.nombre} 👋\n¡Tu pedido fue confirmado! 📄 Pedido #${p.codigo} — Total: ${total}\nAbonado: ${money(p.abono)} · Saldo: ${saldo}\n\nTe avisamos en cuanto haya novedades.\n\n${urlNota}`;
 }
 function esAppAnclada(){
   return window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
@@ -1901,23 +1920,36 @@ function abrirWhatsapp(){
   const p = pedidos.find(x=>x.id===state.openPedidoId);
   if(!p) return;
   const numero = (p.cliente.telefono || '').replace(/\D/g,'');
-  const texto = encodeURIComponent(mensajeWhatsapp(p));
-  const destino = `https://wa.me/${numero}?text=${texto}`;
-  // En iOS, la app anclada a inicio corre en modo standalone: window.open() no abre nada ahí.
+  // Chat directo, sin mensaje automático: es para conversar libremente con el cliente.
+  const destino = `https://wa.me/${numero}`;
   if(esAppAnclada()) window.location.href = destino;
   else window.open(destino, '_blank');
+}
+function tituloDocumentoPedido(p){
+  if(p.estado === 'cotizacion') return 'COTIZACIÓN';
+  if(p.estado === 'listo' || p.estado === 'entregado') return 'NOTA DE ENTREGA';
+  return 'NOTA DE PEDIDO';
 }
 function construirDatosNota(p){
   const total = totalPedido(p);
   const saldo = Math.max(0, total - p.abono);
+  const itemsConFoto = p.items.map(it => ({
+    ...it,
+    foto: it.catalogoId ? fotoModeloPorColor(getModelo(it.catalogoId), it.especificaciones?.color) : null
+  }));
+  const metodos = [...new Set((p.abonos || []).map(a => a.metodo))];
   return {
     codigo: p.codigo,
     cliente: p.cliente,
+    fecha: p.fecha,
     fecha_entrega: p.fecha_entrega,
     estado: ESTADO_LABEL[p.estado],
-    items: p.items,
+    titulo: tituloDocumentoPedido(p),
+    items: itemsConFoto,
     descuento: p.descuento || 0,
     abono: p.abono || 0,
+    metodos_pago: metodos.length ? metodos.join(', ') : '—',
+    pagado: saldo <= 0 && total > 0,
     total, saldo
   };
 }
@@ -1974,7 +2006,7 @@ async function enviarNotaWhatsapp(){
   btn.classList.remove('loading');
   if(!resultado){ if(ventana) ventana.close(); return; }
   const numero = (p.cliente.telefono || '').replace(/\D/g,'');
-  const texto = encodeURIComponent(`Hola ${p.cliente.nombre}, aquí tienes la nota de tu pedido #${p.codigo}: ${resultado.url}`);
+  const texto = encodeURIComponent(mensajeWhatsappNota(p, resultado.url));
   const destino = `https://wa.me/${numero}?text=${texto}`;
   if(anclada) window.location.href = destino;
   else if(ventana) ventana.location.href = destino;
@@ -2021,13 +2053,27 @@ async function quitarItemExistente(idx){
   const p = pedidos.find(x=>x.id===state.openPedidoId);
   if(!p) return;
   if(p.items.length <= 1){ showToast('El pedido necesita al menos un ítem', 'error'); return; }
+  const itemQuitado = p.items[idx];
   const respaldo = p.items.slice();
   p.items.splice(idx,1);
+  if(itemQuitado.exhibicionId){
+    const x = exhibicion.find(e=>e.id===itemQuitado.exhibicionId);
+    if(x){ x.estado = 'Disponible'; x.pedido_id = null; }
+  }
   abrirDrawer(p.id);
   renderLista();
+  renderExhibicion();
   if(!MODO_DEMO){
-    try{ await llamarBackend('updatePedido', { id: p.id, items: p.items }); }
-    catch(err){ p.items = respaldo; abrirDrawer(p.id); renderLista(); return; }
+    try{
+      await llamarBackend('updatePedido', { id: p.id, items: p.items });
+      if(itemQuitado.exhibicionId) await llamarBackend('updateExhibicion', { id: itemQuitado.exhibicionId, estado: 'Disponible' });
+    }
+    catch(err){
+      p.items = respaldo;
+      if(itemQuitado.exhibicionId){ const x = exhibicion.find(e=>e.id===itemQuitado.exhibicionId); if(x){ x.estado = 'Vendido'; x.pedido_id = p.id; } }
+      abrirDrawer(p.id); renderLista(); renderExhibicion();
+      return;
+    }
   }
   showToast('Ítem eliminado', 'success');
 }
