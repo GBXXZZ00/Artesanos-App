@@ -320,14 +320,14 @@
   }
   [data-theme="dark"] .bottom-nav{ background:rgba(24,22,19,.82); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px); border-color:rgba(255,255,255,.08); }
   .nav-item{
-    flex:1; height:52px; border-radius:26px; display:flex; align-items:center; justify-content:center;
+    flex:1; height:56px; border-radius:22px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;
     color:var(--text3); cursor:pointer; transition: color .18s var(--ease-out), background-color .22s var(--ease-out), transform .16s var(--ease-out);
   }
   .nav-item:active{ transform:scale(0.9); }
   .nav-item.active{ color:var(--gold); background:var(--gold-dim); }
-  .nav-item svg{ width:27px; height:27px; transition: transform .26s var(--ease-out); }
-  .nav-item.active svg{ transform:scale(1.12); }
-  .nav-item span{ display:none; }
+  .nav-item svg{ width:22px; height:22px; transition: transform .26s var(--ease-out); }
+  .nav-item.active svg{ transform:scale(1.08); }
+  .nav-item span{ font-size:10px; font-weight:700; }
 
   /* ---------- SCRIM / DRAWER ---------- */
   .scrim{ position:absolute; inset:0; background:rgba(0,0,0,.6); opacity:0; pointer-events:none; transition:opacity .28s var(--ease-out); z-index:20; }
@@ -365,10 +365,27 @@
   .item-row{ display:flex; justify-content:space-between; align-items:center; padding:11px 0; border-bottom:1px solid var(--border); }
   .item-row:last-child{ border-bottom:none; }
   .item-name{ font-size:14px; font-weight:600; }
+  .item-origen{ font-size:9.5px; font-weight:800; text-transform:uppercase; letter-spacing:.03em; padding:2px 6px; border-radius:5px; vertical-align:middle; }
+  .item-origen.exh{ background:var(--blue-dim); color:#3B82C4; }
+  .item-origen.fab{ background:var(--amber-dim); color:#B8860B; }
   .item-spec{ font-size:11.5px; color:var(--text2); margin-top:2px; }
   .item-price{ font-size:14px; font-weight:700; color:var(--gold); flex-shrink:0; margin-left:10px; }
 
-  .balance-box{ background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:14px; margin-top:16px; display:flex; justify-content:space-between; }
+  .balance-box{ background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:14px; margin-top:16px; display:flex; justify-content:space-between; transition: box-shadow .35s var(--ease-out), border-color .35s var(--ease-out); }
+  .balance-box.destello{ box-shadow:0 0 0 2px var(--gold-dim); border-color:var(--gold); }
+  .abono-cards-row{ display:flex; gap:8px; margin-bottom:10px; }
+  .abono-card{
+    flex:1; display:flex; flex-direction:column; align-items:center; gap:5px; padding:10px 4px;
+    background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); cursor:pointer;
+    color:var(--gold); transition: transform .1s var(--ease-out); min-width:0;
+  }
+  .abono-card:active{ transform:scale(0.96); }
+  .abono-card select, .abono-card input[type="number"]{
+    border:none; background:none; text-align:center; font-size:12px; font-weight:700; color:var(--text);
+    width:100%; padding:0; text-align-last:center;
+  }
+  .abono-card select:focus, .abono-card input:focus{ outline:none; }
+  .abono-card span{ font-size:10.5px; font-weight:700; color:var(--text2); text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
   .balance-box div span{ display:block; font-size:11px; color:var(--text2); }
   .balance-box div strong{ font-size:17px; }
   .balance-box .paid strong{ color:var(--green); }
@@ -767,33 +784,38 @@
       <div class="section-label">Ítems del pedido</div>
       <div id="detItems"></div>
       <button class="btn-add-item-existing" id="btnAgregarItemExistente" data-action="agregar-item-existente">+ Agregar ítem a este pedido</button>
-      <div class="balance-box">
+      <div class="balance-box" id="detBalanceBox">
         <div class="paid"><span>Abonado</span><strong id="detAbono"></strong></div>
         <div class="pending"><span>Saldo</span><strong id="detSaldo"></strong></div>
       </div>
       <div id="detAbonosHistorial"></div>
       <div class="form-group" style="margin-top:10px" id="abonoFormWrap">
-        <div class="form-row">
-          <div class="field"><label>Monto a abonar</label><div class="input-money"><input type="number" id="inputAbono" placeholder="0"></div></div>
-          <div class="field"><label>Método</label>
-            <select id="inputMetodoAbono" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px">
+        <div class="abono-cards-row">
+          <div class="abono-card">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+            <select id="inputMetodoAbono">
               <option value="Efectivo">Efectivo</option>
               <option value="Zelle">Zelle</option>
               <option value="Pago móvil">Pago móvil</option>
               <option value="Transferencia">Transferencia</option>
             </select>
           </div>
+          <div class="abono-card">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+            <input type="number" id="inputAbono" placeholder="0">
+          </div>
+          <label class="abono-card" for="inputFotoAbono">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            <span id="inputFotoAbonoLabel">Comprobante</span>
+          </label>
+          <input type="file" id="inputFotoAbono" accept="image/*" class="file-input-hidden">
         </div>
-        <label class="file-picker-btn" for="inputFotoAbono" style="margin-top:8px">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
-          <span id="inputFotoAbonoLabel">Agregar comprobante</span>
-        </label>
-        <input type="file" id="inputFotoAbono" accept="image/*" class="file-input-hidden">
-        <button class="btn-sm" id="btnRegistrarAbono" data-action="registrar-abono" style="background:var(--gold);color:#1A1409;width:100%;margin-top:10px"><span class="btn-spin"></span><span id="btnRegistrarAbonoLabel">Registrar abono</span></button>
+        <button class="btn-sm" id="btnRegistrarAbono" data-action="registrar-abono" style="background:var(--gold);color:#1A1409;width:100%;margin-top:4px"><span class="btn-spin"></span><span id="btnRegistrarAbonoLabel">Registrar abono</span></button>
       </div>
       <button class="btn-primary hidden" id="btnMarcarEntregado" style="width:100%;margin-top:14px;background:var(--green);color:#0d2417" data-action="marcar-entregado"><span class="btn-spin"></span><span id="btnMarcarEntregadoLabel">Marcar como entregado</span></button>
       <button class="btn-primary hidden" id="btnConfirmarPedido" style="width:100%;margin-top:18px" data-action="confirmar-pedido"><span class="btn-spin"></span><span id="btnConfirmarPedidoLabel">Confirmar pedido</span></button>
       <button class="btn-ghost" id="btnCancelarPedido" style="width:100%;margin-top:12px;color:var(--red);border-color:var(--red)" data-action="cancelar-pedido"><span class="btn-spin"></span><span id="btnCancelarPedidoLabel">Cancelar pedido</span></button>
+      <button class="btn-ghost" style="width:100%;margin-top:22px" data-action="close-drawer">Cerrar</button>
     </div>
   </div>
 
@@ -867,9 +889,9 @@
           <div class="option-text"><b>Desde Exhibición</b><span>Ya está fabricada y disponible ahora</span></div>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
         </div>
-        <div class="option-card" data-action="mostrar-form-personalizado">
-          <div class="option-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div>
-          <div class="option-text"><b>Personalizado</b><span>Arma las especificaciones desde cero</span></div>
+        <div class="option-card" data-action="ir-crear-modelo-y-volver">
+          <div class="option-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg></div>
+          <div class="option-text"><b>Registrar modelo nuevo</b><span>Lo agregas a Catálogo (con fotos) y vuelves aquí para ajustarlo</span></div>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
         </div>
       </div>
@@ -1279,7 +1301,7 @@ let exhibicion = [
 /* ============ ESTADO UI ============ */
 const ESTADOS = ['cotizacion','confirmado','produccion','listo','entregado'];
 const ESTADO_LABEL = { cotizacion:'Cotización', confirmado:'Confirmado', produccion:'En Producción', listo:'Listo', entregado:'Entregado', cancelado:'Cancelado' };
-let state = { tab:'activos', search:'', openPedidoId:null, npItems:[], itemTarget:'nuevo', exhTab:'disponibles', exhSearch:'', catSearch:'', catTipoFiltro:'Todos', openExhId:null, openCatId:null, openCatColor:null, modoSeleccion:null, rol:null, nombreUsuario:null, modeloEditId:null, itemEditIndexNP:null, exhRango:'mes' };
+let state = { tab:'activos', search:'', openPedidoId:null, npItems:[], itemTarget:'nuevo', exhTab:'disponibles', exhSearch:'', catSearch:'', catTipoFiltro:'Todos', openExhId:null, openCatId:null, openCatColor:null, modoSeleccion:null, rol:null, nombreUsuario:null, modeloEditId:null, itemEditIndexNP:null, exhRango:'mes', volverAItemDespuesDeModelo:null };
 
 function getModelo(catalogoId){ return catalogo.find(c=>c.id===catalogoId) || null; }
 function fotoModeloPorColor(modelo, color){
@@ -1562,6 +1584,12 @@ function renderBentoVentas(){
 }
 
 /* ============ DRAWER DETALLE ============ */
+function destellar(elId){
+  const el = document.getElementById(elId);
+  if(!el) return;
+  el.classList.add('destello');
+  setTimeout(()=> el.classList.remove('destello'), 900);
+}
 function resaltarPedidoEnLista(id){
   requestAnimationFrame(()=>{
     const el = document.querySelector(`.order-card[data-id="${id}"]`);
@@ -1606,18 +1634,22 @@ function poblarDetalle(id){
   document.getElementById('btnMarcarEntregado').classList.toggle('hidden',
     p.estado === 'entregado' || p.estado === 'cancelado' || p.estado === 'cotizacion' || saldoPendiente > 0);
   const pedidoCerrado = p.estado === 'entregado' || p.estado === 'cancelado';
-  document.getElementById('btnAgregarItemExistente').classList.toggle('hidden', pedidoCerrado);
+  document.getElementById('btnAgregarItemExistente').classList.toggle('hidden', p.estado !== 'cotizacion');
   document.getElementById('abonoFormWrap').classList.toggle('hidden', pedidoCerrado || saldoPendiente <= 0);
 
+  const seEditaItems = p.estado === 'cotizacion';
   document.getElementById('detItems').innerHTML = p.items.map((it,i)=>`
-    <div class="item-row" data-action="toggle-select-item" data-index="${i}">
+    <div class="item-row" ${seEditaItems ? `data-action="toggle-select-item" data-index="${i}"` : ''}>
       <div class="item-left">
         <div class="item-thumb">${miniaturaItem(it)}</div>
-        <div><div class="item-name">${it.nombreModelo || it.tipo}${it.cantidad>1 ? ' ×'+it.cantidad : ''}</div><div class="item-spec">${especTexto(it)}</div></div>
+        <div>
+          <div class="item-name">${it.nombreModelo || it.tipo}${it.cantidad>1 ? ' ×'+it.cantidad : ''} <span class="item-origen ${it.exhibicionId ? 'exh' : 'fab'}">${it.exhibicionId ? 'Exhibición' : 'A fabricar'}</span></div>
+          <div class="item-spec">${especTexto(it)}</div>
+        </div>
       </div>
       <div class="item-actions">
         <div class="item-price">${money(it.precio*it.cantidad)}</div>
-        <button class="item-delete-btn" data-action="delete-item-existing" data-index="${i}" title="Eliminar ítem">&times;</button>
+        ${seEditaItems ? `<button class="item-delete-btn" data-action="delete-item-existing" data-index="${i}" title="Eliminar ítem">&times;</button>` : ''}
       </div>
     </div>`).join('');
 
@@ -1819,6 +1851,7 @@ async function registrarAbono(){
     } else {
       abrirDrawer(p.id);
       renderLista();
+      destellar('detBalanceBox');
       showToast('Abono de ' + money(val) + ' registrado', 'success');
     }
   } catch(err){
@@ -2000,6 +2033,22 @@ async function quitarItemExistente(idx){
 }
 
 /* ============ EXHIBICIÓN (pantalla independiente) ============ */
+function agruparPiezasIdenticas(lista){
+  const grupos = [];
+  const indicePorClave = new Map();
+  lista.forEach(x=>{
+    if(x._guardando){ grupos.push(x); return; }
+    const clave = (x.catalogo_id || 'sin-modelo') + '::' + JSON.stringify(x.especificaciones || {});
+    if(indicePorClave.has(clave)){
+      const idx = indicePorClave.get(clave);
+      grupos[idx] = { ...grupos[idx], _cantidadGrupo: (grupos[idx]._cantidadGrupo || 1) + 1 };
+    } else {
+      indicePorClave.set(clave, grupos.length);
+      grupos.push({ ...x, _cantidadGrupo: 1 });
+    }
+  });
+  return grupos;
+}
 function renderExhibicion(){
   renderBentoExhibicion();
   const cont = document.getElementById('exhGrid');
@@ -2021,7 +2070,8 @@ function renderExhibicion(){
     </div>`;
     return;
   }
-  cont.innerHTML = filtrados.map((x,i)=>{
+  const paraRenderizar = state.exhTab === 'disponibles' ? agruparPiezasIdenticas(filtrados) : filtrados;
+  cont.innerHTML = paraRenderizar.map((x,i)=>{
     if(x._guardando){
       return `
       <div class="exh-card is-guardando" style="--i:${i}">
@@ -2039,6 +2089,7 @@ function renderExhibicion(){
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m2 0v14a2 2 0 01-2 2H8a2 2 0 01-2-2V6h12z"/></svg>
         </button>` : ''}
         ${x.estado==='Vendido' ? `<span class="badge entregado">Vendido</span>` : ''}
+        ${x._cantidadGrupo > 1 ? `<span class="badge listo">×${x._cantidadGrupo}</span>` : ''}
       </div>
       <div class="exh-name">${info.nombre}</div>
       <div class="exh-spec">${especTexto(x)}</div>
@@ -2080,6 +2131,11 @@ function abrirExhDrawer(id){
   const fechas = [];
   if(x.fecha_registro) fechas.push('Registrada el ' + fechaCorta(x.fecha_registro));
   if(x.fecha_venta) fechas.push('Vendida el ' + fechaCorta(x.fecha_venta.slice(0,10)));
+  if(x.estado === 'Disponible'){
+    const clave = (x.catalogo_id || 'sin-modelo') + '::' + JSON.stringify(x.especificaciones || {});
+    const hermanas = exhibicion.filter(y=>y.estado==='Disponible' && !y._guardando && (y.catalogo_id || 'sin-modelo') + '::' + JSON.stringify(y.especificaciones || {}) === clave);
+    if(hermanas.length > 1) fechas.push(`Hay ${hermanas.length} idénticas disponibles`);
+  }
   document.getElementById('exhFechas').textContent = fechas.join(' · ');
   const puedeUsar = x.estado === 'Disponible';
   document.getElementById('btnVenderPieza').classList.toggle('hidden', !puedeUsar || state.modoSeleccion === 'exhibicion');
@@ -2287,6 +2343,11 @@ function editarModeloCatalogo(id){
 function cerrarNuevoModelo(){
   document.getElementById('scrim5').classList.remove('open');
   document.getElementById('drawerNuevoModelo').classList.remove('open');
+  if(state.volverAItemDespuesDeModelo != null){
+    const destino = state.volverAItemDespuesDeModelo;
+    state.volverAItemDespuesDeModelo = null;
+    abrirItemDrawer(destino);
+  }
 }
 function comprimirImagen(archivo, anchoMax){
   return new Promise((resolve, reject)=>{
@@ -2327,6 +2388,38 @@ async function guardarNuevoModelo(){
     especificaciones_base: leerEspecificacionesGenerico(tipoKey, 'nm', 'nm'),
     precio_base: precio
   };
+
+  const destinoRetorno = state.volverAItemDespuesDeModelo;
+  if(destinoRetorno != null){
+    // Este modelo hace falta de una vez para seguir armando el pedido/pieza en curso: aquí sí esperamos el guardado real.
+    const btn = document.getElementById('btnGuardarModelo');
+    setCargando(btn, true);
+    try{
+      if((archivoBlanco || archivoNegro) && !MODO_DEMO){
+        const tareas = [];
+        if(archivoBlanco) tareas.push(comprimirImagen(archivoBlanco, 800).then(base64 => llamarBackend('subirFoto', { base64, mimeType:'image/jpeg', nombreProducto: nombre + ' Blanco' })).then(r=>{ modelo.fotos.Blanco = r.url; }));
+        if(archivoNegro) tareas.push(comprimirImagen(archivoNegro, 800).then(base64 => llamarBackend('subirFoto', { base64, mimeType:'image/jpeg', nombreProducto: nombre + ' Negro' })).then(r=>{ modelo.fotos.Negro = r.url; }));
+        await Promise.all(tareas);
+      }
+      if(MODO_DEMO){
+        modelo.id = catalogo.reduce((max,c)=>typeof c.id==='number' ? Math.max(max,c.id) : max, 0) + 1;
+      } else {
+        const resultado = await llamarBackend('saveCatalogoModelo', modelo);
+        modelo.id = resultado.id;
+      }
+      catalogo.push(modelo);
+      state.volverAItemDespuesDeModelo = null;
+      setCargando(btn, false);
+      cerrarNuevoModelo();
+      abrirItemDrawer(destinoRetorno);
+      mostrarFormConModelo(modelo, null);
+      showToast('Modelo creado, ajusta las especificaciones para este pedido', 'success');
+    } catch(err){
+      setCargando(btn, false);
+      showToast('No se pudo guardar el modelo, intenta de nuevo', 'error');
+    }
+    return;
+  }
 
   // Cierre inmediato: no hacemos esperar al usuario el viaje al backend.
   cerrarNuevoModelo();
@@ -3215,7 +3308,11 @@ document.body.addEventListener('click', e=>{
   else if(action === 'close-cat-drawer') cerrarCatDrawer();
   else if(action === 'usar-modelo-catalogo') usarModeloCatalogo();
   else if(action === 'ir-seleccion-catalogo') irASeleccionCatalogo();
-  else if(action === 'mostrar-form-personalizado') mostrarFormPersonalizado();
+  else if(action === 'ir-crear-modelo-y-volver'){
+    state.volverAItemDespuesDeModelo = state.itemTarget;
+    cerrarItemDrawer();
+    abrirNuevoModelo();
+  }
   else if(action === 'toggle-select-item') manejarTapItem(parseInt(el.dataset.index));
   else if(action === 'abrir-nuevo-pedido') abrirNuevoPedido();
   else if(action === 'abrir-nueva-exh') abrirNuevaPiezaExhibicion();
