@@ -42,18 +42,18 @@
     --radius-sm: 6px;
   }
   [data-theme="light"]{
-    --bg:       #F2EDE6;
+    --bg:       #FFFFFF;
     --surface:  #FFFFFF;
-    --surface2: #EDE8E0;
-    --surface3: #E0D9CF;
-    --border:   #C8BFB2;
-    --border2:  #A89E92;
+    --surface2: #F3F3F1;
+    --surface3: #E9E8E4;
+    --border:   #E2E0DA;
+    --border2:  #C9C6BE;
     --teal:     #1A4A47;
-    --text:     #1A2830;
-    --text2:    #5C6E78;
-    --text3:    #96A0A8;
-    --gold: #96793D;
-    --gold-dim: #F2E4C8;
+    --text:     #12140F;
+    --text2:    #5B5F58;
+    --text3:    #9A9D96;
+    --gold: #1E6B45;
+    --gold-dim: #E3F1E8;
     --green-dim: #E1F3E1;
     --amber-dim: #FBEFD2;
     --red-dim:   #FBE2E1;
@@ -204,10 +204,10 @@
     padding:6px; letter-spacing:.3px; border-bottom:1px solid var(--border);
   }
 
-  .content{ flex:1; overflow-y:auto; overflow-x:hidden; padding:14px 14px 90px; position:relative; }
+  .content{ flex:1; overflow-y:auto; overflow-x:hidden; padding:14px 14px 110px; position:relative; }
   .screen{ display:none; }
-  .screen.active{ display:block; animation:fadeIn .25s var(--ease-out); }
-  @keyframes fadeIn{ from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:translateY(0);} }
+  .screen.active{ display:block; opacity:1; transform:translateY(0) scale(1); transition:opacity .28s var(--ease-out), transform .28s var(--ease-out); }
+  .screen.active.entering{ opacity:0; transform:translateY(10px) scale(0.98); }
 
   .placeholder-screen{ display:flex; flex-direction:column; align-items:center; text-align:center; padding:60px 20px; gap:10px; color:var(--text2); }
   .placeholder-screen svg{ opacity:.5; margin-bottom:6px; }
@@ -293,17 +293,31 @@
   .empty-state span{ font-size:13px; }
 
   .fab{
-    position:absolute; right:16px; bottom:calc(78px + env(safe-area-inset-bottom)); width:54px; height:54px; border-radius:50%; background:var(--gold);
-    color:#1A1409; border:none; display:flex; align-items:center; justify-content:center;
-    box-shadow:0 4px 14px rgba(0,0,0,.45); cursor:pointer; transition: transform .12s var(--ease-out); z-index:15;
+    position:absolute; right:18px; bottom:calc(100px + env(safe-area-inset-bottom)); width:56px; height:56px; border-radius:50%; background:var(--gold);
+    color:var(--bg); border:none; display:flex; align-items:center; justify-content:center;
+    box-shadow:0 8px 20px rgba(0,0,0,.35); cursor:pointer; transition: transform .12s var(--ease-out); z-index:16;
   }
-  .fab:active{ transform:scale(0.93); }
+  .fab:active{ transform:scale(0.9); }
 
-  .bottom-nav{ position:sticky; bottom:0; display:flex; background:var(--surface); border-top:1px solid var(--border); padding:8px 4px calc(10px + env(safe-area-inset-bottom)); z-index:10; flex-shrink:0; }
-  .nav-item{ flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; padding:6px 2px; color:var(--text3); cursor:pointer; transition: color .15s var(--ease-out), transform .12s var(--ease-out); }
-  .nav-item:active{ transform:scale(0.94); }
-  .nav-item.active{ color:var(--gold); }
-  .nav-item span{ font-size:11.5px; font-weight:600; }
+  .bottom-nav-wrap{
+    position:absolute; left:0; right:0; bottom:0; display:flex; justify-content:center;
+    padding-bottom:calc(16px + env(safe-area-inset-bottom)); z-index:14; pointer-events:none;
+  }
+  .bottom-nav{
+    pointer-events:auto; display:flex; align-items:center; gap:2px;
+    background:var(--surface); border:1px solid var(--border); border-radius:999px; padding:7px;
+    box-shadow:0 12px 30px rgba(0,0,0,.28);
+  }
+  [data-theme="dark"] .bottom-nav{ background:rgba(24,22,19,.82); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px); border-color:rgba(255,255,255,.08); }
+  .nav-item{
+    width:56px; height:56px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    color:var(--text3); cursor:pointer; transition: color .18s var(--ease-out), background-color .22s var(--ease-out), transform .16s var(--ease-out);
+  }
+  .nav-item:active{ transform:scale(0.88); }
+  .nav-item.active{ color:var(--gold); background:var(--gold-dim); }
+  .nav-item svg{ width:27px; height:27px; transition: transform .26s var(--ease-out); }
+  .nav-item.active svg{ transform:scale(1.12); }
+  .nav-item span{ display:none; }
 
   /* ---------- SCRIM / DRAWER ---------- */
   .scrim{ position:absolute; inset:0; background:rgba(0,0,0,.6); opacity:0; pointer-events:none; transition:opacity .28s var(--ease-out); z-index:20; }
@@ -396,6 +410,12 @@
   .swatch-blanco{ background:#f2ede3; }
   .swatch-negro{ background:#1c1a17; }
   .foto-modelo-img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+  .input-money{ position:relative; }
+  .input-money::before{
+    content:'$'; position:absolute; left:14px; top:50%; transform:translateY(-50%);
+    color:var(--text2); font-size:15px; font-weight:700; pointer-events:none;
+  }
+  .input-money input{ padding-left:26px !important; }
   .exh-card.is-guardando, .order-card.is-guardando{ opacity:.6; pointer-events:none; }
   .quick-actions-row{ display:flex; gap:10px; margin-bottom:18px; }
   .quick-action-btn{
@@ -659,16 +679,18 @@
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1A1409" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
     </button>
 
+    <div class="bottom-nav-wrap">
     <div class="bottom-nav" id="bottomNav">
       <div class="nav-item active" data-action="nav" data-screen="ventas" data-label="Ventas">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-6 9 6v11a1 1 0 01-1 1H4a1 1 0 01-1-1z"/></svg><span>Ventas</span>
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-6 9 6v11a1 1 0 01-1 1H4a1 1 0 01-1-1z"/></svg><span>Ventas</span>
       </div>
       <div class="nav-item" data-action="nav" data-screen="exhibicion" data-label="Exhibición">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v6"/></svg><span>Exhibición</span>
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v6"/></svg><span>Exhibición</span>
       </div>
       <div class="nav-item" data-action="nav" data-screen="placeholder" data-label="Producción">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a4 4 0 11-5.4 5.4L4 17v3h3l5.3-5.3"/></svg><span>Producción</span>
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a4 4 0 11-5.4 5.4L4 17v3h3l5.3-5.3"/></svg><span>Producción</span>
       </div>
+    </div>
     </div>
   </div>
 
@@ -725,7 +747,7 @@
       <div id="detAbonosHistorial"></div>
       <div class="form-group" style="margin-top:10px">
         <div class="form-row">
-          <div class="field"><label>Monto a abonar</label><input type="number" id="inputAbono" placeholder="0"></div>
+          <div class="field"><label>Monto a abonar</label><div class="input-money"><input type="number" id="inputAbono" placeholder="0"></div></div>
           <div class="field"><label>Método</label>
             <select id="inputMetodoAbono" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px">
               <option value="Efectivo">Efectivo</option>
@@ -785,12 +807,12 @@
 
       <div class="section-label">Total y descuento</div>
       <div class="form-row" style="margin-bottom:14px">
-        <div class="field"><label>Descuento</label><input type="number" id="npDescuento" value="0" placeholder="0"></div>
+        <div class="field"><label>Descuento</label><div class="input-money"><input type="number" id="npDescuento" value="0" placeholder="0"></div></div>
         <div class="field"><label>Total estimado</label><input type="text" id="npTotal" value="$0" disabled style="opacity:.7"></div>
       </div>
       <div class="form-group" style="margin-bottom:20px">
         <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Abono inicial (opcional)</label>
-        <input type="number" id="npAbonoInicial" value="0" placeholder="0" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px">
+        <div class="input-money"><input type="number" id="npAbonoInicial" value="0" placeholder="0" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px"></div>
       </div>
 
       <button class="btn-primary" style="width:100%" data-action="guardar-pedido"><span class="btn-spin"></span><span id="btnGuardarPedidoLabel">Guardar pedido</span></button>
@@ -849,7 +871,7 @@
         <div class="price-suggestion" id="npPrecioSugerido"></div>
         <div class="form-group">
           <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Precio final (editable)</label>
-          <input type="number" id="npPrecioFinal" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px">
+          <div class="input-money"><input type="number" id="npPrecioFinal" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px"></div>
         </div>
         <button class="btn-primary" id="btnAgregarItemAccion" style="width:100%;margin-bottom:10px" data-action="add-item"><span class="btn-spin"></span><span id="btnAgregarItemLabel">+ Agregar este ítem</span></button>
       </div>
@@ -928,7 +950,7 @@
       </div>
       <div id="nmCamposDinamicos"></div>
       <div class="form-group">
-        <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Fotos del modelo (opcional)</label>
+        <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Fotos del modelo</label>
         <div class="foto-modelo-row">
           <label class="foto-modelo-box" for="nmFotoBlanco">
             <div class="foto-modelo-empty" id="nmFotoBlancoEmpty">
@@ -950,7 +972,7 @@
           <input type="file" id="nmFotoNegro" accept="image/*" class="file-input-hidden">
         </div>
       </div>
-      <div class="form-group"><label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Precio base</label><input type="number" id="nmPrecio" placeholder="0" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px"></div>
+      <div class="form-group"><label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Precio base</label><div class="input-money"><input type="number" id="nmPrecio" placeholder="0" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px"></div></div>
       <button class="btn-primary" id="btnGuardarModelo" style="width:100%" data-action="guardar-nuevo-modelo"><span class="btn-spin"></span><span id="btnGuardarModeloLabel">Guardar modelo</span></button>
       <button class="btn-ghost" style="width:100%;margin-top:10px" data-action="close-nuevo-modelo">Cancelar</button>
     </div>
@@ -2376,28 +2398,28 @@ function renderCamposDinamicosGenerico(tipo, contId, idPrefix, radioPrefix){
   }
   else if(tipo === 'porton'){
     html += CM();
+    html += CR('vidrio_o_farquilla','Vidrio o Farquilla', ['Vidrio','Farquilla'], 'Vidrio');
+    html += SUB('ColorVidrio', CR('color_vidrio','Color vidrio', ['Azul','Espejo','Negro'], 'Espejo'));
+    html += CT('Manillon', 'Manillón');
+    html += SUB('Manillon', CR('manillon_tipo','Tipo de manillón', ['H','S','Luna'], 'H'));
     html += CR('color','Color', ['Blanco','Negro'], 'Blanco');
     html += CR('sentido','Sentido de apertura', ['Derecha','Izquierda'], 'Derecha');
     html += CR('posicion','Posición de instalación', ['Adentro','Afuera'], 'Afuera');
-    html += CR('vidrio_o_farquilla','Vidrio o Farquilla', ['Vidrio','Farquilla'], 'Vidrio');
-    html += SUB('ColorVidrio', CR('color_vidrio','Color vidrio', ['Azul','Espejo','Negro','Plateado'], 'Espejo'));
     html += CR('bloque','Tipo de bloque', ['10','15','Tubo'], '15');
-    html += CT('Manillon', 'Manillón');
-    html += SUB('Manillon', CR('manillon_tipo','Tipo de manillón', ['H','S','Luna'], 'H'));
     html += CT('Instalacion', 'Instalación incluida (precio adicional)');
   }
   else if(tipo === 'puerta' || tipo === 'puerta_multilock'){
     html += CM();
+    html += CR('vidrio_o_farquilla','Vidrio o Farquilla', ['Vidrio','Farquilla'], 'Vidrio');
+    html += SUB('ColorVidrio', CR('color_vidrio','Color vidrio', ['Azul','Espejo','Negro'], 'Negro'));
+    html += CT('Manillon', 'Manillón');
+    html += SUB('Manillon', CR('manillon_tipo','Tipo de manillón', ['H','S','Luna'], 'Luna'));
+    html += CT('MarcoDecorativo', 'Marco decorativo');
+    html += CT('Proteccion', 'Protección');
     html += CR('color','Color', ['Blanco','Negro'], 'Negro');
     html += CR('sentido','Sentido de apertura', ['Derecha','Izquierda'], 'Derecha');
     html += CR('posicion','Posición de apertura', ['Adentro','Afuera'], 'Afuera');
     html += CR('bloque','Tipo de bloque', ['10','15','Tubo'], '15');
-    html += CT('MarcoDecorativo', 'Marco decorativo (precio editable)');
-    html += CR('vidrio_o_farquilla','Vidrio o Farquilla', ['Vidrio','Farquilla'], 'Farquilla');
-    html += SUB('ColorVidrio', CR('color_vidrio','Color vidrio', ['Azul','Espejo','Negro','Plateado'], 'Negro'));
-    html += CT('Manillon', 'Manillón');
-    html += SUB('Manillon', CR('manillon_tipo','Tipo de manillón', ['H','S','Luna'], 'Luna'));
-    html += CT('Proteccion', 'Protección');
   }
   else if(tipo === 'combo'){
     html += CR('variante','Variante del combo', ['Sin protección en puerta','Con protección en puerta'], 'Con protección en puerta');
@@ -2442,17 +2464,17 @@ function renderCamposDinamicosModelo(){
   else if(tipoKey === 'porton'){
     html += CM();
     html += CR('vidrio_o_farquilla','Vidrio o Farquilla', ['Vidrio','Farquilla'], 'Vidrio');
-    html += SUB('ColorVidrio', CR('color_vidrio','Color vidrio', ['Azul','Espejo','Negro','Plateado'], 'Espejo'));
+    html += SUB('ColorVidrio', CR('color_vidrio','Color vidrio', ['Azul','Espejo','Negro'], 'Espejo'));
     html += CT('Manillon', 'Manillón');
     html += SUB('Manillon', CR('manillon_tipo','Tipo de manillón', ['H','S','Luna'], 'H'));
   }
   else if(tipoKey === 'puerta' || tipoKey === 'puerta_multilock'){
     html += CM();
-    html += CT('MarcoDecorativo', 'Marco decorativo (precio editable)');
-    html += CR('vidrio_o_farquilla','Vidrio o Farquilla', ['Vidrio','Farquilla'], 'Farquilla');
-    html += SUB('ColorVidrio', CR('color_vidrio','Color vidrio', ['Azul','Espejo','Negro','Plateado'], 'Negro'));
+    html += CR('vidrio_o_farquilla','Vidrio o Farquilla', ['Vidrio','Farquilla'], 'Vidrio');
+    html += SUB('ColorVidrio', CR('color_vidrio','Color vidrio', ['Azul','Espejo','Negro'], 'Negro'));
     html += CT('Manillon', 'Manillón');
     html += SUB('Manillon', CR('manillon_tipo','Tipo de manillón', ['H','S','Luna'], 'Luna'));
+    html += CT('MarcoDecorativo', 'Marco decorativo');
     html += CT('Proteccion', 'Protección');
   }
   else if(tipoKey === 'combo'){
@@ -2512,7 +2534,7 @@ function leerEspecificacionesGenerico(tipo, idPrefix, radioPrefix){
     e.mas_hojas = g('MasHojas')?.checked || false;
   } else if(tipo==='porton'){
     e.sentido = radioVal('sentido'); e.posicion = radioVal('posicion');
-    e.vidrio_o_farquilla = radioVal('vidrio_o_farquilla'); e.color_vidrio = e.vidrio_o_farquilla === 'Vidrio' ? radioVal('color_vidrio') : null;
+    e.vidrio_o_farquilla = radioVal('vidrio_o_farquilla'); e.color_vidrio = e.vidrio_o_farquilla === 'Vidrio' ? radioVal('color_vidrio') : 'Plateado';
     e.bloque = radioVal('bloque');
     e.manillon = g('Manillon')?.checked || false;
     e.manillon_tipo = e.manillon ? radioVal('manillon_tipo') : null;
@@ -2521,7 +2543,7 @@ function leerEspecificacionesGenerico(tipo, idPrefix, radioPrefix){
     e.sentido = radioVal('sentido'); e.posicion = radioVal('posicion'); e.bloque = radioVal('bloque');
     e.marco_decorativo = g('MarcoDecorativo')?.checked || false;
     e.vidrio_o_farquilla = radioVal('vidrio_o_farquilla');
-    e.color_vidrio = e.vidrio_o_farquilla === 'Vidrio' ? radioVal('color_vidrio') : null;
+    e.color_vidrio = e.vidrio_o_farquilla === 'Vidrio' ? radioVal('color_vidrio') : 'Plateado';
     e.manillon = g('Manillon')?.checked || false;
     e.manillon_tipo = e.manillon ? radioVal('manillon_tipo') : null;
     e.proteccion = g('Proteccion')?.checked || false;
@@ -2823,8 +2845,10 @@ async function guardarPedido(){
 
 /* ============ NAVEGACIÓN ============ */
 function irAScreen(name, label){
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById('screen-' + name).classList.add('active');
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active','entering'));
+  const nueva = document.getElementById('screen-' + name);
+  nueva.classList.add('active', 'entering');
+  requestAnimationFrame(()=> requestAnimationFrame(()=> nueva.classList.remove('entering')));
   document.getElementById('breadcrumb').textContent = label;
   document.getElementById('placeholderTitle').textContent = label;
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active', n.dataset.screen===name && n.dataset.label===label));
@@ -2955,11 +2979,7 @@ document.body.addEventListener('click', e=>{
     if(hayDatos) confirmar('¿Seguro que quieres salir? Se perderá lo que llevas escrito.').then(ok=>{ if(ok) cerrarTodo(); });
     else cerrarTodo();
   }
-  else if(action === 'set-tab'){
-    state.tab = el.dataset.tab;
-    document.querySelectorAll('#screen-ventas .tab').forEach(t=>t.classList.toggle('active', t===el));
-    renderLista();
-  }
+  else if(action === 'set-tab') cambiarTabVentas(el.dataset.tab);
   else if(action === 'set-exh-tab'){
     state.exhTab = el.dataset.tab;
     document.querySelectorAll('#screen-exhibicion .tab').forEach(t=>t.classList.toggle('active', t===el));
@@ -3052,6 +3072,34 @@ document.body.addEventListener('click', e=>{
   link.rel = 'manifest';
   link.href = URL.createObjectURL(blob);
   document.head.appendChild(link);
+})();
+
+const ORDEN_TABS_VENTAS = ['cotizaciones','activos','completados','cancelados'];
+function cambiarTabVentas(nombreTab){
+  state.tab = nombreTab;
+  document.querySelectorAll('#screen-ventas .tab').forEach(t=>t.classList.toggle('active', t.dataset.tab===nombreTab));
+  renderLista();
+}
+/* Swipe horizontal entre pestañas de Ventas (Cotizaciones/Activos/Completados/Cancelados) */
+(function(){
+  let touchStartX = 0, touchStartY = 0, touchTime = 0;
+  const zona = document.getElementById('screen-ventas');
+  zona.addEventListener('touchstart', e=>{
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+    touchTime = Date.now();
+  }, { passive:true });
+  zona.addEventListener('touchend', e=>{
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    const dy = e.changedTouches[0].clientY - touchStartY;
+    const dt = Date.now() - touchTime;
+    // Solo si el gesto es claramente horizontal (no scroll vertical) y no hay un drawer abierto encima
+    if(Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.8 && dt < 600 && !document.querySelector('.drawer.open, .side-drawer.open')){
+      const idx = ORDEN_TABS_VENTAS.indexOf(state.tab);
+      if(dx < 0 && idx < ORDEN_TABS_VENTAS.length - 1) cambiarTabVentas(ORDEN_TABS_VENTAS[idx+1]);
+      else if(dx > 0 && idx > 0) cambiarTabVentas(ORDEN_TABS_VENTAS[idx-1]);
+    }
+  }, { passive:true });
 })();
 
 /* ============ INIT ============ */
