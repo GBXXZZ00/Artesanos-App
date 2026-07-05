@@ -180,11 +180,16 @@
 
   .seleccion-banner{
     display:flex; align-items:center; justify-content:space-between; gap:10px; background:var(--gold-dim);
-    border:1px solid var(--gold); border-radius:var(--radius-sm); padding:11px 14px; margin-bottom:14px; font-size:12.5px;
-    font-weight:600; color:var(--gold);
+    border:1.5px solid var(--gold); border-radius:var(--radius); padding:13px 14px; margin-bottom:14px; font-size:13px;
+    font-weight:700; color:var(--gold); box-shadow:0 2px 10px rgba(0,0,0,.15);
   }
   .seleccion-banner.hidden{ display:none; }
-  .seleccion-banner button{ background:none; border:none; color:var(--gold); font-weight:700; font-size:12.5px; cursor:pointer; text-decoration:underline; flex-shrink:0; }
+  .seleccion-banner .sel-texto{ display:flex; align-items:center; gap:8px; }
+  .seleccion-banner button{
+    background:var(--surface); border:1.5px solid var(--gold); color:var(--gold); font-weight:700; font-size:12px;
+    cursor:pointer; padding:7px 13px; border-radius:20px; flex-shrink:0; transition:transform .1s var(--ease-out);
+  }
+  .seleccion-banner button:active{ transform:scale(0.93); }
 
   .option-card{
     display:flex; align-items:center; gap:12px; background:var(--surface2); border:1px solid var(--border);
@@ -245,9 +250,11 @@
   .order-card{
     display:flex; gap:12px; background:var(--surface); border:1px solid var(--border); border-left:3px solid var(--border2);
     border-radius:var(--radius); padding:13px 14px; margin-bottom:10px; cursor:pointer;
-    transition: transform .12s var(--ease-out); animation:rise .35s var(--ease-out) both; animation-delay:calc(var(--i) * 50ms);
+    transition: transform .12s var(--ease-out), box-shadow .5s var(--ease-out), border-color .5s var(--ease-out);
+    animation:rise .35s var(--ease-out) both; animation-delay:calc(var(--i) * 50ms);
   }
   .order-card:active{ transform:scale(0.98); }
+  .order-card.resaltado{ border-color:var(--gold); box-shadow:0 0 0 2px var(--gold-dim), 0 4px 18px rgba(201,169,110,.35); }
   .order-card.urgent{ border-left-color:var(--red); }
   .order-card.warn{ border-left-color:var(--amber); }
   .order-card.ok{ border-left-color:var(--green); }
@@ -633,7 +640,10 @@
       <!-- SCREEN: EXHIBICIÓN -->
       <div class="screen" id="screen-exhibicion">
         <div class="seleccion-banner hidden">
-          <span>Elige una pieza disponible para el pedido</span>
+          <div class="sel-texto">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/></svg>
+            <span>Elige una pieza disponible para el pedido</span>
+          </div>
           <button data-action="cancelar-seleccion">Cancelar</button>
         </div>
         <div class="tabs">
@@ -650,7 +660,10 @@
       <!-- SCREEN: CATÁLOGO -->
       <div class="screen" id="screen-catalogo">
         <div class="seleccion-banner hidden">
-          <span>Elige un modelo para fabricar a medida</span>
+          <div class="sel-texto">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/></svg>
+            <span id="catSeleccionBannerTexto">Elige un modelo para fabricar a medida</span>
+          </div>
           <button data-action="cancelar-seleccion">Cancelar</button>
         </div>
         <div class="chip-row" id="catTipoChips"></div>
@@ -709,6 +722,7 @@
           <button class="btn-link" data-action="editar-cliente">Editar</button>
         </div>
         <div class="order-meta" id="detClienteMeta" style="margin-top:2px"></div>
+        <div class="order-meta" id="detFechaEmision" style="margin-top:2px;color:var(--text3)"></div>
         <div class="client-edit-form hidden" id="detClienteEdit">
           <input type="text" id="editClienteNombre" placeholder="Nombre del cliente">
           <input type="text" id="editClienteCedula" placeholder="Cédula (V-12345678)">
@@ -1035,7 +1049,7 @@
 <script>
 /* ============ CONFIG ============ */
 const MODO_DEMO = false;
-const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbwfaSlUMFop_uporD9K6OAUyTR03sXAQnnxB_0GwmfUJE32NNfPyfV1N7yuzv3Zq9B6/exec';
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbwcXka3rRB2Ec3rD2I_ndk1TIWr_cUOJBmKEq2-XdRgpWYKxFUZCfj31n0AGjZyFDfU/exec';
 const NUMERO_NEGOCIO = '584220167079';
 
 /* ============ SPINNER GENÉRICO PARA BOTONES ============ */
@@ -1474,6 +1488,14 @@ function renderBentoVentas(){
 }
 
 /* ============ DRAWER DETALLE ============ */
+function resaltarPedidoEnLista(id){
+  requestAnimationFrame(()=>{
+    const el = document.querySelector(`.order-card[data-id="${id}"]`);
+    if(!el) return;
+    el.classList.add('resaltado');
+    setTimeout(()=> el.classList.remove('resaltado'), 1800);
+  });
+}
 function esPedidoSoloExhibicion(p){
   return p.items.length > 0 && p.items.every(it => it.exhibicionId);
 }
@@ -1487,6 +1509,7 @@ function poblarDetalle(id){
   document.getElementById('detCodigo').textContent = '#' + p.codigo;
   document.getElementById('detCliente').textContent = p.cliente.nombre;
   document.getElementById('detClienteMeta').textContent = [p.cliente.cedula, p.cliente.telefono].filter(Boolean).join(' · ');
+  document.getElementById('detFechaEmision').textContent = p.fecha ? 'Emitido el ' + fechaCorta(p.fecha) : '';
   document.getElementById('detClienteView').classList.remove('hidden');
   document.getElementById('detClienteEdit').classList.add('hidden');
 
@@ -1668,6 +1691,7 @@ async function registrarAbono(){
   setCargando(btn, true);
 
   const abonoAnterior = p.abono;
+  const eraCotizacion = p.estado === 'cotizacion';
   const abonosAnteriores = (p.abonos || []).slice();
   const registroOptimista = { id: 'temp-' + Date.now(), fecha: new Date().toISOString(), monto: val, metodo, foto_url: null, _guardando: true };
   p.abono = abonoAnterior + val;
@@ -1687,10 +1711,23 @@ async function registrarAbono(){
       const idx = p.abonos.findIndex(a=>a.id===registroOptimista.id);
       if(idx>-1) p.abonos[idx] = { ...registroOptimista, _guardando: false };
     }
-    abrirDrawer(p.id);
-    renderLista();
     setCargando(document.getElementById('btnRegistrarAbono'), false);
-    showToast('Abono de ' + money(val) + ' registrado', 'success');
+
+    // Un pedido 100% de exhibición que recibe abono ya no es solo una cotización: pasa a Activos.
+    if(eraCotizacion && esPedidoSoloExhibicion(p)){
+      p.estado = 'confirmado';
+      if(!MODO_DEMO){
+        try{ await llamarBackend('updatePedido', { id: p.id, estado: 'confirmado' }); } catch(err){}
+      }
+      cerrarTodo();
+      cambiarTabVentas('activos');
+      resaltarPedidoEnLista(p.id);
+      showToast('Abono registrado, pedido confirmado', 'success');
+    } else {
+      abrirDrawer(p.id);
+      renderLista();
+      showToast('Abono de ' + money(val) + ' registrado', 'success');
+    }
   } catch(err){
     p.abono = abonoAnterior;
     p.abonos = abonosAnteriores;
@@ -1889,6 +1926,13 @@ function renderExhibicion(){
     return;
   }
   cont.innerHTML = filtrados.map((x,i)=>{
+    if(x._guardando){
+      return `
+      <div class="exh-card is-guardando" style="--i:${i}">
+        <div class="exh-thumb"><div class="mini-spin"></div></div>
+        <div class="exh-name">Guardando...</div>
+      </div>`;
+    }
     const info = getInfoExhibicion(x);
     return `
     <div class="exh-card ${x.estado==='Vendido' ? 'vendido' : ''}" style="--i:${i}" data-action="open-exh-drawer" data-id="${x.id}">
@@ -1920,10 +1964,17 @@ function abrirExhDrawer(id){
   const chips = [];
   if(e.alto && e.ancho) chips.push(['Medidas', `${e.alto}×${e.ancho} m`]);
   if(e.color) chips.push(['Color', e.color]);
+  if(e.variante) chips.push(['Variante', e.variante]);
+  if(e.sentido) chips.push(['Sentido de apertura', e.sentido]);
+  if(e.posicion) chips.push(['Posición', e.posicion]);
+  if(e.bloque) chips.push(['Bloque', e.bloque]);
   if('proteccion' in e) chips.push(['Protección', e.proteccion ? 'Sí' : 'No']);
   if('marco_decorativo' in e) chips.push(['Marco decorativo', e.marco_decorativo ? 'Sí' : 'No']);
-  if(e.bloque) chips.push(['Bloque', e.bloque]);
   if(e.manillon) chips.push(['Manillón', e.manillon_tipo || 'Sí']);
+  if(e.vidrio_o_farquilla) chips.push([e.vidrio_o_farquilla === 'Vidrio' ? 'Vidrio' : 'Farquilla', e.color_vidrio || '—']);
+  if(e.papel_ahumado) chips.push(['Papel ahumado', 'Sí']);
+  if(e.mas_hojas) chips.push(['Más de 2 hojas', 'Sí']);
+  if(e.instalacion) chips.push(['Instalación incluida', 'Sí']);
   document.getElementById('exhSpecs').innerHTML = chips.map(c=>`<div class="exh-spec-chip"><span>${c[0]}</span><strong>${c[1]}</strong></div>`).join('');
   document.getElementById('exhPrecio').textContent = money(x.precio);
   const badge = document.getElementById('exhEstadoBadge');
@@ -2278,7 +2329,7 @@ function mostrarFormConModelo(m, colorElegido){
   document.getElementById('npModeloHeaderFoto').innerHTML = foto
     ? `<img src="${foto}" alt="${m.nombre}" style="width:100%;height:100%;object-fit:cover">`
     : `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>`;
-  document.getElementById('npModeloHeaderNombre').textContent = m.nombre + (colorElegido ? ' ' + colorElegido : '');
+  document.getElementById('npModeloHeaderNombre').textContent = m.nombre;
   document.getElementById('npFormWrap').classList.remove('hidden');
   document.getElementById('npTipoProducto').value = tipoKey;
   renderCamposDinamicos();
@@ -2286,7 +2337,7 @@ function mostrarFormConModelo(m, colorElegido){
   precargarEspecificaciones(specsConColor);
   document.getElementById('npPrecioFinal').value = m.precio_base;
   document.getElementById('npPrecioSugerido').textContent = `Precargado desde "${m.nombre}", ajusta si el cliente pidió algo distinto`;
-  state.modeloElegidoNombre = m.nombre + (colorElegido ? ' ' + colorElegido : '');
+  state.modeloElegidoNombre = m.nombre;
   state.catalogoIdElegido = m.id;
 }
 function mostrarFormPersonalizado(){
@@ -2327,6 +2378,12 @@ function volverAOrigenItem(){
 }
 function actualizarBannerSeleccion(){
   document.querySelectorAll('.seleccion-banner').forEach(b=>b.classList.toggle('hidden', !state.modoSeleccion));
+  const textoCat = document.getElementById('catSeleccionBannerTexto');
+  if(textoCat){
+    textoCat.textContent = state.itemTarget === 'exhibicion-nueva'
+      ? 'Escoge un modelo para registrar en exhibición'
+      : 'Elige un modelo para fabricar a medida';
+  }
 }
 function irASeleccionCatalogo(){
   state.modoSeleccion = 'catalogo';
@@ -2401,11 +2458,11 @@ function renderCamposDinamicosGenerico(tipo, contId, idPrefix, radioPrefix){
   }
   else if(tipo === 'porton'){
     html += CM();
+    html += CR('color','Color', ['Blanco','Negro'], 'Blanco');
     html += CR('vidrio_o_farquilla','Vidrio o Farquilla', ['Vidrio','Farquilla'], 'Vidrio');
     html += SUB('ColorVidrio', CR('color_vidrio','Color vidrio', ['Azul','Espejo','Negro'], 'Espejo'));
     html += CT('Manillon', 'Manillón');
     html += SUB('Manillon', CR('manillon_tipo','Tipo de manillón', ['H','S','Luna'], 'H'));
-    html += CR('color','Color', ['Blanco','Negro'], 'Blanco');
     html += CR('sentido','Sentido de apertura', ['Derecha','Izquierda'], 'Derecha');
     html += CR('posicion','Posición de instalación', ['Adentro','Afuera'], 'Afuera');
     html += CR('bloque','Tipo de bloque', ['10','15','Tubo'], '15');
@@ -2413,13 +2470,13 @@ function renderCamposDinamicosGenerico(tipo, contId, idPrefix, radioPrefix){
   }
   else if(tipo === 'puerta' || tipo === 'puerta_multilock'){
     html += CM();
+    html += CR('color','Color', ['Blanco','Negro'], 'Negro');
     html += CR('vidrio_o_farquilla','Vidrio o Farquilla', ['Vidrio','Farquilla'], 'Vidrio');
     html += SUB('ColorVidrio', CR('color_vidrio','Color vidrio', ['Azul','Espejo','Negro'], 'Negro'));
     html += CT('Manillon', 'Manillón');
     html += SUB('Manillon', CR('manillon_tipo','Tipo de manillón', ['H','S','Luna'], 'Luna'));
     html += CT('MarcoDecorativo', 'Marco decorativo');
     html += CT('Proteccion', 'Protección');
-    html += CR('color','Color', ['Blanco','Negro'], 'Negro');
     html += CR('sentido','Sentido de apertura', ['Derecha','Izquierda'], 'Derecha');
     html += CR('posicion','Posición de apertura', ['Adentro','Afuera'], 'Afuera');
     html += CR('bloque','Tipo de bloque', ['10','15','Tubo'], '15');
@@ -2637,24 +2694,32 @@ async function agregarItemComun(item, mensaje){
   showToast(mensaje, 'success');
 }
 async function guardarNuevaPiezaDesdeForm(item){
-  const btn = document.getElementById('btnAgregarItemAccion');
   const pieza = { catalogo_id: state.catalogoIdElegido || null, especificaciones: item.especificaciones, precio: item.precio, estado: 'Disponible' };
-  if(MODO_DEMO){
-    pieza.id = exhibicion.reduce((max,x)=>Math.max(max,x.id),0) + 1;
-    exhibicion.push(pieza);
-  } else {
-    try{
+
+  // Cierre inmediato: no hacemos esperar al usuario el viaje al backend.
+  cerrarItemDrawer();
+  irAScreen('exhibicion', 'Exhibición');
+
+  const idTemporal = 'temp-' + Date.now();
+  exhibicion.push({ ...pieza, id: idTemporal, _guardando: true });
+  renderExhibicion();
+
+  try{
+    if(MODO_DEMO){
+      pieza.id = exhibicion.reduce((max,x)=>typeof x.id==='number' ? Math.max(max,x.id) : max, 0) + 1;
+    } else {
       const resultado = await llamarBackend('saveExhibicionPieza', pieza);
       pieza.id = resultado.id;
-      exhibicion.push(pieza);
-    } catch(err){
-      if(btn) btn.disabled = false;
-      return;
     }
+    const idx = exhibicion.findIndex(x=>x.id===idTemporal);
+    if(idx>-1) exhibicion[idx] = pieza;
+    renderExhibicion();
+    showToast('Pieza agregada a exhibición', 'success');
+  } catch(err){
+    exhibicion = exhibicion.filter(x=>x.id!==idTemporal);
+    renderExhibicion();
+    showToast('No se pudo guardar la pieza, intenta de nuevo', 'error');
   }
-  cerrarItemDrawer();
-  renderExhibicion();
-  showToast('Pieza agregada a exhibición', 'success');
 }
 function agregarItem(){
   const btn = document.getElementById('btnAgregarItemAccion');
@@ -2803,15 +2868,21 @@ async function guardarPedido(){
   const abonoInicial = parseFloat(document.getElementById('npAbonoInicial').value) || 0;
   const items = state.npItems;
 
+  const totalCalculado = Math.max(0, items.reduce((a,i)=>a+i.precio*i.cantidad, 0) - descuento);
+  const esExhibicionPura = items.length > 0 && items.every(it => it.exhibicionId);
+  // Si es 100% exhibición y se paga completo desde el inicio, nace confirmado (ya está fabricado, no hace falta cotizar).
+  const estadoInicial = (esExhibicionPura && totalCalculado > 0 && abonoInicial >= totalCalculado) ? 'confirmado' : 'cotizacion';
+  const tabDestino = estadoInicial === 'confirmado' ? 'activos' : 'cotizaciones';
+
   // Cierre inmediato: se guarda en segundo plano, sin bloquear al usuario.
   cerrarTodo();
-  state.tab = 'cotizaciones';
-  document.querySelectorAll('#screen-ventas .tab').forEach(t=>t.classList.toggle('active', t.dataset.tab==='cotizaciones'));
+  state.tab = tabDestino;
+  document.querySelectorAll('#screen-ventas .tab').forEach(t=>t.classList.toggle('active', t.dataset.tab===tabDestino));
 
   const idTemporal = 'temp-' + Date.now();
   const placeholder = {
     id: idTemporal, codigo:'', cliente, fecha: new Date().toISOString().slice(0,10),
-    fecha_entrega, estado:'cotizacion', descuento, abono: abonoInicial, items, _guardando: true
+    fecha_entrega, estado:estadoInicial, descuento, abono: abonoInicial, items, _guardando: true
   };
   pedidos.unshift(placeholder);
   renderLista();
@@ -2822,7 +2893,7 @@ async function guardarPedido(){
       idNuevo = nextId++;
       codigoNuevo = 'PED-' + String(nextCodigo++).padStart(4,'0');
     } else {
-      const resultado = await llamarBackend('savePedido', { cliente, fecha_entrega, descuento, abono: abonoInicial, items });
+      const resultado = await llamarBackend('savePedido', { cliente, fecha_entrega, descuento, abono: abonoInicial, items, estado: estadoInicial });
       idNuevo = resultado.id;
       codigoNuevo = resultado.codigo;
     }
@@ -2838,6 +2909,7 @@ async function guardarPedido(){
     const idx = pedidos.findIndex(p=>p.id===idTemporal);
     if(idx>-1) pedidos[idx] = { ...placeholder, id: idNuevo, codigo: codigoNuevo, _guardando: false };
     renderLista();
+    if(estadoInicial === 'confirmado') resaltarPedidoEnLista(idNuevo);
     showToast('Pedido ' + codigoNuevo + ' creado', 'success');
   } catch(err){
     pedidos = pedidos.filter(p=>p.id!==idTemporal);
