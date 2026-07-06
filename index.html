@@ -310,7 +310,7 @@
 
   .bottom-nav-wrap{
     position:absolute; left:0; right:0; bottom:0; display:flex; justify-content:center;
-    padding-bottom:calc(16px + env(safe-area-inset-bottom)); z-index:14; pointer-events:none;
+    padding-bottom:calc(6px + env(safe-area-inset-bottom)); z-index:14; pointer-events:none;
   }
   .bottom-nav{
     pointer-events:auto; display:flex; align-items:center; gap:6px;
@@ -374,11 +374,26 @@
   .balance-box{ background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:14px; margin-top:16px; display:flex; justify-content:space-between; transition: box-shadow .35s var(--ease-out), border-color .35s var(--ease-out); }
   .balance-box.destello{ box-shadow:0 0 0 2px var(--gold-dim); border-color:var(--gold); }
   .abono-caja{ border:1px solid var(--border); border-radius:var(--radius); padding:14px; background:var(--surface2); margin-top:10px; }
-  .abono-fila{ margin-bottom:12px; }
-  .abono-fila label{ display:block; font-size:11.5px; font-weight:600; color:var(--text2); margin-bottom:5px; }
-  .abono-fila select{ width:100%; padding:10px 12px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text); font-size:14px; }
-  .abono-fila .input-money input{ background:var(--surface); }
-  #btnRegistrarAbono{ padding:11px; font-size:13.5px; }
+  .abono-toggle{ display:flex; align-items:center; justify-content:space-between; cursor:pointer; color:var(--gold); transition:transform .1s var(--ease-out); }
+  .abono-toggle:active{ transform:scale(0.98); }
+  .abono-toggle span{ font-size:13.5px; font-weight:700; }
+  .abono-chevron{ transition:transform .25s var(--ease-out); }
+  .abono-toggle.abierto .abono-chevron{ transform:rotate(180deg); }
+  .abono-contenido{ max-height:0; overflow:hidden; opacity:0; transition:max-height .3s var(--ease-out), opacity .2s var(--ease-out); }
+  .abono-contenido.abierto{ max-height:400px; opacity:1; margin-top:14px; }
+  .abono-fila-h{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:11px 0; border-bottom:1px solid var(--border); }
+  .abono-fila-h:nth-of-type(3){ border-bottom:none; padding-bottom:4px; }
+  .abono-fila-h label{ font-size:13px; font-weight:600; color:var(--text2); flex-shrink:0; }
+  .abono-fila-h select{ width:150px; padding:9px 10px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text); font-size:13.5px; text-align:right; }
+  .abono-fila-h .input-money{ width:120px; }
+  .abono-fila-h .input-money input{ background:var(--surface); text-align:right; padding:9px 12px 9px 24px; }
+  .abono-fila-h .file-picker-btn{ padding:8px 12px; font-size:12.5px; }
+  .cantidad-selector{ display:flex; align-items:center; justify-content:space-between; margin-top:18px; padding:12px 14px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); }
+  .cantidad-selector span{ font-size:13.5px; font-weight:600; color:var(--text2); }
+  .cantidad-stepper{ display:flex; align-items:center; gap:14px; }
+  .cantidad-stepper button{ width:30px; height:30px; border-radius:50%; border:1px solid var(--border); background:var(--surface); color:var(--gold); font-size:17px; font-weight:700; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:transform .1s var(--ease-out); }
+  .cantidad-stepper button:active{ transform:scale(0.9); }
+  .cantidad-stepper span{ font-size:16px; font-weight:800; color:var(--text); min-width:18px; text-align:center; }
   .abono-card{
     flex:1; display:flex; flex-direction:column; align-items:center; gap:5px; padding:10px 4px;
     background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); cursor:pointer;
@@ -783,7 +798,7 @@
         <button class="quick-action-btn gold" id="btnEnviarNota" data-action="enviar-nota" title="Enviar el documento y el mensaje al cliente por WhatsApp">
           <span class="btn-spin"></span>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg>
-          <span>Enviar</span>
+          <span id="btnEnviarNotaEtiqueta">Enviar</span>
         </button>
       </div>
       <div class="section-label">Ítems del pedido</div>
@@ -794,29 +809,35 @@
         <div class="pending"><span>Saldo</span><strong id="detSaldo"></strong></div>
       </div>
       <div id="detAbonosHistorial"></div>
-      <div class="abono-caja" id="abonoFormWrap">
-        <div class="abono-fila">
-          <label>Método de pago</label>
-          <select id="inputMetodoAbono">
-            <option value="Efectivo">Efectivo</option>
-            <option value="Zelle">Zelle</option>
-            <option value="Pago móvil">Pago móvil</option>
-            <option value="Transferencia">Transferencia</option>
-          </select>
+      <div class="abono-caja" id="abonoCajaWrap">
+        <div class="abono-toggle" data-action="toggle-abono-form" id="abonoToggle">
+          <span>+ Registrar abono</span>
+          <svg class="abono-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9l6 6 6-6"/></svg>
         </div>
-        <div class="abono-fila">
-          <label>Monto a abonar</label>
-          <div class="input-money"><input type="number" id="inputAbono" placeholder="0"></div>
+        <div class="abono-contenido" id="abonoFormWrap">
+          <div class="abono-fila-h">
+            <label>Método de pago</label>
+            <select id="inputMetodoAbono">
+              <option value="Efectivo">Efectivo</option>
+              <option value="Zelle">Zelle</option>
+              <option value="Pago móvil">Pago móvil</option>
+              <option value="Transferencia">Transferencia</option>
+            </select>
+          </div>
+          <div class="abono-fila-h">
+            <label>Monto a abonar</label>
+            <div class="input-money"><input type="number" id="inputAbono" placeholder="0"></div>
+          </div>
+          <div class="abono-fila-h">
+            <label>Comprobante</label>
+            <label class="file-picker-btn" for="inputFotoAbono">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              <span id="inputFotoAbonoLabel">Agregar</span>
+            </label>
+            <input type="file" id="inputFotoAbono" accept="image/*" class="file-input-hidden">
+          </div>
+          <button class="btn-primary" id="btnRegistrarAbono" data-action="registrar-abono" style="width:100%;margin-top:6px"><span class="btn-spin"></span><span id="btnRegistrarAbonoLabel">Registrar abono</span></button>
         </div>
-        <div class="abono-fila">
-          <label>Comprobante</label>
-          <label class="file-picker-btn" for="inputFotoAbono" style="width:100%">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
-            <span id="inputFotoAbonoLabel">Agregar comprobante</span>
-          </label>
-          <input type="file" id="inputFotoAbono" accept="image/*" class="file-input-hidden">
-        </div>
-        <button class="btn-sm" id="btnRegistrarAbono" data-action="registrar-abono" style="background:var(--gold);color:#1A1409;width:100%"><span class="btn-spin"></span><span id="btnRegistrarAbonoLabel">Registrar abono</span></button>
       </div>
       <button class="btn-primary hidden" id="btnMarcarEntregado" style="width:100%;margin-top:14px;background:var(--green);color:#0d2417" data-action="marcar-entregado"><span class="btn-spin"></span><span id="btnMarcarEntregadoLabel">Marcar como entregado</span></button>
       <button class="btn-primary hidden" id="btnConfirmarPedido" style="width:100%;margin-top:18px" data-action="confirmar-pedido"><span class="btn-spin"></span><span id="btnConfirmarPedidoLabel">Confirmar pedido</span></button>
@@ -861,13 +882,9 @@
       <button class="btn-add-item-existing" style="margin-top:0;margin-bottom:22px" data-action="abrir-item-nuevo">+ Agregar ítem</button>
 
       <div class="section-label">Total y descuento</div>
-      <div class="form-row" style="margin-bottom:14px">
+      <div class="form-row" style="margin-bottom:20px">
         <div class="field"><label>Descuento</label><div class="input-money"><input type="number" id="npDescuento" value="0" placeholder="0"></div></div>
         <div class="field"><label>Total estimado</label><input type="text" id="npTotal" value="$0" disabled style="opacity:.7"></div>
-      </div>
-      <div class="form-group" style="margin-bottom:20px">
-        <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Abono inicial (opcional)</label>
-        <div class="input-money"><input type="number" id="npAbonoInicial" value="0" placeholder="0" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px"></div>
       </div>
 
       <button class="btn-primary" style="width:100%" data-action="guardar-pedido"><span class="btn-spin"></span><span id="btnGuardarPedidoLabel">Guardar pedido</span></button>
@@ -924,9 +941,15 @@
         <div id="npCamposDinamicos"></div>
 
         <div class="price-suggestion" id="npPrecioSugerido"></div>
-        <div class="form-group">
-          <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Precio final (editable)</label>
-          <div class="input-money"><input type="number" id="npPrecioFinal" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px"></div>
+        <div class="form-row">
+          <div class="field" style="flex:2">
+            <label>Precio final (editable, por unidad)</label>
+            <div class="input-money"><input type="number" id="npPrecioFinal" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px"></div>
+          </div>
+          <div class="field" style="flex:1">
+            <label>Cantidad</label>
+            <input type="number" id="npCantidad" min="1" value="1" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px">
+          </div>
         </div>
         <button class="btn-primary" id="btnAgregarItemAccion" style="width:100%;margin-bottom:10px" data-action="add-item"><span class="btn-spin"></span><span id="btnAgregarItemLabel">+ Agregar este ítem</span></button>
       </div>
@@ -953,6 +976,14 @@
       <div class="balance-box" style="justify-content:space-between;align-items:center">
         <div><span style="font-size:11px;color:var(--text2);display:block">Precio</span><strong id="exhPrecio" style="font-size:20px"></strong></div>
         <span class="badge" id="exhEstadoBadge"></span>
+      </div>
+      <div class="cantidad-selector hidden" id="exhCantidadSelector">
+        <span>Cantidad</span>
+        <div class="cantidad-stepper">
+          <button type="button" data-action="exh-cantidad-menos">−</button>
+          <span id="exhCantidadValor">1</span>
+          <button type="button" data-action="exh-cantidad-mas">+</button>
+        </div>
       </div>
       <button class="btn-primary" style="width:100%;margin-top:18px" id="btnVenderPieza" data-action="vender-pieza">Vender esta pieza</button>
       <button class="btn-primary" style="width:100%;margin-top:18px" id="btnAgregarPiezaPedido" data-action="agregar-exh-seleccion"><span class="btn-spin"></span><span id="btnAgregarPiezaPedidoLabel">Agregar a este pedido</span></button>
@@ -1089,7 +1120,7 @@
 <script>
 /* ============ CONFIG ============ */
 const MODO_DEMO = false;
-const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbwo4fl3cGhDHCkoFbofNgGG3jQ9U8SoUfef2JQOTP17kP7VzcWiX-w3hm_A-ni6MbeW/exec';
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbyFq2HOnbB69_Hr3V9D4wpoAhbgQGv5e7anKxpFuPrIFsGe6LwakWTq_oT_asf9lw5D/exec';
 const NUMERO_NEGOCIO = '584220167079';
 
 /* ============ SPINNER GENÉRICO PARA BOTONES ============ */
@@ -1307,7 +1338,7 @@ let exhibicion = [
 /* ============ ESTADO UI ============ */
 const ESTADOS = ['cotizacion','confirmado','produccion','listo','entregado'];
 const ESTADO_LABEL = { cotizacion:'Cotización', confirmado:'Confirmado', produccion:'En Producción', listo:'Listo', entregado:'Entregado', cancelado:'Cancelado' };
-let state = { tab:'activos', search:'', openPedidoId:null, npItems:[], itemTarget:'nuevo', exhTab:'disponibles', exhSearch:'', catSearch:'', catTipoFiltro:'Todos', openExhId:null, openCatId:null, openCatColor:null, modoSeleccion:null, rol:null, nombreUsuario:null, modeloEditId:null, itemEditIndexNP:null, exhRango:'mes', volverAItemDespuesDeModelo:null };
+let state = { tab:'activos', search:'', openPedidoId:null, npItems:[], itemTarget:'nuevo', exhTab:'disponibles', exhSearch:'', catSearch:'', catTipoFiltro:'Todos', openExhId:null, openCatId:null, openCatColor:null, modoSeleccion:null, rol:null, nombreUsuario:null, modeloEditId:null, itemEditIndexNP:null, exhRango:'mes', volverAItemDespuesDeModelo:null, exhPiezasHermanasIds:[], exhCantidadSeleccionada:1 };
 
 function getModelo(catalogoId){ return catalogo.find(c=>c.id===catalogoId) || null; }
 function fotoModeloPorColor(modelo, color){
@@ -1337,6 +1368,12 @@ function buscarClienteExistente(valor){
 
 /* ============ UTILIDADES ============ */
 function money(n){ return '$' + (Math.round(n*100)/100).toLocaleString('es-VE'); }
+function idsExhibicion(it){
+  if(it.exhibicionIds && it.exhibicionIds.length) return it.exhibicionIds;
+  if(it.exhibicionId) return [it.exhibicionId];
+  return [];
+}
+function esDeExhibicion(it){ return idsExhibicion(it).length > 0; }
 function showToast(msg, type){
   const c = document.getElementById('toastContainer');
   const t = document.createElement('div');
@@ -1605,7 +1642,7 @@ function resaltarPedidoEnLista(id){
   });
 }
 function esPedidoSoloExhibicion(p){
-  return p.items.length > 0 && p.items.every(it => it.exhibicionId);
+  return p.items.length > 0 && p.items.every(it => esDeExhibicion(it));
 }
 
 function poblarDetalle(id){
@@ -1618,6 +1655,8 @@ function poblarDetalle(id){
   document.getElementById('detCliente').textContent = p.cliente.nombre;
   document.getElementById('detClienteMeta').textContent = [p.cliente.cedula, p.cliente.telefono].filter(Boolean).join(' · ');
   document.getElementById('detFechaEmision').textContent = p.fecha ? 'Emitido el ' + fechaCorta(p.fecha) : '';
+  const etiquetasEnvio = { cotizacion:'Enviar cotización', listo:'Enviar nota', entregado:'Enviar nota' };
+  document.getElementById('btnEnviarNotaEtiqueta').textContent = etiquetasEnvio[p.estado] || 'Enviar pedido';
   document.getElementById('detClienteView').classList.remove('hidden');
   document.getElementById('detClienteEdit').classList.add('hidden');
 
@@ -1641,7 +1680,7 @@ function poblarDetalle(id){
     p.estado === 'entregado' || p.estado === 'cancelado' || p.estado === 'cotizacion' || saldoPendiente > 0);
   const pedidoCerrado = p.estado === 'entregado' || p.estado === 'cancelado';
   document.getElementById('btnAgregarItemExistente').classList.toggle('hidden', p.estado !== 'cotizacion');
-  document.getElementById('abonoFormWrap').classList.toggle('hidden', pedidoCerrado || saldoPendiente <= 0);
+  document.getElementById('abonoCajaWrap').classList.toggle('hidden', pedidoCerrado || saldoPendiente <= 0);
 
   const seEditaItems = p.estado === 'cotizacion';
   document.getElementById('detItems').innerHTML = p.items.map((it,i)=>`
@@ -1649,7 +1688,7 @@ function poblarDetalle(id){
       <div class="item-left">
         <div class="item-thumb">${miniaturaItem(it)}</div>
         <div>
-          <div class="item-name">${it.nombreModelo || it.tipo}${it.cantidad>1 ? ' ×'+it.cantidad : ''} <span class="item-origen ${it.exhibicionId ? 'exh' : 'porfabricar'}">${it.exhibicionId ? 'Exhibición' : 'Fabricación'}</span></div>
+          <div class="item-name">${it.nombreModelo || it.tipo}${it.cantidad>1 ? ' ×'+it.cantidad : ''} <span class="item-origen ${esDeExhibicion(it) ? 'exh' : 'porfabricar'}">${esDeExhibicion(it) ? 'Exhibición' : 'Fabricación'}</span></div>
           <div class="item-spec">${especTexto(it)}</div>
         </div>
       </div>
@@ -1666,7 +1705,9 @@ function poblarDetalle(id){
   document.getElementById('inputAbono').value = saldo > 0 ? saldo : '';
   document.getElementById('inputMetodoAbono').value = 'Efectivo';
   document.getElementById('inputFotoAbono').value = '';
-  document.getElementById('inputFotoAbonoLabel').textContent = 'Agregar comprobante';
+  document.getElementById('inputFotoAbonoLabel').textContent = 'Agregar';
+  document.getElementById('abonoFormWrap').classList.remove('abierto');
+  document.getElementById('abonoToggle').classList.remove('abierto');
   renderAbonosHistorial(p);
 }
 function abrirDrawer(id){
@@ -1726,7 +1767,7 @@ async function guardarEdicionItem(itemNuevo){
   const idx = state.itemEditIndex;
   const respaldo = p.items[idx];
   itemNuevo.nombreModelo = respaldo.nombreModelo;
-  itemNuevo.exhibicionId = respaldo.exhibicionId;
+  itemNuevo.exhibicionIds = idsExhibicion(respaldo);
   p.items[idx] = itemNuevo;
   state.itemEditIndex = null;
   cerrarItemDrawer();
@@ -1810,11 +1851,11 @@ async function cancelarPedido(){
   }
   // Las piezas de exhibición que traía este pedido vuelven a estar disponibles.
   p.items.forEach(item=>{
-    if(item.exhibicionId){
-      const x = exhibicion.find(e=>e.id===item.exhibicionId);
+    idsExhibicion(item).forEach(id=>{
+      const x = exhibicion.find(e=>e.id===id);
       if(x){ x.estado = 'Disponible'; x.pedido_id = null; }
-      if(!MODO_DEMO) llamarBackend('updateExhibicion', { id: item.exhibicionId, estado: 'Disponible' }).catch(()=>{});
-    }
+      if(!MODO_DEMO) llamarBackend('updateExhibicion', { id, estado: 'Disponible' }).catch(()=>{});
+    });
   });
   renderExhibicion();
 }
@@ -1905,18 +1946,19 @@ function mensajeWhatsappNota(p, urlNota){
   const total = money(totalNum);
   const saldo = money(saldoNum);
   const abono50 = money(totalNum * 0.5);
+  const lineaLink = urlNota ? `\n\n${urlNota}` : '';
 
   if(p.estado === 'cotizacion'){
-    return `Hola ${p.cliente.nombre} 👋\nAquí tienes tu cotización de Herrería Artesanos:\n📄 Cotización #${p.codigo} — Total: ${total}\n\nPara comenzar a fabricar necesitamos un abono del 50% (${abono50}). Cualquier duda, quedamos atentos: ¿deseas continuar con el pedido?\n\n_Creando con distinción_ ✨\n\n${urlNota}`;
+    return `Hola ${p.cliente.nombre} 👋\nAquí tienes tu cotización de Herrería Artesanos:\n📄 Cotización #${p.codigo} — Total: ${total}\n\nPara comenzar a fabricar necesitamos un abono del 50% (${abono50}). Cualquier duda, quedamos atentos: ¿deseas continuar con el pedido?\n\n_Creando con distinción_ ✨${lineaLink}`;
   }
   if(p.estado === 'listo'){
     const lineaSaldo = saldoNum > 0 ? `\nRecuerda traer el saldo restante de ${saldo} para la entrega.` : '';
-    return `Hola ${p.cliente.nombre} 👋\n¡Tu pedido #${p.codigo} ya está listo! Puedes pasar a retirarlo.${lineaSaldo}\n\n${urlNota}`;
+    return `Hola ${p.cliente.nombre} 👋\n¡Tu pedido #${p.codigo} ya está listo! Puedes pasar a retirarlo.${lineaSaldo}${lineaLink}`;
   }
   if(p.estado === 'entregado'){
-    return `Hola ${p.cliente.nombre} 👋\n¡Gracias por tu compra! Tu pedido #${p.codigo} fue entregado${saldoNum<=0 ? ' y el pago quedó completo ✅' : ''}.\nAdjunto tu nota de entrega.\n\n${urlNota}`;
+    return `Hola ${p.cliente.nombre} 👋\n¡Gracias por tu compra! Tu pedido #${p.codigo} fue entregado${saldoNum<=0 ? ' y el pago quedó completo ✅' : ''}.\nAdjunto tu nota de entrega.${lineaLink}`;
   }
-  return `Hola ${p.cliente.nombre} 👋\n¡Tu pedido fue confirmado! 📄 Pedido #${p.codigo} — Total: ${total}\nAbonado: ${money(p.abono)} · Saldo: ${saldo}\n\nTe avisamos en cuanto haya novedades.\n\n${urlNota}`;
+  return `Hola ${p.cliente.nombre} 👋\n¡Tu pedido fue confirmado! 📄 Pedido #${p.codigo} — Total: ${total}\nAbonado: ${money(p.abono)} · Saldo: ${saldo}\n\nTe avisamos en cuanto haya novedades.${lineaLink}`;
 }
 function esAppAnclada(){
   return window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
@@ -1999,16 +2041,14 @@ async function enviarNotaWhatsapp(){
   if(!p) return;
   const btn = document.getElementById('btnEnviarNota');
   if(btn.disabled) return;
-  btn.disabled = true;
-  btn.classList.add('loading');
+  setCargando(btn, true);
   const anclada = esAppAnclada();
   // En navegador normal, Safari bloquea window.open() si ocurre después de un await:
   // se abre la pestaña en blanco de forma síncrona y se redirige después.
   // En modo anclado (standalone) window.open() no sirve de nada, así que ahí no lo usamos.
   const ventana = anclada ? null : window.open('', '_blank');
   const resultado = await generarNotaPdf(p);
-  btn.disabled = false;
-  btn.classList.remove('loading');
+  setCargando(btn, false);
   if(!resultado){ if(ventana) ventana.close(); return; }
   const numero = (p.cliente.telefono || '').replace(/\D/g,'');
   const texto = encodeURIComponent(mensajeWhatsappNota(p, resultado.url));
@@ -2059,23 +2099,24 @@ async function quitarItemExistente(idx){
   if(!p) return;
   if(p.items.length <= 1){ showToast('El pedido necesita al menos un ítem', 'error'); return; }
   const itemQuitado = p.items[idx];
+  const idsExh = idsExhibicion(itemQuitado);
   const respaldo = p.items.slice();
   p.items.splice(idx,1);
-  if(itemQuitado.exhibicionId){
-    const x = exhibicion.find(e=>e.id===itemQuitado.exhibicionId);
+  idsExh.forEach(id=>{
+    const x = exhibicion.find(e=>e.id===id);
     if(x){ x.estado = 'Disponible'; x.pedido_id = null; }
-  }
+  });
   abrirDrawer(p.id);
   renderLista();
   renderExhibicion();
   if(!MODO_DEMO){
     try{
       await llamarBackend('updatePedido', { id: p.id, items: p.items });
-      if(itemQuitado.exhibicionId) await llamarBackend('updateExhibicion', { id: itemQuitado.exhibicionId, estado: 'Disponible' });
+      for(const id of idsExh) await llamarBackend('updateExhibicion', { id, estado: 'Disponible' });
     }
     catch(err){
       p.items = respaldo;
-      if(itemQuitado.exhibicionId){ const x = exhibicion.find(e=>e.id===itemQuitado.exhibicionId); if(x){ x.estado = 'Vendido'; x.pedido_id = p.id; } }
+      idsExh.forEach(id=>{ const x = exhibicion.find(e=>e.id===id); if(x){ x.estado = 'Vendido'; x.pedido_id = p.id; } });
       abrirDrawer(p.id); renderLista(); renderExhibicion();
       return;
     }
@@ -2182,12 +2223,17 @@ function abrirExhDrawer(id){
   const fechas = [];
   if(x.fecha_registro) fechas.push('Registrada el ' + fechaCorta(x.fecha_registro));
   if(x.fecha_venta) fechas.push('Vendida el ' + fechaCorta(x.fecha_venta.slice(0,10)));
+  state.exhPiezasHermanasIds = [];
   if(x.estado === 'Disponible'){
     const clave = (x.catalogo_id || 'sin-modelo') + '::' + JSON.stringify(x.especificaciones || {});
     const hermanas = exhibicion.filter(y=>y.estado==='Disponible' && !y._guardando && (y.catalogo_id || 'sin-modelo') + '::' + JSON.stringify(y.especificaciones || {}) === clave);
+    state.exhPiezasHermanasIds = hermanas.map(h=>h.id);
     if(hermanas.length > 1) fechas.push(`Hay ${hermanas.length} idénticas disponibles`);
   }
   document.getElementById('exhFechas').textContent = fechas.join(' · ');
+  state.exhCantidadSeleccionada = 1;
+  document.getElementById('exhCantidadValor').textContent = '1';
+  document.getElementById('exhCantidadSelector').classList.toggle('hidden', state.exhPiezasHermanasIds.length <= 1 || x.estado !== 'Disponible');
   const puedeUsar = x.estado === 'Disponible';
   document.getElementById('btnVenderPieza').classList.toggle('hidden', !puedeUsar || state.modoSeleccion === 'exhibicion');
   document.getElementById('btnAgregarPiezaPedido').classList.toggle('hidden', !puedeUsar || state.modoSeleccion !== 'exhibicion');
@@ -2233,25 +2279,35 @@ function eliminarPiezaExhibicion(id){
     }
   }, 5200);
 }
-function construirItemDesdeExhibicion(x){
+function construirItemDesdeExhibicion(x, cantidad){
+  const n = cantidad || 1;
+  const idsGrupo = (state.exhPiezasHermanasIds && state.exhPiezasHermanasIds.length ? state.exhPiezasHermanasIds : [x.id]).slice(0, n);
   const info = getInfoExhibicion(x);
-  return { tipo:info.tipo, nombreModelo:info.nombre, catalogoId:x.catalogo_id || null, especificaciones:x.especificaciones, precio:x.precio, cantidad:1, exhibicionId:x.id };
+  return { tipo:info.tipo, nombreModelo:info.nombre, catalogoId:x.catalogo_id || null, especificaciones:x.especificaciones, precio:x.precio, cantidad:n, exhibicionIds:idsGrupo };
+}
+function cambiarCantidadExh(delta){
+  const max = Math.max(1, (state.exhPiezasHermanasIds || []).length || 1);
+  const nueva = Math.min(max, Math.max(1, (state.exhCantidadSeleccionada || 1) + delta));
+  state.exhCantidadSeleccionada = nueva;
+  document.getElementById('exhCantidadValor').textContent = nueva;
 }
 function venderPiezaExhibicion(){
   const x = exhibicion.find(e=>e.id===state.openExhId);
   if(!x || x.estado !== 'Disponible') return;
+  const cantidad = state.exhCantidadSeleccionada || 1;
   cerrarExhDrawer();
   irAScreen('ventas', 'Ventas');
-  abrirNuevoPedido(construirItemDesdeExhibicion(x));
+  abrirNuevoPedido(construirItemDesdeExhibicion(x, cantidad));
   showToast('Pieza agregada, completa los datos del cliente', 'success');
 }
 function agregarPiezaDesdeSeleccion(){
   const x = exhibicion.find(e=>e.id===state.openExhId);
   if(!x || x.estado !== 'Disponible') return;
+  const cantidad = state.exhCantidadSeleccionada || 1;
   const btn = document.getElementById('btnAgregarPiezaPedido');
   setCargando(btn, true);
   cerrarExhDrawer();
-  const item = construirItemDesdeExhibicion(x);
+  const item = construirItemDesdeExhibicion(x, cantidad);
   state.modoSeleccion = null;
   irAScreen('ventas', 'Ventas');
   agregarItemComun(item, 'Pieza de exhibición agregada al pedido').finally(()=>setCargando(document.getElementById('btnAgregarPiezaPedido'), false));
@@ -2887,7 +2943,8 @@ function leerCamposActuales(){
   const tipoLabel = { ventana:'Ventana', porton:'Portón', puerta:'Puerta', puerta_multilock:'Puerta Multilock', combo:'Combo' }[tipo];
   const e = leerEspecificacionesGenerico(tipo, 'np', '');
   const precioFinal = parseFloat(document.getElementById('npPrecioFinal').value) || 0;
-  return { tipo: tipoLabel, nombreModelo: state.modeloElegidoNombre || null, catalogoId: state.catalogoIdElegido || null, especificaciones: e, precio: precioFinal, cantidad: 1 };
+  const cantidad = parseInt(document.getElementById('npCantidad').value) || 1;
+  return { tipo: tipoLabel, nombreModelo: state.modeloElegidoNombre || null, catalogoId: state.catalogoIdElegido || null, especificaciones: e, precio: precioFinal, cantidad };
 }
 
 /* ---- Drawer compartido de ítem (catálogo/exhibición + personalizado) ---- */
@@ -2904,6 +2961,7 @@ function resetItemDrawerASeleccion(){
   state.itemEditIndexNP = null;
   state.modeloElegidoNombre = null;
   state.catalogoIdElegido = null;
+  document.getElementById('npCantidad').value = 1;
   const body = document.querySelector('#drawerItem .drawer-body');
   if(body) body.scrollTop = 0;
 }
@@ -2919,23 +2977,24 @@ function cerrarItemDrawer(){
   resetItemDrawerASeleccion();
 }
 async function agregarItemComun(item, mensaje){
+  const idsExh = idsExhibicion(item);
   if(typeof state.itemTarget === 'number'){
     const p = pedidos.find(x=>x.id===state.itemTarget);
     p.items.push(item);
-    if(item.exhibicionId){
-      const x = exhibicion.find(e=>e.id===item.exhibicionId);
+    idsExh.forEach(id=>{
+      const x = exhibicion.find(e=>e.id===id);
       if(x){ x.estado = 'Vendido'; x.pedido_id = p.id; }
-    }
+    });
     cerrarItemDrawer();
     abrirDrawer(p.id);
     renderLista();
     if(!MODO_DEMO){
       try{
         await llamarBackend('updatePedido', { id: p.id, items: p.items });
-        if(item.exhibicionId) await llamarBackend('updateExhibicion', { id: item.exhibicionId, estado: 'Vendido', pedido_id: p.id });
+        for(const id of idsExh) await llamarBackend('updateExhibicion', { id, estado: 'Vendido', pedido_id: p.id });
       } catch(err){
         p.items.pop();
-        if(item.exhibicionId){ const x = exhibicion.find(e=>e.id===item.exhibicionId); if(x){ x.estado = 'Disponible'; x.pedido_id = null; } }
+        idsExh.forEach(id=>{ const x = exhibicion.find(e=>e.id===id); if(x){ x.estado = 'Disponible'; x.pedido_id = null; } });
         abrirDrawer(p.id);
         renderLista();
         return;
@@ -2947,7 +3006,7 @@ async function agregarItemComun(item, mensaje){
     actualizarTotalNuevo();
     cerrarItemDrawer();
     // Si ya no es un pedido 100% de exhibición (se mezcló con algo a fabricar), la fecha de entrega vuelve a ser necesaria.
-    const sigueSiendoSoloExhibicion = state.npItems.every(it => it.exhibicionId);
+    const sigueSiendoSoloExhibicion = state.npItems.every(it => esDeExhibicion(it));
     if(!sigueSiendoSoloExhibicion){
       document.getElementById('npFechaEntregaGroup').classList.remove('hidden');
       document.getElementById('npExhDirectaHint').classList.add('hidden');
@@ -3060,7 +3119,7 @@ function guardarEdicionItemNP(itemNuevo){
   if(idx == null) return;
   const respaldo = state.npItems[idx];
   itemNuevo.nombreModelo = respaldo.nombreModelo;
-  itemNuevo.exhibicionId = respaldo.exhibicionId;
+  itemNuevo.exhibicionIds = idsExhibicion(respaldo);
   state.npItems[idx] = itemNuevo;
   state.itemEditIndexNP = null;
   cerrarItemDrawer();
@@ -3092,12 +3151,11 @@ function abrirNuevoPedido(itemPrecargado){
   document.getElementById('npNombre').value = '';
   document.getElementById('npTelefono').value = '';
   document.getElementById('npCedula').value = '';
-  const esExhibicionDirecta = !!(itemPrecargado && itemPrecargado.exhibicionId);
+  const esExhibicionDirecta = !!(itemPrecargado && esDeExhibicion(itemPrecargado));
   document.getElementById('npFechaEntregaGroup').classList.toggle('hidden', esExhibicionDirecta);
   document.getElementById('npExhDirectaHint').classList.toggle('hidden', !esExhibicionDirecta);
   document.getElementById('npFechaEntrega').value = esExhibicionDirecta ? '' : sumarDiasHabiles(new Date(), 10);
   document.getElementById('npDescuento').value = 0;
-  document.getElementById('npAbonoInicial').value = 0;
   document.getElementById('npClienteHint').classList.remove('show');
   renderAddedItems();
   actualizarTotalNuevo();
@@ -3132,14 +3190,12 @@ async function guardarPedido(){
   };
   const fecha_entrega = document.getElementById('npFechaEntrega').value;
   const descuento = parseFloat(document.getElementById('npDescuento').value) || 0;
-  const abonoInicial = parseFloat(document.getElementById('npAbonoInicial').value) || 0;
+  const abonoInicial = 0;
   const items = state.npItems;
 
   const totalCalculado = Math.max(0, items.reduce((a,i)=>a+i.precio*i.cantidad, 0) - descuento);
-  const esExhibicionPura = items.length > 0 && items.every(it => it.exhibicionId);
-  // Si es 100% exhibición y se paga completo desde el inicio, nace confirmado (ya está fabricado, no hace falta cotizar).
-  const estadoInicial = (esExhibicionPura && totalCalculado > 0 && abonoInicial >= totalCalculado) ? 'confirmado' : 'cotizacion';
-  const tabDestino = estadoInicial === 'confirmado' ? 'activos' : 'cotizaciones';
+  const estadoInicial = 'cotizacion';
+  const tabDestino = 'cotizaciones';
 
   // Cierre inmediato: se guarda en segundo plano, sin bloquear al usuario.
   cerrarTodo();
@@ -3166,11 +3222,11 @@ async function guardarPedido(){
     }
 
     items.forEach(item=>{
-      if(item.exhibicionId){
-        const x = exhibicion.find(e=>e.id===item.exhibicionId);
+      idsExhibicion(item).forEach(id=>{
+        const x = exhibicion.find(e=>e.id===id);
         if(x){ x.estado = 'Vendido'; x.pedido_id = idNuevo; }
-        if(!MODO_DEMO) llamarBackend('updateExhibicion', { id: item.exhibicionId, estado: 'Vendido', pedido_id: idNuevo }).catch(()=>{});
-      }
+        if(!MODO_DEMO) llamarBackend('updateExhibicion', { id, estado: 'Vendido', pedido_id: idNuevo }).catch(()=>{});
+      });
     });
 
     const idx = pedidos.findIndex(p=>p.id===idTemporal);
@@ -3324,6 +3380,8 @@ document.body.addEventListener('click', e=>{
   else if(action === 'set-tab') cambiarTabVentas(el.dataset.tab);
   else if(action === 'set-exh-tab') cambiarExhTab(el.dataset.tab);
   else if(action === 'ver-pedido-desde-exh') verPedidoDesdeExh();
+  else if(action === 'exh-cantidad-menos') cambiarCantidadExh(-1);
+  else if(action === 'exh-cantidad-mas') cambiarCantidadExh(1);
   else if(action === 'set-exh-rango'){
     state.exhRango = el.dataset.rango;
     document.querySelectorAll('#exhRangoChips .chip').forEach(c=>c.classList.toggle('active', c===el));
@@ -3337,6 +3395,10 @@ document.body.addEventListener('click', e=>{
   else if(action === 'aceptar-confirm') cerrarConfirm(true);
   else if(action === 'cerrar-confirm') cerrarConfirm(false);
   else if(action === 'registrar-abono') registrarAbono();
+  else if(action === 'toggle-abono-form'){
+    document.getElementById('abonoFormWrap').classList.toggle('abierto');
+    document.getElementById('abonoToggle').classList.toggle('abierto');
+  }
   else if(action === 'wa-cliente') abrirWhatsapp();
   else if(action === 'ver-presupuesto') verPresupuesto();
   else if(action === 'enviar-nota') enviarNotaWhatsapp();
