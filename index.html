@@ -381,13 +381,6 @@
   .abono-toggle.abierto .abono-chevron{ transform:rotate(180deg); }
   .abono-contenido{ max-height:0; overflow:hidden; opacity:0; transition:max-height .3s var(--ease-out), opacity .2s var(--ease-out); }
   .abono-contenido.abierto{ max-height:400px; opacity:1; margin-top:14px; }
-  .abono-fila-h{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:11px 0; border-bottom:1px solid var(--border); }
-  .abono-fila-h:nth-of-type(3){ border-bottom:none; padding-bottom:4px; }
-  .abono-fila-h label{ font-size:13px; font-weight:600; color:var(--text2); flex-shrink:0; }
-  .abono-fila-h select{ width:150px; padding:9px 10px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text); font-size:13.5px; text-align:right; }
-  .abono-fila-h .input-money{ width:120px; }
-  .abono-fila-h .input-money input{ background:var(--surface); text-align:right; padding:9px 12px 9px 24px; }
-  .abono-fila-h .file-picker-btn{ padding:8px 12px; font-size:12.5px; }
   .cantidad-selector{ display:flex; align-items:center; justify-content:space-between; margin-top:18px; padding:12px 14px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); }
   .cantidad-selector span{ font-size:13.5px; font-weight:600; color:var(--text2); }
   .cantidad-stepper{ display:flex; align-items:center; gap:14px; }
@@ -457,6 +450,14 @@
   .swatch-blanco{ background:#f2ede3; }
   .swatch-negro{ background:#1c1a17; }
   .foto-modelo-img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+  .comprobante-box{
+    display:flex; align-items:center; justify-content:center; height:64px; border-radius:var(--radius);
+    border:1.5px dashed var(--border2); background:var(--surface2); position:relative; overflow:hidden; cursor:pointer;
+    transition: border-color .15s var(--ease-out), transform .1s var(--ease-out);
+  }
+  .comprobante-box:active{ transform:scale(0.98); }
+  .comprobante-empty{ display:flex; align-items:center; gap:8px; color:var(--text2); font-size:12.5px; font-weight:600; }
+  .comprobante-img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
   .input-money{ position:relative; }
   .input-money::before{
     content:'$'; position:absolute; left:14px; top:50%; transform:translateY(-50%);
@@ -786,9 +787,9 @@
     <div class="drawer-body">
       <div class="stepper" id="detStepper"></div>
       <div class="quick-actions-row">
-        <button class="quick-action-btn wa" data-action="wa-cliente" title="WhatsApp cliente">
+        <button class="quick-action-btn wa" data-action="wa-cliente" title="Abrir chat de WhatsApp con el cliente, sin mensaje automático">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 00-8.6 15L2 22l5.2-1.4A10 10 0 1012 2zm5.8 14.2c-.2.7-1.4 1.3-2 1.4-.5.1-1.1.2-3.6-.8-3-1.2-5-4.2-5.1-4.4-.2-.2-1.2-1.6-1.2-3.1s.8-2.2 1.1-2.5c.3-.3.6-.4.8-.4h.6c.2 0 .5 0 .7.5l1 2.4c.1.2.1.4 0 .6l-.5.7c-.1.2-.2.3 0 .6.2.3.9 1.4 1.9 2.3 1.3 1.1 2.4 1.5 2.7 1.6.3.1.5.1.7-.1l.9-1c.2-.3.4-.2.7-.1l2.1 1c.2.1.4.2.5.3.1.2.1.9-.1 1.6z"/></svg>
-          <span>WhatsApp</span>
+          <span>Chat</span>
         </button>
         <button class="quick-action-btn" id="btnVerPresupuesto" data-action="ver-presupuesto" title="Ver el documento (cotización, nota de pedido o de entrega, según el estado)">
           <span class="btn-spin"></span>
@@ -815,28 +816,31 @@
           <svg class="abono-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9l6 6 6-6"/></svg>
         </div>
         <div class="abono-contenido" id="abonoFormWrap">
-          <div class="abono-fila-h">
-            <label>Método de pago</label>
-            <select id="inputMetodoAbono">
+          <div class="form-group">
+            <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Método de pago</label>
+            <select id="inputMetodoAbono" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px">
               <option value="Efectivo">Efectivo</option>
               <option value="Zelle">Zelle</option>
               <option value="Pago móvil">Pago móvil</option>
               <option value="Transferencia">Transferencia</option>
             </select>
           </div>
-          <div class="abono-fila-h">
-            <label>Monto a abonar</label>
-            <div class="input-money"><input type="number" id="inputAbono" placeholder="0"></div>
+          <div class="form-group">
+            <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Monto a abonar</label>
+            <div class="input-money"><input type="number" id="inputAbono" placeholder="0" inputmode="decimal" autocomplete="off" name="monto-abono-taller" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px"></div>
           </div>
-          <div class="abono-fila-h">
-            <label>Comprobante</label>
-            <label class="file-picker-btn" for="inputFotoAbono">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
-              <span id="inputFotoAbonoLabel">Agregar</span>
+          <div class="form-group" style="margin-bottom:0">
+            <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Comprobante</label>
+            <label class="comprobante-box" for="inputFotoAbono">
+              <div class="comprobante-empty" id="inputFotoAbonoEmpty">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                <span>Agregar foto del comprobante</span>
+              </div>
+              <img id="inputFotoAbonoPreview" class="comprobante-img hidden">
             </label>
             <input type="file" id="inputFotoAbono" accept="image/*" class="file-input-hidden">
           </div>
-          <button class="btn-primary" id="btnRegistrarAbono" data-action="registrar-abono" style="width:100%;margin-top:6px"><span class="btn-spin"></span><span id="btnRegistrarAbonoLabel">Registrar abono</span></button>
+          <button class="btn-primary" id="btnRegistrarAbono" data-action="registrar-abono" style="width:100%;margin-top:16px"><span class="btn-spin"></span><span id="btnRegistrarAbonoLabel">Registrar abono</span></button>
         </div>
       </div>
       <button class="btn-primary hidden" id="btnMarcarEntregado" style="width:100%;margin-top:14px;background:var(--green);color:#0d2417" data-action="marcar-entregado"><span class="btn-spin"></span><span id="btnMarcarEntregadoLabel">Marcar como entregado</span></button>
@@ -1120,7 +1124,7 @@
 <script>
 /* ============ CONFIG ============ */
 const MODO_DEMO = false;
-const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbyFq2HOnbB69_Hr3V9D4wpoAhbgQGv5e7anKxpFuPrIFsGe6LwakWTq_oT_asf9lw5D/exec';
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycby8DqIjTrsa7vdlp_ueTnSeusNEaBVIrtpryczD6r63-jJWpFdq6qSL8h6osNSmXNk/exec';
 const NUMERO_NEGOCIO = '584220167079';
 
 /* ============ SPINNER GENÉRICO PARA BOTONES ============ */
@@ -1705,7 +1709,8 @@ function poblarDetalle(id){
   document.getElementById('inputAbono').value = saldo > 0 ? saldo : '';
   document.getElementById('inputMetodoAbono').value = 'Efectivo';
   document.getElementById('inputFotoAbono').value = '';
-  document.getElementById('inputFotoAbonoLabel').textContent = 'Agregar';
+  document.getElementById('inputFotoAbonoPreview').classList.add('hidden');
+  document.getElementById('inputFotoAbonoEmpty').classList.remove('hidden');
   document.getElementById('abonoFormWrap').classList.remove('abierto');
   document.getElementById('abonoToggle').classList.remove('abierto');
   renderAbonosHistorial(p);
@@ -1960,13 +1965,23 @@ function mensajeWhatsappNota(p, urlNota){
   }
   return `Hola ${p.cliente.nombre} 👋\n¡Tu pedido fue confirmado! 📄 Pedido #${p.codigo} — Total: ${total}\nAbonado: ${money(p.abono)} · Saldo: ${saldo}\n\nTe avisamos en cuanto haya novedades.${lineaLink}`;
 }
+// Normaliza cualquier forma en la que llegue un teléfono venezolano al formato
+// internacional que wa.me necesita (58 + 10 dígitos, sin el 0 inicial).
+// Cubre: "+584121234567", "584121234567", "04121234567", "4121234567".
+function normalizarTelefonoVE(telefono){
+  let digitos = (telefono || '').replace(/\D/g,'');
+  if(!digitos) return '';
+  if(digitos.startsWith('58')) return digitos;
+  if(digitos.startsWith('0')) return '58' + digitos.slice(1);
+  return '58' + digitos;
+}
 function esAppAnclada(){
   return window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
 }
 function abrirWhatsapp(){
   const p = pedidos.find(x=>x.id===state.openPedidoId);
   if(!p) return;
-  const numero = (p.cliente.telefono || '').replace(/\D/g,'');
+  const numero = normalizarTelefonoVE(p.cliente.telefono);
   // Chat directo, sin mensaje automático: es para conversar libremente con el cliente.
   const destino = `https://wa.me/${numero}`;
   if(esAppAnclada()) window.location.href = destino;
@@ -2050,7 +2065,7 @@ async function enviarNotaWhatsapp(){
   const resultado = await generarNotaPdf(p);
   setCargando(btn, false);
   if(!resultado){ if(ventana) ventana.close(); return; }
-  const numero = (p.cliente.telefono || '').replace(/\D/g,'');
+  const numero = normalizarTelefonoVE(p.cliente.telefono);
   const texto = encodeURIComponent(mensajeWhatsappNota(p, resultado.url));
   const destino = `https://wa.me/${numero}?text=${texto}`;
   if(anclada) window.location.href = destino;
@@ -3328,10 +3343,7 @@ function wireFotoPreview(inputId, wrapId, imgId){
 }
 wireFotoPreview('nmFotoBlanco', 'nmFotoBlancoEmpty', 'nmFotoBlancoPreview');
 wireFotoPreview('nmFotoNegro', 'nmFotoNegroEmpty', 'nmFotoNegroPreview');
-document.getElementById('inputFotoAbono').addEventListener('change', e=>{
-  const archivo = e.target.files[0];
-  document.getElementById('inputFotoAbonoLabel').textContent = archivo ? archivo.name : 'Agregar comprobante (opcional)';
-});
+wireFotoPreview('inputFotoAbono', 'inputFotoAbonoEmpty', 'inputFotoAbonoPreview');
 document.getElementById('npDescuento').addEventListener('input', actualizarTotalNuevo);
 document.getElementById('npTelefono').addEventListener('input', chequearClienteExistente);
 document.getElementById('npCedula').addEventListener('input', chequearClienteExistente);
