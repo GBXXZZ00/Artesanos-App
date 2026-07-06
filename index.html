@@ -74,7 +74,7 @@
   .hidden{ display:none !important; }
 
   .phone{
-    width:100%; max-width:430px; height:100vh; height:100dvh; background:var(--bg); color:var(--text);
+    width:100%; max-width:430px; height:100vh; height:100dvh; min-height:100%; background:var(--bg); color:var(--text);
     position:relative; overflow:hidden; display:flex; flex-direction:column;
   }
 
@@ -373,7 +373,12 @@
 
   .balance-box{ background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:14px; margin-top:16px; display:flex; justify-content:space-between; transition: box-shadow .35s var(--ease-out), border-color .35s var(--ease-out); }
   .balance-box.destello{ box-shadow:0 0 0 2px var(--gold-dim); border-color:var(--gold); }
-  .abono-cards-row{ display:flex; gap:8px; margin-bottom:10px; }
+  .abono-caja{ border:1px solid var(--border); border-radius:var(--radius); padding:14px; background:var(--surface2); margin-top:10px; }
+  .abono-fila{ margin-bottom:12px; }
+  .abono-fila label{ display:block; font-size:11.5px; font-weight:600; color:var(--text2); margin-bottom:5px; }
+  .abono-fila select{ width:100%; padding:10px 12px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text); font-size:14px; }
+  .abono-fila .input-money input{ background:var(--surface); }
+  #btnRegistrarAbono{ padding:11px; font-size:13.5px; }
   .abono-card{
     flex:1; display:flex; flex-direction:column; align-items:center; gap:5px; padding:10px 4px;
     background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); cursor:pointer;
@@ -770,15 +775,15 @@
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 00-8.6 15L2 22l5.2-1.4A10 10 0 1012 2zm5.8 14.2c-.2.7-1.4 1.3-2 1.4-.5.1-1.1.2-3.6-.8-3-1.2-5-4.2-5.1-4.4-.2-.2-1.2-1.6-1.2-3.1s.8-2.2 1.1-2.5c.3-.3.6-.4.8-.4h.6c.2 0 .5 0 .7.5l1 2.4c.1.2.1.4 0 .6l-.5.7c-.1.2-.2.3 0 .6.2.3.9 1.4 1.9 2.3 1.3 1.1 2.4 1.5 2.7 1.6.3.1.5.1.7-.1l.9-1c.2-.3.4-.2.7-.1l2.1 1c.2.1.4.2.5.3.1.2.1.9-.1 1.6z"/></svg>
           <span>WhatsApp</span>
         </button>
-        <button class="quick-action-btn" id="btnVerPresupuesto" data-action="ver-presupuesto" title="Ver presupuesto">
+        <button class="quick-action-btn" id="btnVerPresupuesto" data-action="ver-presupuesto" title="Ver el documento (cotización, nota de pedido o de entrega, según el estado)">
           <span class="btn-spin"></span>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
-          <span>Presupuesto</span>
+          <span>Ver documento</span>
         </button>
-        <button class="quick-action-btn gold" id="btnEnviarNota" data-action="enviar-nota" title="Enviar nota por WhatsApp">
+        <button class="quick-action-btn gold" id="btnEnviarNota" data-action="enviar-nota" title="Enviar el documento y el mensaje al cliente por WhatsApp">
           <span class="btn-spin"></span>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg>
-          <span>Nota</span>
+          <span>Enviar</span>
         </button>
       </div>
       <div class="section-label">Ítems del pedido</div>
@@ -789,28 +794,29 @@
         <div class="pending"><span>Saldo</span><strong id="detSaldo"></strong></div>
       </div>
       <div id="detAbonosHistorial"></div>
-      <div class="form-group" style="margin-top:10px" id="abonoFormWrap">
-        <div class="abono-cards-row">
-          <div class="abono-card">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
-            <select id="inputMetodoAbono">
-              <option value="Efectivo">Efectivo</option>
-              <option value="Zelle">Zelle</option>
-              <option value="Pago móvil">Pago móvil</option>
-              <option value="Transferencia">Transferencia</option>
-            </select>
-          </div>
-          <div class="abono-card">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
-            <input type="number" id="inputAbono" placeholder="0">
-          </div>
-          <label class="abono-card" for="inputFotoAbono">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
-            <span id="inputFotoAbonoLabel">Comprobante</span>
+      <div class="abono-caja" id="abonoFormWrap">
+        <div class="abono-fila">
+          <label>Método de pago</label>
+          <select id="inputMetodoAbono">
+            <option value="Efectivo">Efectivo</option>
+            <option value="Zelle">Zelle</option>
+            <option value="Pago móvil">Pago móvil</option>
+            <option value="Transferencia">Transferencia</option>
+          </select>
+        </div>
+        <div class="abono-fila">
+          <label>Monto a abonar</label>
+          <div class="input-money"><input type="number" id="inputAbono" placeholder="0"></div>
+        </div>
+        <div class="abono-fila">
+          <label>Comprobante</label>
+          <label class="file-picker-btn" for="inputFotoAbono" style="width:100%">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            <span id="inputFotoAbonoLabel">Agregar comprobante</span>
           </label>
           <input type="file" id="inputFotoAbono" accept="image/*" class="file-input-hidden">
         </div>
-        <button class="btn-sm" id="btnRegistrarAbono" data-action="registrar-abono" style="background:var(--gold);color:#1A1409;width:100%;margin-top:4px"><span class="btn-spin"></span><span id="btnRegistrarAbonoLabel">Registrar abono</span></button>
+        <button class="btn-sm" id="btnRegistrarAbono" data-action="registrar-abono" style="background:var(--gold);color:#1A1409;width:100%"><span class="btn-spin"></span><span id="btnRegistrarAbonoLabel">Registrar abono</span></button>
       </div>
       <button class="btn-primary hidden" id="btnMarcarEntregado" style="width:100%;margin-top:14px;background:var(--green);color:#0d2417" data-action="marcar-entregado"><span class="btn-spin"></span><span id="btnMarcarEntregadoLabel">Marcar como entregado</span></button>
       <button class="btn-primary hidden" id="btnConfirmarPedido" style="width:100%;margin-top:18px" data-action="confirmar-pedido"><span class="btn-spin"></span><span id="btnConfirmarPedidoLabel">Confirmar pedido</span></button>
@@ -1657,10 +1663,10 @@ function poblarDetalle(id){
   const saldo = Math.max(0, total - p.abono);
   document.getElementById('detAbono').textContent = money(p.abono);
   document.getElementById('detSaldo').textContent = money(saldo);
-  document.getElementById('inputAbono').value = '';
+  document.getElementById('inputAbono').value = saldo > 0 ? saldo : '';
   document.getElementById('inputMetodoAbono').value = 'Efectivo';
   document.getElementById('inputFotoAbono').value = '';
-  document.getElementById('inputFotoAbonoLabel').textContent = 'Agregar comprobante (opcional)';
+  document.getElementById('inputFotoAbonoLabel').textContent = 'Agregar comprobante';
   renderAbonosHistorial(p);
 }
 function abrirDrawer(id){
@@ -1833,7 +1839,6 @@ async function registrarAbono(){
   p.abonos = [...abonosAnteriores, registroOptimista];
   abrirDrawer(p.id);
   renderLista();
-  document.getElementById('inputAbono').value = '';
 
   try{
     let foto_base64 = null;
