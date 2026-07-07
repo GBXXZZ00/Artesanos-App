@@ -177,6 +177,10 @@
   .avatar-menu-item:last-child{ border-bottom:none; }
   .avatar-menu-item:active{ transform:scale(0.98); }
   .avatar-menu-item.danger{ color:var(--red); }
+  .menu-badge-count{
+    margin-left:auto; background:var(--gold); color:#1A1409; font-size:11px; font-weight:800;
+    border-radius:20px; padding:2px 8px; min-width:20px; text-align:center;
+  }
 
   .seleccion-banner{
     display:flex; align-items:center; justify-content:space-between; gap:10px; background:var(--gold-dim);
@@ -401,8 +405,6 @@
   .abono-card span{ font-size:10.5px; font-weight:700; color:var(--text2); text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
   .balance-box div span{ display:block; font-size:11px; color:var(--text2); }
   .balance-box div strong{ font-size:17px; }
-  .balance-box .paid strong{ color:var(--green); }
-  .balance-box .pending strong{ color:var(--red); }
 
   .abono-row{ display:flex; gap:8px; margin-top:12px; }
   .abono-row input{ flex:1; padding:10px 12px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text); font-size:14px; }
@@ -418,6 +420,11 @@
   /* ---------- FORM (nuevo pedido) ---------- */
   .form-group{ margin-bottom:14px; }
   .form-row{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .item-total-row{
+    display:flex; justify-content:space-between; align-items:center; margin:14px 0 16px; padding-top:12px;
+    border-top:1px solid var(--border); font-size:13.5px; font-weight:700; color:var(--text2);
+  }
+  .item-total-row strong{ font-size:19px; color:var(--gold); }
   .field-toggle{ display:flex; align-items:center; justify-content:space-between; padding:11px 14px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); margin-bottom:10px; }
   .field-toggle span{ font-size:13.5px; font-weight:600; }
   .switch{ position:relative; width:40px; height:23px; flex-shrink:0; }
@@ -478,16 +485,57 @@
   .quick-action-btn.loading .btn-spin{ display:block; }
   .quick-action-btn.loading svg{ display:none; }
   .mini-spin{ width:22px; height:22px; border:2.5px solid var(--border2); border-top-color:var(--gold); border-radius:50%; animation:spin .7s linear infinite; }
-  .abono-historial-item{
-    display:flex; justify-content:space-between; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--border);
+  .ledger-box{ background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:14px; margin-top:16px; transition: box-shadow .35s var(--ease-out), border-color .35s var(--ease-out); }
+  .ledger-box.destello{ box-shadow:0 0 0 2px var(--gold-dim); border-color:var(--gold); }
+  .ledger-row{ display:flex; justify-content:space-between; align-items:center; }
+  .ledger-total{ padding-bottom:12px; margin-bottom:2px; font-size:13px; color:var(--text2); font-weight:600; }
+  .ledger-total strong{ font-size:17px; color:var(--text); }
+  .ledger-saldo-box{ margin-top:10px; }
+  .ledger-saldo{ font-size:13px; color:var(--text2); font-weight:700; }
+  .ledger-saldo strong{ font-size:19px; color:var(--red); }
+  .ledger-saldo.pagado strong{ color:var(--green); }
+  .ledger-abono-item{ padding:12px 0 0 0; border-top:1px solid var(--border); display:flex; align-items:flex-start; justify-content:space-between; gap:10px; margin-top:12px; }
+  .ledger-abono-item.is-guardando{ opacity:.6; }
+  .ledger-abono-info{ display:flex; flex-direction:column; gap:3px; }
+  .ledger-abono-info strong{ font-size:14.5px; }
+  .ledger-abono-info span{ font-size:11.5px; color:var(--text2); }
+  .ledger-abono-motivo{ font-size:11px; color:var(--red); font-style:italic; }
+  .ledger-abono-foto{ display:inline-flex; align-items:center; gap:5px; font-size:11px; color:var(--text2); text-decoration:none; font-weight:600; }
+  .ledger-abono-foto img{ width:22px; height:22px; border-radius:5px; object-fit:cover; border:1px solid var(--border); }
+  .ledger-abono-right{ display:flex; flex-direction:column; align-items:flex-end; gap:6px; }
+  .badge-abono{ font-size:10.5px; font-weight:700; padding:3px 9px; border-radius:20px; white-space:nowrap; }
+  .badge-abono.pendiente{ background:var(--gold-dim); color:var(--gold); }
+  .badge-abono.confirmado{ background:var(--green-dim); color:var(--green); }
+  .badge-abono.rechazado{ background:var(--red-dim); color:var(--red); }
+  .btn-avisar-admin{
+    display:inline-flex; align-items:center; gap:4px; font-size:10.5px; font-weight:700; color:var(--green);
+    background:var(--green-dim); border:1px solid var(--green); border-radius:20px; padding:4px 9px; cursor:pointer;
+    transition:transform .1s var(--ease-out);
   }
-  .abono-historial-item:last-child{ border-bottom:none; }
-  .abono-historial-item.is-guardando{ opacity:.6; }
-  .abono-historial-info{ display:flex; flex-direction:column; gap:2px; }
-  .abono-historial-info strong{ font-size:14.5px; }
-  .abono-historial-info span{ font-size:11.5px; color:var(--text2); }
-  .abono-historial-foto{ width:36px; height:36px; border-radius:8px; overflow:hidden; border:1px solid var(--border); flex-shrink:0; display:block; }
-  .abono-historial-foto img{ width:100%; height:100%; object-fit:cover; }
+  .btn-avisar-admin:active{ transform:scale(0.95); }
+
+  /* ============ MÓDULO FINANCIERO ============ */
+  .fin-card{
+    background:var(--surface); border:1px solid var(--border); border-left:3px solid var(--gold);
+    border-radius:var(--radius); padding:14px; margin-bottom:12px;
+    animation:rise .35s var(--ease-out) both; animation-delay:calc(var(--i) * 50ms);
+    transition: box-shadow .35s var(--ease-out), border-color .35s var(--ease-out);
+  }
+  .fin-card.destello{ box-shadow:0 0 0 2px var(--gold-dim); border-color:var(--gold); }
+  .fin-card-head{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:10px; }
+  .fin-card-cliente{ font-size:15px; font-weight:700; }
+  .fin-card-meta{ font-size:11.5px; color:var(--text2); margin-top:2px; }
+  .fin-card-monto{ font-size:19px; font-weight:800; color:var(--gold); white-space:nowrap; }
+  .fin-card-comprobante{ display:flex; align-items:center; gap:8px; margin-bottom:12px; }
+  .fin-card-comprobante img{ width:44px; height:44px; border-radius:8px; object-fit:cover; border:1px solid var(--border); }
+  .fin-card-comprobante span{ font-size:11.5px; color:var(--text2); font-weight:600; }
+  .fin-card-motivo{
+    width:100%; margin-bottom:10px; padding:10px 12px; background:var(--surface2); border:1px solid var(--border);
+    border-radius:var(--radius-sm); color:var(--text); font-size:13px; box-sizing:border-box;
+  }
+  .fin-card-actions{ display:flex; gap:8px; }
+  .fin-card-actions .btn-primary, .fin-card-actions .btn-ghost{ flex:1; padding:10px; font-size:13px; }
+  .fin-card-ver{ display:block; text-align:center; margin-top:8px; font-size:12.5px; font-weight:700; color:var(--text2); cursor:pointer; }
 
   .subfields{ padding:12px; background:var(--surface3); border-radius:var(--radius-sm); margin:-4px 0 12px; border:1px dashed var(--border2); }
 
@@ -722,6 +770,13 @@
         <div class="exh-grid" id="catGrid"></div>
       </div>
 
+      <!-- SCREEN: FINANCIERO (confirmación de abonos, solo admin) -->
+      <!-- Cuando se agreguen más secciones (Caja, Reportes) esto se vuelve una fila de .chip como en Catálogo -->
+      <div class="screen" id="screen-financiero">
+        <div class="section-label">Abonos pendientes de confirmar</div>
+        <div id="financieroLista"></div>
+      </div>
+
       <!-- SCREEN: PLACEHOLDER (otras secciones) -->
       <div class="screen" id="screen-placeholder">
         <div class="placeholder-screen">
@@ -805,11 +860,10 @@
       <div class="section-label">Ítems del pedido</div>
       <div id="detItems"></div>
       <button class="btn-add-item-existing" id="btnAgregarItemExistente" data-action="agregar-item-existente">+ Agregar ítem a este pedido</button>
-      <div class="balance-box" id="detBalanceBox">
-        <div class="paid"><span>Abonado</span><strong id="detAbono"></strong></div>
-        <div class="pending"><span>Saldo</span><strong id="detSaldo"></strong></div>
+      <div class="ledger-box" id="ledgerBox">
+        <div class="ledger-row ledger-total"><span>Total</span><strong id="ledgerTotal"></strong></div>
+        <div id="ledgerAbonosList"></div>
       </div>
-      <div id="detAbonosHistorial"></div>
       <div class="abono-caja" id="abonoCajaWrap">
         <div class="abono-toggle" data-action="toggle-abono-form" id="abonoToggle">
           <span>+ Registrar abono</span>
@@ -842,6 +896,9 @@
           </div>
           <button class="btn-primary" id="btnRegistrarAbono" data-action="registrar-abono" style="width:100%;margin-top:16px"><span class="btn-spin"></span><span id="btnRegistrarAbonoLabel">Registrar abono</span></button>
         </div>
+      </div>
+      <div class="ledger-box ledger-saldo-box" id="ledgerSaldoBox">
+        <div class="ledger-row ledger-saldo"><span>Resta por pagar</span><strong id="ledgerSaldo"></strong></div>
       </div>
       <button class="btn-primary hidden" id="btnMarcarEntregado" style="width:100%;margin-top:14px;background:var(--green);color:#0d2417" data-action="marcar-entregado"><span class="btn-spin"></span><span id="btnMarcarEntregadoLabel">Marcar como entregado</span></button>
       <button class="btn-primary hidden" id="btnConfirmarPedido" style="width:100%;margin-top:18px" data-action="confirmar-pedido"><span class="btn-spin"></span><span id="btnConfirmarPedidoLabel">Confirmar pedido</span></button>
@@ -946,14 +1003,17 @@
 
         <div class="price-suggestion" id="npPrecioSugerido"></div>
         <div class="form-row">
-          <div class="field" style="flex:2">
-            <label>Precio final (editable, por unidad)</label>
-            <div class="input-money"><input type="number" id="npPrecioFinal" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px"></div>
-          </div>
           <div class="field" style="flex:1">
             <label>Cantidad</label>
             <input type="number" id="npCantidad" min="1" value="1" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px">
           </div>
+          <div class="field" style="flex:1">
+            <label>Precio unitario</label>
+            <div class="input-money"><input type="number" id="npPrecioFinal" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px"></div>
+          </div>
+        </div>
+        <div class="item-total-row">
+          <span>Total</span><strong id="npTotalItemValor">$0</strong>
         </div>
         <button class="btn-primary" id="btnAgregarItemAccion" style="width:100%;margin-bottom:10px" data-action="add-item"><span class="btn-spin"></span><span id="btnAgregarItemLabel">+ Agregar este ítem</span></button>
       </div>
@@ -1107,6 +1167,10 @@
       <div class="avatar-menu-nombre" id="avatarMenuNombre">—</div>
       <div class="avatar-menu-rol" id="avatarMenuRol">—</div>
     </div>
+    <div class="avatar-menu-item hidden" id="menuItemFinanciero" data-action="ir-financiero">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>Módulo financiero
+      <span class="menu-badge-count hidden" id="badgeAbonosPendientes">0</span>
+    </div>
     <div class="avatar-menu-item" data-action="ir-catalogo">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v6"/></svg>Catálogo
     </div>
@@ -1126,6 +1190,7 @@
 const MODO_DEMO = false;
 const BACKEND_URL = 'https://script.google.com/macros/s/AKfycby8DqIjTrsa7vdlp_ueTnSeusNEaBVIrtpryczD6r63-jJWpFdq6qSL8h6osNSmXNk/exec';
 const NUMERO_NEGOCIO = '584220167079';
+const TELEFONO_ADMIN_ABONOS = '584146326465'; // Recibe el aviso por WhatsApp cuando hay un abono pendiente de confirmar
 
 /* ============ SPINNER GENÉRICO PARA BOTONES ============ */
 function setCargando(btn, cargando){
@@ -1229,6 +1294,7 @@ async function retomarSesion(sesion){
   if(state.cancelarRetomo) return;
   document.getElementById('resumeScreen').classList.add('hidden');
   document.getElementById('loginScreen').classList.add('hidden');
+  procesarDeepLinkFinanciero();
 }
 function cambiarUsuario(){
   state.cancelarRetomo = true;
@@ -1338,6 +1404,7 @@ let exhibicion = [
   { id:3, catalogo_id:3, especificaciones:{ alto:2.20, ancho:3.00, color:'Blanco', sentido:'Izquierda', posicion:'Afuera', vidrio_o_farquilla:'Vidrio', color_vidrio:'Espejo', manillon:true, manillon_tipo:'H', bloque:'Tubo', instalacion:true }, precio:540, estado:'Vendido' },
   { id:4, catalogo_id:4, especificaciones:{ alto:1.2, ancho:1, color:'Blanco', papel_ahumado:true, proteccion:false }, precio:130, estado:'Disponible' }
 ];
+let abonosPendientes = [];
 
 /* ============ ESTADO UI ============ */
 const ESTADOS = ['cotizacion','confirmado','produccion','listo','entregado'];
@@ -1704,8 +1771,10 @@ function poblarDetalle(id){
 
   const total = totalPedido(p);
   const saldo = Math.max(0, total - p.abono);
-  document.getElementById('detAbono').textContent = money(p.abono);
-  document.getElementById('detSaldo').textContent = money(saldo);
+  document.getElementById('ledgerTotal').textContent = money(total);
+  document.getElementById('ledgerSaldo').textContent = money(saldo);
+  document.getElementById('ledgerSaldoBox').querySelector('.ledger-saldo').classList.toggle('pagado', saldo <= 0);
+  renderLedgerAbonos(p);
   document.getElementById('inputAbono').value = saldo > 0 ? saldo : '';
   document.getElementById('inputMetodoAbono').value = 'Efectivo';
   document.getElementById('inputFotoAbono').value = '';
@@ -1713,7 +1782,6 @@ function poblarDetalle(id){
   document.getElementById('inputFotoAbonoEmpty').classList.remove('hidden');
   document.getElementById('abonoFormWrap').classList.remove('abierto');
   document.getElementById('abonoToggle').classList.remove('abierto');
-  renderAbonosHistorial(p);
 }
 function abrirDrawer(id){
   poblarDetalle(id);
@@ -1764,7 +1832,9 @@ function abrirEditarItem(idx){
   renderCamposDinamicos();
   precargarEspecificaciones(item.especificaciones);
   document.getElementById('npPrecioFinal').value = item.precio;
+  document.getElementById('npCantidad').value = item.cantidad || 1;
   document.getElementById('npPrecioSugerido').textContent = item.nombreModelo ? ('Editando: ' + item.nombreModelo) : 'Editando ítem personalizado';
+  actualizarTotalItem();
 }
 async function guardarEdicionItem(itemNuevo){
   const p = pedidos.find(x=>x.id===state.openPedidoId);
@@ -1880,7 +1950,7 @@ async function registrarAbono(){
   const abonoAnterior = p.abono;
   const eraCotizacion = p.estado === 'cotizacion';
   const abonosAnteriores = (p.abonos || []).slice();
-  const registroOptimista = { id: 'temp-' + Date.now(), fecha: new Date().toISOString(), monto: val, metodo, foto_url: null, _guardando: true };
+  const registroOptimista = { id: 'temp-' + Date.now(), fecha: new Date().toISOString(), monto: val, metodo, foto_url: null, estado: 'pendiente', _guardando: true };
   p.abono = abonoAnterior + val;
   p.abonos = [...abonosAnteriores, registroOptimista];
   abrirDrawer(p.id);
@@ -1890,7 +1960,7 @@ async function registrarAbono(){
     let foto_base64 = null;
     if(archivoFoto) foto_base64 = await comprimirImagen(archivoFoto, 900);
     if(!MODO_DEMO){
-      const resultado = await llamarBackend('registrarAbono', { id: p.id, monto: val, metodo, foto_base64, mimeType: 'image/jpeg' });
+      const resultado = await llamarBackend('registrarAbono', { id: p.id, monto: val, metodo, foto_base64, mimeType: 'image/jpeg', usuario: state.nombreUsuario || '' });
       p.abono = resultado.abono;
       p.abonos = resultado.abonos;
     } else {
@@ -1912,7 +1982,7 @@ async function registrarAbono(){
     } else {
       abrirDrawer(p.id);
       renderLista();
-      destellar('detBalanceBox');
+      destellar('ledgerBox');
       showToast('Abono de ' + money(val) + ' registrado', 'success');
     }
   } catch(err){
@@ -1924,25 +1994,145 @@ async function registrarAbono(){
     showToast('No se pudo registrar el abono, intenta de nuevo', 'error');
   }
 }
-function renderAbonosHistorial(p){
-  const cont = document.getElementById('detAbonosHistorial');
+const ABONO_ESTADO_LABEL = { pendiente:'Pendiente', confirmado:'Confirmado', rechazado:'Rechazado' };
+function renderLedgerAbonos(p){
+  const cont = document.getElementById('ledgerAbonosList');
   if(!cont) return;
   const abonos = p.abonos || [];
   if(abonos.length === 0){ cont.innerHTML = ''; return; }
-  cont.innerHTML = `
-    <div class="section-label" style="margin-top:14px">Historial de abonos</div>
-    ${abonos.slice().reverse().map(a=>`
-      <div class="abono-historial-item ${a._guardando ? 'is-guardando' : ''}">
-        <div class="abono-historial-info">
-          <strong>${money(a.monto)}</strong>
-          <span>${a.metodo} · ${fechaHoraCorta(a.fecha)}</span>
-        </div>
-        ${a.foto_url ? `<a href="${a.foto_url}" target="_blank" rel="noopener" class="abono-historial-foto"><img src="${a.foto_url}"></a>` : (a._guardando ? `<div class="mini-spin"></div>` : '')}
-      </div>`).join('')}`;
+  cont.innerHTML = abonos.slice().reverse().map(a=>{
+    // Los abonos anteriores a este cambio no tienen "estado": se asumen confirmados.
+    const estado = a.estado || 'confirmado';
+    const puedeAvisar = estado === 'pendiente' && !a._guardando;
+    return `
+    <div class="ledger-abono-item ${a._guardando ? 'is-guardando' : ''}">
+      <div class="ledger-abono-info">
+        <strong>${money(a.monto)}</strong>
+        <span>${a.metodo} · ${fechaHoraCorta(a.fecha)}</span>
+        ${a.foto_url ? `<a href="${a.foto_url}" target="_blank" rel="noopener" class="ledger-abono-foto"><img src="${a.foto_url}"> Ver comprobante</a>` : ''}
+        ${estado === 'rechazado' && a.motivo_rechazo ? `<span class="ledger-abono-motivo">Motivo: ${a.motivo_rechazo}</span>` : ''}
+      </div>
+      <div class="ledger-abono-right">
+        ${a._guardando ? `<div class="mini-spin"></div>` : `<span class="badge-abono ${estado}">${ABONO_ESTADO_LABEL[estado]}</span>`}
+        ${puedeAvisar ? `<button type="button" class="btn-avisar-admin" data-action="avisar-admin-abono" data-abono-id="${a.id}">Avisar admin</button>` : ''}
+      </div>
+    </div>`;
+  }).join('');
 }
 function fechaHoraCorta(iso){
   const d = new Date(iso);
   return d.toLocaleDateString('es-VE', {day:'numeric', month:'short'}) + ' · ' + d.toLocaleTimeString('es-VE', {hour:'2-digit', minute:'2-digit'});
+}
+
+/* ============ MÓDULO FINANCIERO (confirmación de abonos) ============ */
+async function cargarAbonosPendientes(){
+  if(state.rol !== 'admin') return;
+  try{
+    abonosPendientes = MODO_DEMO ? [] : await llamarBackend('getAbonosPendientes');
+  } catch(err){
+    // el toast de error ya lo muestra llamarBackend
+  }
+  actualizarBadgeFinanciero();
+  if(document.getElementById('screen-financiero').classList.contains('active')) renderFinanciero();
+}
+function actualizarBadgeFinanciero(){
+  const badge = document.getElementById('badgeAbonosPendientes');
+  const n = abonosPendientes.length;
+  badge.textContent = n;
+  badge.classList.toggle('hidden', n === 0);
+}
+function renderFinanciero(){
+  const cont = document.getElementById('financieroLista');
+  if(abonosPendientes.length === 0){
+    cont.innerHTML = `<div class="empty-state">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 12l2 2 4-4M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      <strong>Todo al día</strong><span>No hay abonos pendientes de confirmar.</span>
+    </div>`;
+    return;
+  }
+  cont.innerHTML = abonosPendientes.map((a,i)=>`
+    <div class="fin-card" style="--i:${i}">
+      <div class="fin-card-head">
+        <div>
+          <div class="fin-card-cliente">${a.cliente_nombre}</div>
+          <div class="fin-card-meta">#${a.codigo} · ${a.metodo} · ${fechaHoraCorta(a.fecha)}</div>
+          ${a.registrado_por ? `<div class="fin-card-meta">Registrado por ${a.registrado_por}</div>` : ''}
+        </div>
+        <div class="fin-card-monto">${money(a.monto)}</div>
+      </div>
+      ${a.foto_url ? `<a href="${a.foto_url}" target="_blank" rel="noopener" class="fin-card-comprobante"><img src="${a.foto_url}"><span>Ver comprobante</span></a>` : ''}
+      <textarea class="fin-card-motivo hidden" id="finMotivo-${a.pedido_id}-${a.abono_id}" placeholder="Motivo del rechazo (opcional)" rows="2"></textarea>
+      <div class="fin-card-actions">
+        <button class="btn-ghost" data-action="fin-rechazar" data-pedido-id="${a.pedido_id}" data-abono-id="${a.abono_id}"><span class="btn-spin"></span><span id="finRechazarLabel-${a.pedido_id}-${a.abono_id}">Rechazar</span></button>
+        <button class="btn-primary" data-action="fin-confirmar" data-pedido-id="${a.pedido_id}" data-abono-id="${a.abono_id}"><span class="btn-spin"></span><span>Confirmar</span></button>
+      </div>
+      <div class="fin-card-ver" data-action="fin-ver-pedido" data-pedido-id="${a.pedido_id}">Ver pedido →</div>
+    </div>`).join('');
+}
+function actualizarAbonoLocal(pedidoId, abonos, abonoTotal){
+  const p = pedidos.find(x=>x.id===Number(pedidoId));
+  if(p){ p.abonos = abonos; if(abonoTotal !== undefined) p.abono = abonoTotal; }
+}
+async function confirmarAbonoFinanciero(pedidoId, abonoId, btn){
+  setCargando(btn, true);
+  try{
+    const resultado = await llamarBackend('confirmarAbono', { pedido_id: pedidoId, abono_id: abonoId, usuario: state.nombreUsuario || '' });
+    actualizarAbonoLocal(pedidoId, resultado.abonos);
+    abonosPendientes = abonosPendientes.filter(a => !(a.pedido_id===Number(pedidoId) && a.abono_id===abonoId));
+    actualizarBadgeFinanciero();
+    renderFinanciero();
+    showToast('Abono confirmado', 'success');
+  } catch(err){
+    setCargando(btn, false);
+  }
+}
+async function rechazarAbonoFinanciero(pedidoId, abonoId, motivo, btn){
+  setCargando(btn, true);
+  try{
+    const resultado = await llamarBackend('rechazarAbono', { pedido_id: pedidoId, abono_id: abonoId, usuario: state.nombreUsuario || '', motivo });
+    actualizarAbonoLocal(pedidoId, resultado.abonos, resultado.abono);
+    abonosPendientes = abonosPendientes.filter(a => !(a.pedido_id===Number(pedidoId) && a.abono_id===abonoId));
+    actualizarBadgeFinanciero();
+    renderFinanciero();
+    showToast('Abono rechazado', 'success');
+  } catch(err){
+    setCargando(btn, false);
+  }
+}
+function verPedidoDesdeFinanciero(pedidoId){
+  cerrarAvatarMenu();
+  irAScreen('ventas', 'Ventas');
+  abrirDrawer(Number(pedidoId));
+}
+// El botón "Avisar admin" arma el link propio de la app (no el del backend) para que,
+// al abrirlo, la app entre directo al módulo financiero con ese abono resaltado.
+function avisarAdminAbono(abonoId){
+  const p = pedidos.find(x=>x.id===state.openPedidoId);
+  if(!p) return;
+  const urlApp = window.location.origin + window.location.pathname;
+  const link = `${urlApp}?financiero=${abonoId}`;
+  const texto = encodeURIComponent(
+    `Hola, te aviso que registré un abono pendiente de confirmar en el pedido #${p.codigo} (${p.cliente.nombre}). ` +
+    `Entra aquí para revisarlo y confirmarlo: ${link}`
+  );
+  window.open(`https://wa.me/${TELEFONO_ADMIN_ABONOS}?text=${texto}`, '_blank');
+}
+// Si la app se abre desde el link de "Avisar admin", entra directo a Financiero con ese abono resaltado.
+async function procesarDeepLinkFinanciero(){
+  const params = new URLSearchParams(window.location.search);
+  const abonoId = params.get('financiero');
+  if(!abonoId) return;
+  history.replaceState({}, '', window.location.pathname);
+  if(state.rol !== 'admin') return;
+  cerrarAvatarMenu();
+  irAScreen('financiero', 'Financiero');
+  await cargarAbonosPendientes();
+  const tarjeta = document.querySelector(`[data-action="fin-confirmar"][data-abono-id="${abonoId}"]`)?.closest('.fin-card');
+  if(tarjeta){ tarjeta.scrollIntoView({behavior:'smooth', block:'center'}); destellarNodo(tarjeta); }
+}
+function destellarNodo(el){
+  el.classList.add('destello');
+  setTimeout(()=> el.classList.remove('destello'), 900);
 }
 
 function mensajeWhatsappNota(p, urlNota){
@@ -2677,6 +2867,7 @@ function mostrarFormConModelo(m, colorElegido){
   document.getElementById('npPrecioSugerido').textContent = `Precargado desde "${m.nombre}", ajusta si el cliente pidió algo distinto`;
   state.modeloElegidoNombre = m.nombre;
   state.catalogoIdElegido = m.id;
+  actualizarTotalItem();
 }
 function mostrarFormPersonalizado(){
   document.getElementById('itemDrawerOpciones').classList.add('hidden');
@@ -2745,6 +2936,8 @@ function toggleAvatarMenu(){
   if(abriendo){
     document.getElementById('avatarMenuNombre').textContent = state.nombreUsuario || 'Usuario';
     document.getElementById('avatarMenuRol').textContent = state.rol === 'admin' ? 'Admin' : (state.rol === 'vendedor' ? 'Vendedor' : '—');
+    document.getElementById('menuItemFinanciero').classList.toggle('hidden', state.rol !== 'admin');
+    if(state.rol === 'admin') cargarAbonosPendientes();
     document.getElementById('scrim7').classList.add('open');
     menu.classList.add('open');
   } else {
@@ -2913,6 +3106,12 @@ function actualizarPrecioSugerido(){
   const sugerido = area > 1 ? Math.round(base * area) : base;
   document.getElementById('npPrecioSugerido').textContent = `Precio sugerido: ${money(sugerido)} (editable abajo)`;
   document.getElementById('npPrecioFinal').value = sugerido;
+  actualizarTotalItem();
+}
+function actualizarTotalItem(){
+  const precio = parseFloat(document.getElementById('npPrecioFinal').value) || 0;
+  const cantidad = parseInt(document.getElementById('npCantidad').value) || 1;
+  document.getElementById('npTotalItemValor').textContent = money(precio * cantidad);
 }
 
 /* Lee las especificaciones de cualquiera de los dos formularios (prefijo "np" o "nm") */
@@ -2977,6 +3176,8 @@ function resetItemDrawerASeleccion(){
   state.modeloElegidoNombre = null;
   state.catalogoIdElegido = null;
   document.getElementById('npCantidad').value = 1;
+  document.getElementById('npPrecioFinal').value = '';
+  actualizarTotalItem();
   const body = document.querySelector('#drawerItem .drawer-body');
   if(body) body.scrollTop = 0;
 }
@@ -3127,7 +3328,9 @@ function abrirEditarItemNP(idx){
   renderCamposDinamicos();
   precargarEspecificaciones(item.especificaciones);
   document.getElementById('npPrecioFinal').value = item.precio;
+  document.getElementById('npCantidad').value = item.cantidad || 1;
   document.getElementById('npPrecioSugerido').textContent = item.nombreModelo ? ('Editando: ' + item.nombreModelo) : 'Editando ítem personalizado';
+  actualizarTotalItem();
 }
 function guardarEdicionItemNP(itemNuevo){
   const idx = state.itemEditIndexNP;
@@ -3271,6 +3474,7 @@ function irAScreen(name, label){
   actualizarBannerSeleccion();
   if(name === 'exhibicion') renderExhibicion();
   if(name === 'catalogo') renderCatalogo();
+  if(name === 'financiero') renderFinanciero();
 }
 
 /* ============ EVENTOS (delegación) ============ */
@@ -3303,6 +3507,7 @@ document.getElementById('btnLogin').addEventListener('click', async ()=>{
     guardarSesion(usuario);
     document.getElementById('loginScreen').classList.add('hidden');
     await cargarDatosIniciales();
+    procesarDeepLinkFinanciero();
   } catch(err){
     document.getElementById('fieldPassword').classList.add('error');
     document.querySelector('#fieldPassword .field-error').textContent = 'Usuario o PIN incorrecto';
@@ -3345,6 +3550,8 @@ wireFotoPreview('nmFotoBlanco', 'nmFotoBlancoEmpty', 'nmFotoBlancoPreview');
 wireFotoPreview('nmFotoNegro', 'nmFotoNegroEmpty', 'nmFotoNegroPreview');
 wireFotoPreview('inputFotoAbono', 'inputFotoAbonoEmpty', 'inputFotoAbonoPreview');
 document.getElementById('npDescuento').addEventListener('input', actualizarTotalNuevo);
+document.getElementById('npPrecioFinal').addEventListener('input', actualizarTotalItem);
+document.getElementById('npCantidad').addEventListener('input', actualizarTotalItem);
 document.getElementById('npTelefono').addEventListener('input', chequearClienteExistente);
 document.getElementById('npCedula').addEventListener('input', chequearClienteExistente);
 document.getElementById('exhSearchInput').addEventListener('input', e=>{
@@ -3453,6 +3660,20 @@ document.body.addEventListener('click', e=>{
   else if(action === 'cancelar-seleccion') cancelarSeleccion();
   else if(action === 'toggle-avatar-menu') toggleAvatarMenu();
   else if(action === 'ir-catalogo'){ cerrarAvatarMenu(); irAScreen('catalogo', 'Catálogo'); }
+  else if(action === 'ir-financiero'){ cerrarAvatarMenu(); irAScreen('financiero', 'Financiero'); cargarAbonosPendientes(); }
+  else if(action === 'fin-confirmar') confirmarAbonoFinanciero(el.dataset.pedidoId, el.dataset.abonoId, el);
+  else if(action === 'fin-rechazar'){
+    const campoMotivo = document.getElementById(`finMotivo-${el.dataset.pedidoId}-${el.dataset.abonoId}`);
+    const label = document.getElementById(`finRechazarLabel-${el.dataset.pedidoId}-${el.dataset.abonoId}`);
+    if(campoMotivo.classList.contains('hidden')){
+      campoMotivo.classList.remove('hidden'); campoMotivo.focus();
+      label.textContent = 'Confirmar rechazo';
+    } else {
+      rechazarAbonoFinanciero(el.dataset.pedidoId, el.dataset.abonoId, campoMotivo.value.trim(), el);
+    }
+  }
+  else if(action === 'fin-ver-pedido') verPedidoDesdeFinanciero(el.dataset.pedidoId);
+  else if(action === 'avisar-admin-abono') avisarAdminAbono(el.dataset.abonoId);
   else if(action === 'ir-config'){ cerrarAvatarMenu(); irAScreen('placeholder', 'Configuración'); }
   else if(action === 'cerrar-sesion'){
     cerrarAvatarMenu();
