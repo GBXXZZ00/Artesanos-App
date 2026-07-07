@@ -420,6 +420,17 @@
   /* ---------- FORM (nuevo pedido) ---------- */
   .form-group{ margin-bottom:14px; }
   .form-row{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .cantidad-stepper-box{
+    display:flex; align-items:center; justify-content:space-between; padding:6px 14px;
+    background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); height:47px; box-sizing:border-box;
+  }
+  .cantidad-stepper-box button{
+    width:28px; height:28px; border-radius:50%; border:1px solid var(--border2); background:var(--surface); color:var(--gold);
+    font-size:16px; font-weight:700; display:flex; align-items:center; justify-content:center; cursor:pointer;
+    transition:transform .1s var(--ease-out); flex-shrink:0;
+  }
+  .cantidad-stepper-box button:active{ transform:scale(0.9); }
+  .cantidad-stepper-box span{ font-size:15px; font-weight:800; color:var(--text); }
   .item-total-row{
     display:flex; justify-content:space-between; align-items:center; margin:14px 0 16px; padding-top:12px;
     border-top:1px solid var(--border); font-size:13.5px; font-weight:700; color:var(--text2);
@@ -500,7 +511,7 @@
   .ledger-abono-info strong{ font-size:14.5px; }
   .ledger-abono-info span{ font-size:11.5px; color:var(--text2); }
   .ledger-abono-motivo{ font-size:11px; color:var(--red); font-style:italic; }
-  .ledger-abono-foto{ display:inline-flex; align-items:center; gap:5px; font-size:11px; color:var(--text2); text-decoration:none; font-weight:600; }
+  .ledger-abono-foto{ display:inline-flex; align-items:center; gap:5px; font-size:11px; color:var(--text2); text-decoration:none; font-weight:600; cursor:pointer; }
   .ledger-abono-foto img{ width:22px; height:22px; border-radius:5px; object-fit:cover; border:1px solid var(--border); }
   .ledger-abono-right{ display:flex; flex-direction:column; align-items:flex-end; gap:6px; }
   .badge-abono{ font-size:10.5px; font-weight:700; padding:3px 9px; border-radius:20px; white-space:nowrap; }
@@ -526,7 +537,7 @@
   .fin-card-cliente{ font-size:15px; font-weight:700; }
   .fin-card-meta{ font-size:11.5px; color:var(--text2); margin-top:2px; }
   .fin-card-monto{ font-size:19px; font-weight:800; color:var(--gold); white-space:nowrap; }
-  .fin-card-comprobante{ display:flex; align-items:center; gap:8px; margin-bottom:12px; }
+  .fin-card-comprobante{ display:flex; align-items:center; gap:8px; margin-bottom:12px; cursor:pointer; }
   .fin-card-comprobante img{ width:44px; height:44px; border-radius:8px; object-fit:cover; border:1px solid var(--border); }
   .fin-card-comprobante span{ font-size:11.5px; color:var(--text2); font-weight:600; }
   .fin-card-motivo{
@@ -535,7 +546,6 @@
   }
   .fin-card-actions{ display:flex; gap:8px; }
   .fin-card-actions .btn-primary, .fin-card-actions .btn-ghost{ flex:1; padding:10px; font-size:13px; }
-  .fin-card-ver{ display:block; text-align:center; margin-top:8px; font-size:12.5px; font-weight:700; color:var(--text2); cursor:pointer; }
 
   .subfields{ padding:12px; background:var(--surface3); border-radius:var(--radius-sm); margin:-4px 0 12px; border:1px dashed var(--border2); }
 
@@ -597,6 +607,14 @@
     transition: transform .32s var(--ease-drawer); z-index:33; display:flex; flex-direction:column; overflow:hidden;
   }
   .drawer-exh.open{ transform:translateY(0); }
+
+  .lightbox-wrap{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding:24px;
+    opacity:0; pointer-events:none; transform:scale(0.95);
+    transition: opacity .25s var(--ease-out), transform .25s var(--ease-out);
+  }
+  .lightbox-wrap.open{ opacity:1; pointer-events:auto; transform:scale(1); }
+  .lightbox-wrap img{ max-width:100%; max-height:100%; border-radius:var(--radius); object-fit:contain; }
 
   /* ---------- EXHIBICIÓN ---------- */
   .exh-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
@@ -1005,15 +1023,23 @@
         <div class="form-row">
           <div class="field" style="flex:1">
             <label>Cantidad</label>
-            <input type="number" id="npCantidad" min="1" value="1" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px">
+            <div class="cantidad-stepper-box">
+              <button type="button" data-action="np-cantidad-menos">−</button>
+              <span id="npCantidadValor">1</span>
+              <button type="button" data-action="np-cantidad-mas">+</button>
+            </div>
+            <input type="hidden" id="npCantidad" value="1">
           </div>
           <div class="field" style="flex:1">
             <label>Precio unitario</label>
             <div class="input-money"><input type="number" id="npPrecioFinal" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px"></div>
           </div>
         </div>
-        <div class="item-total-row">
+        <div class="item-total-row" id="npTotalRow">
           <span>Total</span><strong id="npTotalItemValor">$0</strong>
+        </div>
+        <div class="item-total-row hidden" id="npAvisoMultiplePiezas">
+          <span id="npAvisoMultiplePiezasTexto">Se registrará 1 pieza independiente</span>
         </div>
         <button class="btn-primary" id="btnAgregarItemAccion" style="width:100%;margin-bottom:10px" data-action="add-item"><span class="btn-spin"></span><span id="btnAgregarItemLabel">+ Agregar este ítem</span></button>
       </div>
@@ -1159,6 +1185,13 @@
     </div>
   </div>
 
+  <!-- SCRIM 8 + LIGHTBOX (ver comprobante sin salir de la app) -->
+  <div class="scrim3" id="scrimLightbox" style="z-index:90; background:rgba(0,0,0,.85)" data-action="close-lightbox"></div>
+  <div class="lightbox-wrap" id="lightboxWrap" style="z-index:91" data-action="close-lightbox">
+    <div class="icon-btn" style="position:absolute;top:calc(env(safe-area-inset-top) + 14px);right:14px;background:rgba(255,255,255,.15);color:#fff" data-action="close-lightbox"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 6l12 12M18 6L6 18"/></svg></div>
+    <img id="lightboxImg" src="" alt="Comprobante">
+  </div>
+
   <!-- SCRIM 7 + DRAWER MENÚ DE AVATAR -->
   <div class="scrim3" id="scrim7" style="z-index:44" data-action="close-avatar-menu"></div>
   <div class="side-drawer" id="avatarMenu" style="z-index:45; padding-top:env(safe-area-inset-top)">
@@ -1168,7 +1201,7 @@
       <div class="avatar-menu-rol" id="avatarMenuRol">—</div>
     </div>
     <div class="avatar-menu-item hidden" id="menuItemFinanciero" data-action="ir-financiero">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>Módulo financiero
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>Pagos pendientes
       <span class="menu-badge-count hidden" id="badgeAbonosPendientes">0</span>
     </div>
     <div class="avatar-menu-item" data-action="ir-catalogo">
@@ -1188,7 +1221,7 @@
 <script>
 /* ============ CONFIG ============ */
 const MODO_DEMO = false;
-const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbydQhS_9BjtkK_QsUz_U5rk8u-up00J3kPJBiHndhKSichw9hrZ1i2o1iKeL4HlwY2i/exec';
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbzfmLhP3_jzUqnikkA67qR2LZlaHpy3mmCHG8SUjqoFJ_d_TkmLkG6uxPVe8vLRDkPi/exec';
 const NUMERO_NEGOCIO = '584220167079';
 const TELEFONO_ADMIN_ABONOS = '584146326465'; // Recibe el aviso por WhatsApp cuando hay un abono pendiente de confirmar
 
@@ -1832,7 +1865,7 @@ function abrirEditarItem(idx){
   renderCamposDinamicos();
   precargarEspecificaciones(item.especificaciones);
   document.getElementById('npPrecioFinal').value = item.precio;
-  document.getElementById('npCantidad').value = item.cantidad || 1;
+  setCantidadNP(item.cantidad || 1);
   document.getElementById('npPrecioSugerido').textContent = item.nombreModelo ? ('Editando: ' + item.nombreModelo) : 'Editando ítem personalizado';
   actualizarTotalItem();
 }
@@ -1969,15 +2002,16 @@ async function registrarAbono(){
     }
     setCargando(document.getElementById('btnRegistrarAbono'), false);
 
-    // Un pedido 100% de exhibición que recibe abono ya no es solo una cotización: pasa a Activos.
+    // Un pedido que recibe su primer abono pasa de Cotización a Confirmado, pero eso
+    // pasa "por debajo" del drawer: el usuario se queda viendo el pedido, no lo sacamos a la lista.
     if(eraCotizacion){
       p.estado = 'confirmado';
       if(!MODO_DEMO){
         try{ await llamarBackend('updatePedido', { id: p.id, estado: 'confirmado' }); } catch(err){}
       }
-      cerrarTodo();
       cambiarTabVentas('activos');
-      resaltarPedidoEnLista(p.id);
+      abrirDrawer(p.id);
+      destellar('ledgerBox');
       showToast('Abono registrado, pedido confirmado', 'success');
     } else {
       abrirDrawer(p.id);
@@ -2009,7 +2043,7 @@ function renderLedgerAbonos(p){
       <div class="ledger-abono-info">
         <strong>${money(a.monto)}</strong>
         <span>${a.metodo} · ${fechaHoraCorta(a.fecha)}</span>
-        ${a.foto_url ? `<a href="${a.foto_url}" target="_blank" rel="noopener" class="ledger-abono-foto"><img src="${a.foto_url}"> Ver comprobante</a>` : ''}
+        ${a.foto_url ? `<div data-action="ver-comprobante" data-url="${a.foto_url}" class="ledger-abono-foto"><img src="${a.foto_url}"> Ver comprobante</div>` : ''}
         ${estado === 'rechazado' && a.motivo_rechazo ? `<span class="ledger-abono-motivo">Motivo: ${a.motivo_rechazo}</span>` : ''}
       </div>
       <div class="ledger-abono-right">
@@ -2060,13 +2094,13 @@ function renderFinanciero(){
         </div>
         <div class="fin-card-monto">${money(a.monto)}</div>
       </div>
-      ${a.foto_url ? `<a href="${a.foto_url}" target="_blank" rel="noopener" class="fin-card-comprobante"><img src="${a.foto_url}"><span>Ver comprobante</span></a>` : ''}
+      ${a.foto_url ? `<div data-action="ver-comprobante" data-url="${a.foto_url}" class="fin-card-comprobante"><img src="${a.foto_url}"><span>Ver comprobante</span></div>` : ''}
       <textarea class="fin-card-motivo hidden" id="finMotivo-${a.pedido_id}-${a.abono_id}" placeholder="Motivo del rechazo (opcional)" rows="2"></textarea>
       <div class="fin-card-actions">
         <button class="btn-ghost" data-action="fin-rechazar" data-pedido-id="${a.pedido_id}" data-abono-id="${a.abono_id}"><span class="btn-spin"></span><span id="finRechazarLabel-${a.pedido_id}-${a.abono_id}">Rechazar</span></button>
         <button class="btn-primary" data-action="fin-confirmar" data-pedido-id="${a.pedido_id}" data-abono-id="${a.abono_id}"><span class="btn-spin"></span><span>Confirmar</span></button>
       </div>
-      <div class="fin-card-ver" data-action="fin-ver-pedido" data-pedido-id="${a.pedido_id}">Ver pedido →</div>
+      <button class="btn-ghost" style="width:100%;margin-top:10px" data-action="fin-ver-pedido" data-pedido-id="${a.pedido_id}">Ver pedido</button>
     </div>`).join('');
 }
 function actualizarAbonoLocal(pedidoId, abonos, abonoTotal){
@@ -2101,7 +2135,6 @@ async function rechazarAbonoFinanciero(pedidoId, abonoId, motivo, btn){
 }
 function verPedidoDesdeFinanciero(pedidoId){
   cerrarAvatarMenu();
-  irAScreen('ventas', 'Ventas');
   abrirDrawer(Number(pedidoId));
 }
 // El botón "Avisar admin" arma el link propio de la app (no el del backend) para que,
@@ -2109,11 +2142,15 @@ function verPedidoDesdeFinanciero(pedidoId){
 function avisarAdminAbono(abonoId){
   const p = pedidos.find(x=>x.id===state.openPedidoId);
   if(!p) return;
+  const abono = (p.abonos || []).find(a => String(a.id) === String(abonoId));
   const urlApp = window.location.origin + window.location.pathname;
   const link = `${urlApp}?financiero=${abonoId}`;
   const texto = encodeURIComponent(
-    `Hola, te aviso que registré un abono pendiente de confirmar en el pedido #${p.codigo} (${p.cliente.nombre}). ` +
-    `Entra aquí para revisarlo y confirmarlo: ${link}`
+    `Hola 👋\n` +
+    `Hay un abono pendiente de confirmar:\n` +
+    `📄 Pedido #${p.codigo} · ${p.cliente.nombre}` +
+    (abono ? `\n💰 Monto: ${money(abono.monto)} · ${abono.metodo}` : '') +
+    `\n\nConfírmalo aquí:\n${link}`
   );
   window.open(`https://wa.me/${TELEFONO_ADMIN_ABONOS}?text=${texto}`, '_blank');
 }
@@ -2125,7 +2162,7 @@ async function procesarDeepLinkFinanciero(){
   history.replaceState({}, '', window.location.pathname);
   if(state.rol !== 'admin') return;
   cerrarAvatarMenu();
-  irAScreen('financiero', 'Financiero');
+  irAScreen('financiero', 'Pagos pendientes');
   await cargarAbonosPendientes();
   const tarjeta = document.querySelector(`[data-action="fin-confirmar"][data-abono-id="${abonoId}"]`)?.closest('.fin-card');
   if(tarjeta){ tarjeta.scrollIntoView({behavior:'smooth', block:'center'}); destellarNodo(tarjeta); }
@@ -2133,6 +2170,16 @@ async function procesarDeepLinkFinanciero(){
 function destellarNodo(el){
   el.classList.add('destello');
   setTimeout(()=> el.classList.remove('destello'), 900);
+}
+function abrirLightbox(url){
+  if(!url) return;
+  document.getElementById('lightboxImg').src = url;
+  document.getElementById('scrimLightbox').classList.add('open');
+  document.getElementById('lightboxWrap').classList.add('open');
+}
+function cerrarLightbox(){
+  document.getElementById('scrimLightbox').classList.remove('open');
+  document.getElementById('lightboxWrap').classList.remove('open');
 }
 
 function mensajeWhatsappNota(p, urlNota){
@@ -3108,10 +3155,29 @@ function actualizarPrecioSugerido(){
   document.getElementById('npPrecioFinal').value = sugerido;
   actualizarTotalItem();
 }
+function setCantidadNP(n){
+  document.getElementById('npCantidad').value = n;
+  document.getElementById('npCantidadValor').textContent = n;
+  actualizarTotalItem();
+}
+function cambiarCantidadNP(delta){
+  const actual = parseInt(document.getElementById('npCantidad').value) || 1;
+  setCantidadNP(Math.max(1, actual + delta));
+}
 function actualizarTotalItem(){
   const precio = parseFloat(document.getElementById('npPrecioFinal').value) || 0;
   const cantidad = parseInt(document.getElementById('npCantidad').value) || 1;
-  document.getElementById('npTotalItemValor').textContent = money(precio * cantidad);
+  const esExhibicionNueva = state.itemTarget === 'exhibicion-nueva';
+  // En exhibición cada pieza es independiente (no hay "venta total" que calcular);
+  // en un pedido sí, porque cantidad × precio es el total real de esa línea.
+  document.getElementById('npTotalRow').classList.toggle('hidden', esExhibicionNueva);
+  document.getElementById('npAvisoMultiplePiezas').classList.toggle('hidden', !esExhibicionNueva);
+  if(esExhibicionNueva){
+    document.getElementById('npAvisoMultiplePiezasTexto').textContent =
+      cantidad > 1 ? `Se registrarán ${cantidad} piezas independientes` : 'Se registrará 1 pieza independiente';
+  } else {
+    document.getElementById('npTotalItemValor').textContent = money(precio * cantidad);
+  }
 }
 
 /* Lee las especificaciones de cualquiera de los dos formularios (prefijo "np" o "nm") */
@@ -3175,7 +3241,7 @@ function resetItemDrawerASeleccion(){
   state.itemEditIndexNP = null;
   state.modeloElegidoNombre = null;
   state.catalogoIdElegido = null;
-  document.getElementById('npCantidad').value = 1;
+  setCantidadNP(1);
   document.getElementById('npPrecioFinal').value = '';
   actualizarTotalItem();
   const body = document.querySelector('#drawerItem .drawer-body');
@@ -3236,29 +3302,35 @@ async function agregarItemComun(item, mensaje){
   showToast(mensaje, 'success');
 }
 async function guardarNuevaPiezaDesdeForm(item){
-  const pieza = { catalogo_id: state.catalogoIdElegido || null, especificaciones: item.especificaciones, precio: item.precio, estado: 'Disponible' };
+  const cantidad = Math.max(1, item.cantidad || 1);
+  const piezaBase = { catalogo_id: state.catalogoIdElegido || null, especificaciones: item.especificaciones, precio: item.precio, estado: 'Disponible' };
 
   // Cierre inmediato: no hacemos esperar al usuario el viaje al backend.
   cerrarItemDrawer();
   irAScreen('exhibicion', 'Exhibición');
 
-  const idTemporal = 'temp-' + Date.now();
-  exhibicion.push({ ...pieza, id: idTemporal, _guardando: true });
+  const temporales = Array.from({ length: cantidad }).map(() => 'temp-' + Date.now() + '-' + Math.random().toString(36).slice(2));
+  temporales.forEach(idTemporal => exhibicion.push({ ...piezaBase, id: idTemporal, _guardando: true }));
   renderExhibicion();
 
   try{
+    let idsNuevos;
     if(MODO_DEMO){
-      pieza.id = exhibicion.reduce((max,x)=>typeof x.id==='number' ? Math.max(max,x.id) : max, 0) + 1;
+      let maxId = exhibicion.reduce((max,x)=>typeof x.id==='number' ? Math.max(max,x.id) : max, 0);
+      idsNuevos = temporales.map(()=> ++maxId);
     } else {
-      const resultado = await llamarBackend('saveExhibicionPieza', pieza);
-      pieza.id = resultado.id;
+      // Una sola llamada crea las N piezas independientes (mismo modelo/specs/precio, cada una su propia fila).
+      const resultado = await llamarBackend('saveExhibicionPieza', { ...piezaBase, cantidad });
+      idsNuevos = resultado.ids;
     }
-    const idx = exhibicion.findIndex(x=>x.id===idTemporal);
-    if(idx>-1) exhibicion[idx] = pieza;
+    temporales.forEach((idTemporal, i) => {
+      const idx = exhibicion.findIndex(x=>x.id===idTemporal);
+      if(idx>-1) exhibicion[idx] = { ...piezaBase, id: idsNuevos[i] };
+    });
     renderExhibicion();
-    showToast('Pieza agregada a exhibición', 'success');
+    showToast(cantidad > 1 ? `${cantidad} piezas agregadas a exhibición` : 'Pieza agregada a exhibición', 'success');
   } catch(err){
-    exhibicion = exhibicion.filter(x=>x.id!==idTemporal);
+    exhibicion = exhibicion.filter(x => !temporales.includes(x.id));
     renderExhibicion();
     showToast('No se pudo guardar la pieza, intenta de nuevo', 'error');
   }
@@ -3328,7 +3400,7 @@ function abrirEditarItemNP(idx){
   renderCamposDinamicos();
   precargarEspecificaciones(item.especificaciones);
   document.getElementById('npPrecioFinal').value = item.precio;
-  document.getElementById('npCantidad').value = item.cantidad || 1;
+  setCantidadNP(item.cantidad || 1);
   document.getElementById('npPrecioSugerido').textContent = item.nombreModelo ? ('Editando: ' + item.nombreModelo) : 'Editando ítem personalizado';
   actualizarTotalItem();
 }
@@ -3551,7 +3623,6 @@ wireFotoPreview('nmFotoNegro', 'nmFotoNegroEmpty', 'nmFotoNegroPreview');
 wireFotoPreview('inputFotoAbono', 'inputFotoAbonoEmpty', 'inputFotoAbonoPreview');
 document.getElementById('npDescuento').addEventListener('input', actualizarTotalNuevo);
 document.getElementById('npPrecioFinal').addEventListener('input', actualizarTotalItem);
-document.getElementById('npCantidad').addEventListener('input', actualizarTotalItem);
 document.getElementById('npTelefono').addEventListener('input', chequearClienteExistente);
 document.getElementById('npCedula').addEventListener('input', chequearClienteExistente);
 document.getElementById('exhSearchInput').addEventListener('input', e=>{
@@ -3601,6 +3672,8 @@ document.body.addEventListener('click', e=>{
   else if(action === 'ver-pedido-desde-exh') verPedidoDesdeExh();
   else if(action === 'exh-cantidad-menos') cambiarCantidadExh(-1);
   else if(action === 'exh-cantidad-mas') cambiarCantidadExh(1);
+  else if(action === 'np-cantidad-menos') cambiarCantidadNP(-1);
+  else if(action === 'np-cantidad-mas') cambiarCantidadNP(1);
   else if(action === 'set-exh-rango'){
     state.exhRango = el.dataset.rango;
     document.querySelectorAll('#exhRangoChips .chip').forEach(c=>c.classList.toggle('active', c===el));
@@ -3660,7 +3733,7 @@ document.body.addEventListener('click', e=>{
   else if(action === 'cancelar-seleccion') cancelarSeleccion();
   else if(action === 'toggle-avatar-menu') toggleAvatarMenu();
   else if(action === 'ir-catalogo'){ cerrarAvatarMenu(); irAScreen('catalogo', 'Catálogo'); }
-  else if(action === 'ir-financiero'){ cerrarAvatarMenu(); irAScreen('financiero', 'Financiero'); cargarAbonosPendientes(); }
+  else if(action === 'ir-financiero'){ cerrarAvatarMenu(); irAScreen('financiero', 'Pagos pendientes'); cargarAbonosPendientes(); }
   else if(action === 'fin-confirmar') confirmarAbonoFinanciero(el.dataset.pedidoId, el.dataset.abonoId, el);
   else if(action === 'fin-rechazar'){
     const campoMotivo = document.getElementById(`finMotivo-${el.dataset.pedidoId}-${el.dataset.abonoId}`);
@@ -3674,6 +3747,8 @@ document.body.addEventListener('click', e=>{
   }
   else if(action === 'fin-ver-pedido') verPedidoDesdeFinanciero(el.dataset.pedidoId);
   else if(action === 'avisar-admin-abono') avisarAdminAbono(el.dataset.abonoId);
+  else if(action === 'ver-comprobante') abrirLightbox(el.dataset.url);
+  else if(action === 'close-lightbox') cerrarLightbox();
   else if(action === 'ir-config'){ cerrarAvatarMenu(); irAScreen('placeholder', 'Configuración'); }
   else if(action === 'cerrar-sesion'){
     cerrarAvatarMenu();
