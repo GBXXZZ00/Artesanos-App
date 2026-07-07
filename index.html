@@ -373,6 +373,9 @@
   .item-origen.exh{ background:var(--blue-dim); color:#3B82C4; }
   .item-origen.porfabricar{ background:var(--amber-dim); color:#B8860B; }
   .item-spec{ font-size:11.5px; color:var(--text2); margin-top:2px; }
+  .prod-line-pedido{ font-size:11px; font-weight:600; margin-top:4px; }
+  .prod-line-pedido.wip{ color:var(--gold); }
+  .prod-line-pedido.done{ color:var(--green); }
   .item-price{ font-size:14px; font-weight:700; color:var(--gold); flex-shrink:0; margin-left:10px; }
 
   .balance-box{ background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:14px; margin-top:16px; display:flex; justify-content:space-between; transition: box-shadow .35s var(--ease-out), border-color .35s var(--ease-out); }
@@ -1390,7 +1393,7 @@
 <script>
 /* ============ CONFIG ============ */
 const MODO_DEMO = false;
-const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbxwdQWvzX_2qjJR7ZF1-Iffz2NV2weSvytLIYQ7Ts5Z_yNd1nqQdG_lUQXydAAAN3Yh/exec';
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbzmNgSOZizUXSpuUnSmszxuGJHgq2VlCDNKV72zHNfKiSvVWF3PhyRjLzqcqAVhcgzU/exec';
 const NUMERO_NEGOCIO = '584220167079';
 const TELEFONO_ADMIN_ABONOS = '584146326465'; // Recibe el aviso por WhatsApp cuando hay un abono pendiente de confirmar
 
@@ -1701,6 +1704,25 @@ function miniaturaItem(item){
     ? `<img src="${foto}" alt="" style="width:100%;height:100%;object-fit:cover">`
     : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--gold)">${iconoGenericoTipo()}</div>`;
 }
+// Solo lectura: refleja lo que ya hay en Producción, sin poder asignar ni completar desde aquí.
+function etapaActualIndexJS(item){
+  if(!item.etapas) return -1;
+  for(let i=0;i<item.etapas.length;i++){
+    if(item.etapas[i].estado !== 'hecho') return i;
+  }
+  return -1;
+}
+function textoProduccionItem(it){
+  if(!it.etapas) return '';
+  const idx = etapaActualIndexJS(it);
+  const ventanaOk = !it.etapaVentana || it.etapaVentana.estado === 'hecho';
+  if(idx === -1 && ventanaOk) return `<div class="prod-line-pedido done">✓ Producción terminada</div>`;
+  if(idx === -1 && !ventanaOk){
+    return `<div class="prod-line-pedido wip">🔨 En producción: ${it.etapaVentana.nombre}${it.etapaVentana.trabajador ? ' · asignado a ' + it.etapaVentana.trabajador : ''}</div>`;
+  }
+  const etapa = it.etapas[idx];
+  return `<div class="prod-line-pedido wip">🔨 En producción: ${etapa.nombre}${etapa.trabajador ? ' · asignado a ' + etapa.trabajador : ''}</div>`;
+}
 function especTexto(item){
   const e = item.especificaciones;
   const parts = [];
@@ -1718,6 +1740,7 @@ function especTexto(item){
   if(e.papel_ahumado) parts.push('papel ahumado');
   if(e.mas_hojas) parts.push('más de 2 hojas');
   if(e.instalacion) parts.push('instalación incluida');
+  if(item.tipo==='Combo') parts.push('incluye 2 ventanas 1×1');
   return parts.join(' · ');
 }
 
@@ -1966,6 +1989,7 @@ function poblarDetalle(id){
         <div>
           <div class="item-name">${it.nombreModelo || it.tipo}${it.cantidad>1 ? ' ×'+it.cantidad : ''} <span class="item-origen ${esDeExhibicion(it) ? 'exh' : 'porfabricar'}">${esDeExhibicion(it) ? 'Exhibición' : 'Fabricación'}</span></div>
           <div class="item-spec">${especTexto(it)}</div>
+          ${!esDeExhibicion(it) ? textoProduccionItem(it) : ''}
         </div>
       </div>
       <div class="item-actions">
@@ -2350,6 +2374,7 @@ let trabajadoresCache = [];
 let prodTabActual = 'pendiente';
 
 async function cargarProduccion(){
+  document.getElementById('listaProduccion').innerHTML = '<div class="mini-spin" style="margin:40px auto"></div>';
   try{
     if(MODO_DEMO){
       produccionData = [];
@@ -2374,6 +2399,7 @@ function cambiarTabProduccion(tab){
   prodTabActual = tab;
   document.querySelectorAll('#prodTabs .tab').forEach(t=>t.classList.toggle('active', t.dataset.tab===tab));
   document.getElementById('btnNuevoTrabajoExh').classList.toggle('hidden', tab==='nomina' || state.rol !== 'admin');
+  document.getElementById('listaProduccion').innerHTML = '<div class="mini-spin" style="margin:40px auto"></div>';
   if(tab === 'nomina') cargarNomina();
   else renderProduccion();
 }
@@ -2397,9 +2423,14 @@ function renderBentoProduccion(){
         if(urgenciaPedido(p.fecha_entrega)) pedidoUrgente = true;
         if(it.etapas[it.etapaActual].estado === 'pendiente' && !it.bloqueada) esperandoAsignar++;
       }
+      if(it.etapaVentana && it.etapaVentana.estado !== 'hecho'){
+        if(urgenciaPedido(p.fecha_entrega)) pedidoUrgente = true;
+        if(it.etapaVentana.estado === 'pendiente') esperandoAsignar++;
+      }
       it.etapas.forEach(e=>{
         if(e.estado === 'hecho' && e.fecha_hecho && new Date(e.fecha_hecho).toDateString() === hoy) completadasHoy++;
       });
+      if(it.etapaVentana && it.etapaVentana.estado === 'hecho' && it.etapaVentana.fecha_hecho && new Date(it.etapaVentana.fecha_hecho).toDateString() === hoy) completadasHoy++;
     });
     if(pedidoUrgente) urgentes++;
   });
@@ -2467,6 +2498,27 @@ function cerrarDrawerProduccion(){
   document.getElementById('scrimProduccion').classList.remove('open');
   document.getElementById('drawerProduccion').classList.remove('open');
 }
+function renderAccionEtapa(p, it, etapa, pista){
+  const idParam = p.pedido_id != null ? p.pedido_id : p.trabajo_id;
+  if(etapa.nombre === 'Embalar'){
+    return `<button class="btn-primary" style="width:100%" data-action="completar-embalaje" data-origen="${p.origen}" data-id="${idParam}" data-item-index="${it.index}" data-pista="${pista}"><span class="btn-spin"></span><span>Marcar como embalado</span></button>`;
+  }
+  if(etapa.estado === 'pendiente'){
+    const especialidadNecesaria = ETAPA_A_ESPECIALIDAD[etapa.nombre] || etapa.nombre;
+    const disponibles = trabajadoresCache.filter(t => t.especialidad === especialidadNecesaria);
+    return `
+      <div class="prod-asignar-box">
+        <select id="prodAsignarSelect-${it.index}-${pista}">
+          <option value="">Elegir ${especialidadNecesaria}...</option>
+          ${disponibles.map(t=>`<option value="${t.usuario}">${t.nombre}</option>`).join('')}
+        </select>
+        <button class="btn-primary" style="padding:11px 16px;flex-shrink:0" data-action="asignar-etapa" data-origen="${p.origen}" data-id="${idParam}" data-item-index="${it.index}" data-pista="${pista}"><span class="btn-spin"></span><span>Asignar</span></button>
+      </div>
+      ${disponibles.length===0 ? `<div class="prod-bloqueada" style="margin-top:6px">Todavía no hay ningún ${especialidadNecesaria} registrado.</div>` : ''}
+    `;
+  }
+  return `<div class="prod-bloqueada">Asignado a ${etapa.trabajador || '—'}, esperando a que lo marque terminado.</div>`;
+}
 function renderProdDrawerItems(p){
   const cont = document.getElementById('prodDrawerItems');
   cont.innerHTML = p.items.map(it=>{
@@ -2478,30 +2530,26 @@ function renderProdDrawerItems(p){
 
     let accionHtml = '';
     if(it.etapaActual === -1){
-      accionHtml = `<div class="prod-terminado-nota">✓ Todas las etapas completadas</div>`;
+      accionHtml = `<div class="prod-terminado-nota">✓ Cadena principal completada</div>`;
     } else if(it.bloqueada){
       accionHtml = `<div class="prod-bloqueada">Esperando a que la ventana de este combo esté ensamblada.</div>`;
     } else if(state.rol === 'admin'){
-      const etapa = it.etapas[it.etapaActual];
-      if(etapa.nombre === 'Embalar'){
-        // Embalar no es un paso de fabricación: es solo dejarlo listo para entregar, no se cobra ni se asigna.
-        accionHtml = `<button class="btn-primary" style="width:100%" data-action="completar-embalaje" data-origen="${p.origen}" data-id="${p.pedido_id != null ? p.pedido_id : p.trabajo_id}" data-item-index="${it.index}"><span class="btn-spin"></span><span>Marcar como embalado</span></button>`;
-      } else if(etapa.estado === 'pendiente'){
-        const especialidadNecesaria = ETAPA_A_ESPECIALIDAD[etapa.nombre] || etapa.nombre;
-        const disponibles = trabajadoresCache.filter(t => t.especialidad === especialidadNecesaria);
-        accionHtml = `
-          <div class="prod-asignar-box">
-            <select id="prodAsignarSelect-${it.index}">
-              <option value="">Elegir ${especialidadNecesaria}...</option>
-              ${disponibles.map(t=>`<option value="${t.usuario}">${t.nombre}</option>`).join('')}
-            </select>
-            <button class="btn-primary" style="padding:11px 16px;flex-shrink:0" data-action="asignar-etapa" data-origen="${p.origen}" data-id="${p.pedido_id != null ? p.pedido_id : p.trabajo_id}" data-item-index="${it.index}"><span class="btn-spin"></span><span>Asignar</span></button>
-          </div>
-          ${disponibles.length===0 ? `<div class="prod-bloqueada" style="margin-top:6px">Todavía no hay ningún ${especialidadNecesaria} registrado.</div>` : ''}
-        `;
-      } else {
-        accionHtml = `<div class="prod-bloqueada">Asignado a ${etapa.trabajador || '—'}, esperando a que lo marque terminado.</div>`;
+      accionHtml = renderAccionEtapa(p, it, it.etapas[it.etapaActual], 'principal');
+    }
+
+    let ventanaHtml = '';
+    if(it.etapaVentana){
+      const chipVentana = `<span class="prod-etapa-chip ${it.etapaVentana.estado}${it.etapaVentana.estado!=='hecho' ? ' actual' : ''}">${it.etapaVentana.nombre}</span>`;
+      let accionVentanaHtml = '';
+      if(it.etapaVentana.estado === 'hecho'){
+        accionVentanaHtml = `<div class="prod-terminado-nota">✓ Ventana ensamblada</div>`;
+      } else if(state.rol === 'admin'){
+        accionVentanaHtml = renderAccionEtapa(p, it, it.etapaVentana, 'ventana');
       }
+      ventanaHtml = `
+        <div class="track-label">Pista de la ventana (en paralelo)</div>
+        <div class="prod-etapas-row">${chipVentana}</div>
+        ${accionVentanaHtml}`;
     }
 
     return `
@@ -2509,18 +2557,20 @@ function renderProdDrawerItems(p){
       <div class="prod-item-head">
         <div>
           <div class="prod-item-nombre">${nombreItemProd(it)}</div>
-          <div class="prod-item-meta">${it.autoGenerado ? 'Incluida en combo' : 'Ítem a fabricar'}</div>
+          <div class="prod-item-meta">Ítem a fabricar</div>
         </div>
       </div>
+      ${it.etapaVentana ? '<div class="track-label">Pista principal</div>' : ''}
       <div class="prod-etapas-row">${chips}</div>
       ${accionHtml}
+      ${ventanaHtml}
     </div>`;
   }).join('');
 }
-async function completarEmbalajeUI(origen, id, itemIndex, btn){
+async function completarEmbalajeUI(origen, id, itemIndex, pista, btn){
   setCargando(btn, true);
   try{
-    const payload = { origen: origen, item_index: Number(itemIndex) };
+    const payload = { origen: origen, item_index: Number(itemIndex), pista: pista };
     if(origen === 'exhibicion') payload.trabajo_id = id; else payload.pedido_id = id;
     await llamarBackend('completarEtapa', payload);
     showToast('Marcado como embalado', 'success');
@@ -2530,13 +2580,13 @@ async function completarEmbalajeUI(origen, id, itemIndex, btn){
     setCargando(btn, false);
   }
 }
-async function asignarEtapaUI(origen, id, itemIndex, btn){
-  const select = document.getElementById('prodAsignarSelect-' + itemIndex);
+async function asignarEtapaUI(origen, id, itemIndex, pista, btn){
+  const select = document.getElementById('prodAsignarSelect-' + itemIndex + '-' + pista);
   const trabajador = select ? select.value : '';
   if(!trabajador){ showToast('Elige un trabajador primero', 'error'); return; }
   setCargando(btn, true);
   try{
-    const payload = { origen: origen, item_index: Number(itemIndex), trabajador: trabajador };
+    const payload = { origen: origen, item_index: Number(itemIndex), trabajador: trabajador, pista: pista };
     if(origen === 'exhibicion') payload.trabajo_id = id; else payload.pedido_id = id;
     await llamarBackend('asignarEtapa', payload);
     showToast('Etapa asignada', 'success');
@@ -2726,8 +2776,11 @@ function tareaActualDelTrabajador(){
       if(it.etapaActual > -1 && !it.bloqueada){
         const e = it.etapas[it.etapaActual];
         if(e.estado === 'asignado' && e.trabajador === state.usuario){
-          candidatos.push({ pedido: p, item: it, etapa: e });
+          candidatos.push({ pedido: p, item: it, etapa: e, pista: 'principal' });
         }
+      }
+      if(it.etapaVentana && it.etapaVentana.estado === 'asignado' && it.etapaVentana.trabajador === state.usuario){
+        candidatos.push({ pedido: p, item: it, etapa: it.etapaVentana, pista: 'ventana' });
       }
     });
   });
@@ -2775,7 +2828,7 @@ function renderBandeja(nomina){
         <img id="bandejaFotoPreview" class="comprobante-img hidden">
       </label>
       <input type="file" id="bandejaFoto" accept="image/*" class="file-input-hidden">
-      <button class="btn-primary" style="width:100%;margin-top:14px" id="btnBandejaTerminar" data-action="bandeja-terminar" data-origen="${tarea.pedido.origen}" data-pedido-id="${tarea.pedido.pedido_id||''}" data-trabajo-id="${tarea.pedido.trabajo_id||''}" data-item-index="${tarea.item.index}">
+      <button class="btn-primary" style="width:100%;margin-top:14px" id="btnBandejaTerminar" data-action="bandeja-terminar" data-origen="${tarea.pedido.origen}" data-pedido-id="${tarea.pedido.pedido_id||''}" data-trabajo-id="${tarea.pedido.trabajo_id||''}" data-item-index="${tarea.item.index}" data-pista="${tarea.pista}">
         <span class="btn-spin"></span><span>Marcar como terminado</span>
       </button>
     </div>${ledgerAcumulado}`;
@@ -2792,6 +2845,7 @@ async function completarTareaBandeja(btn){
       pedido_id: btn.dataset.pedidoId || null,
       trabajo_id: btn.dataset.trabajoId || null,
       item_index: Number(btn.dataset.itemIndex),
+      pista: btn.dataset.pista,
       foto_base64: foto_base64, mimeType: 'image/jpeg'
     });
     showToast('Tarea marcada como terminada', 'success');
@@ -4095,14 +4149,6 @@ function agregarItem(){
   }
 
   agregarItemComun(item, 'Ítem agregado');
-  if(item.tipo === 'Combo'){
-    // El combo se acaba de insertar al final del arreglo que corresponda (pedido existente o borrador nuevo);
-    // enlazamos la ventana incluida a su índice para que Producción sepa a qué combo pertenece.
-    const arr = typeof state.itemTarget === 'number' ? pedidos.find(x=>x.id===state.itemTarget).items : state.npItems;
-    const comboIndex = arr.length - 1;
-    const extra = { tipo:'Ventana', especificaciones:{ alto:1, ancho:1, color:item.especificaciones.color, proteccion:true, marco_decorativo:false }, precio:0, cantidad:2, autoGenerado:true, comboIndex: comboIndex };
-    agregarItemComun(extra, 'Ventanas del combo incluidas');
-  }
 }
 function quitarItem(idx){
   state.npItems.splice(idx,1);
@@ -4512,8 +4558,8 @@ document.body.addEventListener('click', e=>{
   else if(action === 'set-prod-tab') cambiarTabProduccion(el.dataset.tab);
   else if(action === 'ver-produccion-pedido') abrirDrawerProduccion(el.dataset.origen, el.dataset.id);
   else if(action === 'close-drawer-produccion') cerrarDrawerProduccion();
-  else if(action === 'asignar-etapa') asignarEtapaUI(el.dataset.origen, el.dataset.id, el.dataset.itemIndex, el);
-  else if(action === 'completar-embalaje') completarEmbalajeUI(el.dataset.origen, el.dataset.id, el.dataset.itemIndex, el);
+  else if(action === 'asignar-etapa') asignarEtapaUI(el.dataset.origen, el.dataset.id, el.dataset.itemIndex, el.dataset.pista, el);
+  else if(action === 'completar-embalaje') completarEmbalajeUI(el.dataset.origen, el.dataset.id, el.dataset.itemIndex, el.dataset.pista, el);
   else if(action === 'abrir-nuevo-trabajo-exh') abrirNuevoTrabajoExh();
   else if(action === 'close-nuevo-trabajo-exh') cerrarNuevoTrabajoExh();
   else if(action === 'crear-trabajo-exh') crearTrabajoExhUI(el);
