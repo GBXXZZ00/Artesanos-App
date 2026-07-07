@@ -821,7 +821,6 @@
 
       <!-- SCREEN: USUARIOS (gestión, solo admin) -->
       <div class="screen" id="screen-usuarios">
-        <button class="btn-primary" style="width:100%;margin-bottom:12px" data-action="abrir-nuevo-usuario">+ Nuevo usuario</button>
         <div id="listaUsuarios"></div>
       </div>
 
@@ -832,13 +831,13 @@
 
       <!-- SCREEN: PRODUCCIÓN -->
       <div class="screen" id="screen-produccion">
+        <div class="bento-ventas" id="bentoProduccion"></div>
         <div class="tabs" id="prodTabs">
           <div class="tab active" data-action="set-prod-tab" data-tab="pendiente">Por asignar</div>
           <div class="tab" data-action="set-prod-tab" data-tab="asignado">Asignado</div>
           <div class="tab" data-action="set-prod-tab" data-tab="terminado">Terminado</div>
           <div class="tab" data-action="set-prod-tab" data-tab="nomina">Nómina</div>
         </div>
-        <button class="btn-ghost" id="btnNuevoTrabajoExh" style="width:100%;margin-bottom:12px" data-action="abrir-nuevo-trabajo-exh">+ Nuevo trabajo para Exhibición</button>
         <div id="listaProduccion"></div>
       </div>
 
@@ -860,6 +859,12 @@
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1A1409" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
     </button>
     <button class="fab hidden" id="btnNuevoModelo" data-action="abrir-nuevo-modelo">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1A1409" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+    </button>
+    <button class="fab hidden" id="btnNuevoTrabajoExh" data-action="abrir-nuevo-trabajo-exh">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1A1409" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+    </button>
+    <button class="fab hidden" id="btnNuevoUsuario" data-action="abrir-nuevo-usuario">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1A1409" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
     </button>
 
@@ -1343,13 +1348,9 @@
       <div class="form-group hidden" id="usrEspecialidadGroup">
         <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Especialidad</label>
         <select id="usrEspecialidad" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px">
-          <option value="Hierro">Hierro</option>
-          <option value="Masilla">Masilla</option>
-          <option value="Pintura">Pintura</option>
-          <option value="Detalles">Detalles</option>
-          <option value="Embalar">Embalar</option>
-          <option value="Ensamblar">Ensamblar</option>
-          <option value="Instalar ventana">Instalar ventana</option>
+          <option value="Herrero">Herrero</option>
+          <option value="Masillador">Masillador</option>
+          <option value="Ventanero">Ventanero</option>
         </select>
       </div>
       <button class="btn-primary" style="width:100%;margin-top:8px" id="btnGuardarUsuario" data-action="guardar-usuario"><span class="btn-spin"></span><span>Guardar</span></button>
@@ -1389,7 +1390,7 @@
 <script>
 /* ============ CONFIG ============ */
 const MODO_DEMO = false;
-const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbyM8yYxcJ09XXnj0BlD8AeIPjr3TPaUftkc3xVPMZwPxpZZbKSJhsOZRnvJ20jl2ZBu/exec';
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbxwdQWvzX_2qjJR7ZF1-Iffz2NV2weSvytLIYQ7Ts5Z_yNd1nqQdG_lUQXydAAAN3Yh/exec';
 const NUMERO_NEGOCIO = '584220167079';
 const TELEFONO_ADMIN_ABONOS = '584146326465'; // Recibe el aviso por WhatsApp cuando hay un abono pendiente de confirmar
 
@@ -2365,6 +2366,7 @@ async function cargarProduccion(){
     // el toast de error ya lo muestra llamarBackend
   }
   document.getElementById('btnNuevoTrabajoExh').classList.toggle('hidden', prodTabActual==='nomina' || state.rol !== 'admin');
+  renderBentoProduccion();
   if(prodTabActual === 'nomina') cargarNomina();
   else renderProduccion();
 }
@@ -2382,6 +2384,31 @@ function urgenciaPedido(fechaEntrega){
   if(dias < 0) return 'vencido';
   if(dias <= 3) return 'proximo';
   return null;
+}
+function renderBentoProduccion(){
+  const cont = document.getElementById('bentoProduccion');
+  if(!cont) return;
+  const hoy = new Date().toDateString();
+  let urgentes = 0, completadasHoy = 0, esperandoAsignar = 0;
+  produccionData.forEach(p=>{
+    let pedidoUrgente = false;
+    p.items.forEach(it=>{
+      if(it.etapaActual > -1){
+        if(urgenciaPedido(p.fecha_entrega)) pedidoUrgente = true;
+        if(it.etapas[it.etapaActual].estado === 'pendiente' && !it.bloqueada) esperandoAsignar++;
+      }
+      it.etapas.forEach(e=>{
+        if(e.estado === 'hecho' && e.fecha_hecho && new Date(e.fecha_hecho).toDateString() === hoy) completadasHoy++;
+      });
+    });
+    if(pedidoUrgente) urgentes++;
+  });
+  cont.innerHTML = `
+    <div class="bento-card-lg"><span>Pedidos urgentes</span><strong>${urgentes}</strong></div>
+    <div class="bento-col">
+      <div class="bento-card-sm"><span>Etapas hoy</span><strong>${completadasHoy}</strong></div>
+      <div class="bento-card-sm"><span>Esperando asignar</span><strong>${esperandoAsignar}</strong></div>
+    </div>`;
 }
 function renderProduccion(){
   const cont = document.getElementById('listaProduccion');
@@ -2413,6 +2440,16 @@ function renderProduccion(){
     </div>`;
   }).join('');
 }
+// El masillador hace masilla Y pintura (dos etapas, la misma persona); el ventanero ensambla
+// las ventanas e instala en el combo. Embalar no requiere especialidad: lo marca el admin directo.
+const ETAPA_A_ESPECIALIDAD = {
+  'Hierro': 'Herrero',
+  'Masilla': 'Masillador',
+  'Pintura': 'Masillador',
+  'Detalles': 'Herrero',
+  'Ensamblar': 'Ventanero',
+  'Instalar ventana': 'Ventanero'
+};
 function nombreItemProd(it){
   const base = it.autoGenerado ? 'Ventana del combo' : (it.nombreModelo || it.tipo);
   return base + (it.cantidad > 1 ? ' ×' + it.cantidad : '');
@@ -2446,17 +2483,21 @@ function renderProdDrawerItems(p){
       accionHtml = `<div class="prod-bloqueada">Esperando a que la ventana de este combo esté ensamblada.</div>`;
     } else if(state.rol === 'admin'){
       const etapa = it.etapas[it.etapaActual];
-      if(etapa.estado === 'pendiente'){
-        const disponibles = trabajadoresCache.filter(t => t.especialidad === etapa.nombre);
+      if(etapa.nombre === 'Embalar'){
+        // Embalar no es un paso de fabricación: es solo dejarlo listo para entregar, no se cobra ni se asigna.
+        accionHtml = `<button class="btn-primary" style="width:100%" data-action="completar-embalaje" data-origen="${p.origen}" data-id="${p.pedido_id != null ? p.pedido_id : p.trabajo_id}" data-item-index="${it.index}"><span class="btn-spin"></span><span>Marcar como embalado</span></button>`;
+      } else if(etapa.estado === 'pendiente'){
+        const especialidadNecesaria = ETAPA_A_ESPECIALIDAD[etapa.nombre] || etapa.nombre;
+        const disponibles = trabajadoresCache.filter(t => t.especialidad === especialidadNecesaria);
         accionHtml = `
           <div class="prod-asignar-box">
             <select id="prodAsignarSelect-${it.index}">
-              <option value="">Elegir trabajador de ${etapa.nombre}...</option>
+              <option value="">Elegir ${especialidadNecesaria}...</option>
               ${disponibles.map(t=>`<option value="${t.usuario}">${t.nombre}</option>`).join('')}
             </select>
             <button class="btn-primary" style="padding:11px 16px;flex-shrink:0" data-action="asignar-etapa" data-origen="${p.origen}" data-id="${p.pedido_id != null ? p.pedido_id : p.trabajo_id}" data-item-index="${it.index}"><span class="btn-spin"></span><span>Asignar</span></button>
           </div>
-          ${disponibles.length===0 ? `<div class="prod-bloqueada" style="margin-top:6px">Todavía no hay ningún trabajador con la especialidad "${etapa.nombre}".</div>` : ''}
+          ${disponibles.length===0 ? `<div class="prod-bloqueada" style="margin-top:6px">Todavía no hay ningún ${especialidadNecesaria} registrado.</div>` : ''}
         `;
       } else {
         accionHtml = `<div class="prod-bloqueada">Asignado a ${etapa.trabajador || '—'}, esperando a que lo marque terminado.</div>`;
@@ -2475,6 +2516,19 @@ function renderProdDrawerItems(p){
       ${accionHtml}
     </div>`;
   }).join('');
+}
+async function completarEmbalajeUI(origen, id, itemIndex, btn){
+  setCargando(btn, true);
+  try{
+    const payload = { origen: origen, item_index: Number(itemIndex) };
+    if(origen === 'exhibicion') payload.trabajo_id = id; else payload.pedido_id = id;
+    await llamarBackend('completarEtapa', payload);
+    showToast('Marcado como embalado', 'success');
+    await cargarProduccion();
+    abrirDrawerProduccion(origen, id);
+  } catch(err){
+    setCargando(btn, false);
+  }
 }
 async function asignarEtapaUI(origen, id, itemIndex, btn){
   const select = document.getElementById('prodAsignarSelect-' + itemIndex);
@@ -2789,7 +2843,7 @@ function abrirNuevoUsuario(){
   document.getElementById('usrPassword').value = '';
   document.getElementById('usrPassword').placeholder = 'PIN de acceso';
   document.getElementById('usrRol').value = 'vendedor';
-  document.getElementById('usrEspecialidad').value = 'Hierro';
+  document.getElementById('usrEspecialidad').value = 'Herrero';
   document.getElementById('btnEliminarUsuario').classList.add('hidden');
   actualizarVisibilidadEspecialidad();
   document.getElementById('scrimUsuario').classList.add('open');
@@ -2806,7 +2860,7 @@ function abrirEditarUsuario(usuario){
   document.getElementById('usrPassword').value = '';
   document.getElementById('usrPassword').placeholder = 'Déjalo vacío para no cambiarlo';
   document.getElementById('usrRol').value = u.rol;
-  document.getElementById('usrEspecialidad').value = u.especialidad || 'Hierro';
+  document.getElementById('usrEspecialidad').value = u.especialidad || 'Herrero';
   document.getElementById('btnEliminarUsuario').classList.remove('hidden');
   actualizarVisibilidadEspecialidad();
   document.getElementById('scrimUsuario').classList.add('open');
@@ -4238,6 +4292,8 @@ function irAScreen(name, label){
   document.getElementById('btnNuevoPedido').classList.toggle('hidden', name!=='ventas');
   document.getElementById('btnNuevaExh').classList.toggle('hidden', name!=='exhibicion' || state.modoSeleccion || state.rol !== 'admin');
   document.getElementById('btnNuevoModelo').classList.toggle('hidden', name!=='catalogo');
+  document.getElementById('btnNuevoTrabajoExh').classList.toggle('hidden', name!=='produccion' || prodTabActual==='nomina' || state.rol !== 'admin');
+  document.getElementById('btnNuevoUsuario').classList.toggle('hidden', name!=='usuarios' || state.rol !== 'admin');
   actualizarBannerSeleccion();
   if(name === 'exhibicion') renderExhibicion();
   if(name === 'catalogo') renderCatalogo();
@@ -4457,6 +4513,7 @@ document.body.addEventListener('click', e=>{
   else if(action === 'ver-produccion-pedido') abrirDrawerProduccion(el.dataset.origen, el.dataset.id);
   else if(action === 'close-drawer-produccion') cerrarDrawerProduccion();
   else if(action === 'asignar-etapa') asignarEtapaUI(el.dataset.origen, el.dataset.id, el.dataset.itemIndex, el);
+  else if(action === 'completar-embalaje') completarEmbalajeUI(el.dataset.origen, el.dataset.id, el.dataset.itemIndex, el);
   else if(action === 'abrir-nuevo-trabajo-exh') abrirNuevoTrabajoExh();
   else if(action === 'close-nuevo-trabajo-exh') cerrarNuevoTrabajoExh();
   else if(action === 'crear-trabajo-exh') crearTrabajoExhUI(el);
