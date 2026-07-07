@@ -547,6 +547,30 @@
   .fin-card-actions{ display:flex; gap:8px; }
   .fin-card-actions .btn-primary, .fin-card-actions .btn-ghost{ flex:1; padding:10px; font-size:13px; }
 
+  /* ============ PRODUCCIÓN ============ */
+  .prod-item-card{
+    background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:14px; margin-bottom:12px;
+  }
+  .prod-item-head{ display:flex; justify-content:space-between; align-items:flex-start; gap:8px; margin-bottom:10px; }
+  .prod-item-nombre{ font-size:14.5px; font-weight:700; }
+  .prod-item-meta{ font-size:11.5px; color:var(--text2); margin-top:2px; }
+  .prod-etapas-row{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
+  .prod-etapa-chip{
+    font-size:10.5px; font-weight:700; padding:4px 9px; border-radius:20px; white-space:nowrap;
+    background:var(--surface3); color:var(--text2);
+  }
+  .prod-etapa-chip.hecho{ background:var(--green-dim); color:var(--green); }
+  .prod-etapa-chip.asignado{ background:var(--gold-dim); color:var(--gold); }
+  .prod-etapa-chip.actual{ box-shadow:0 0 0 1.5px var(--gold); }
+  .prod-asignar-box{ display:flex; gap:8px; align-items:center; }
+  .prod-asignar-box select{
+    flex:1; padding:11px 12px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm);
+    color:var(--text); font-size:13.5px;
+  }
+  .prod-bloqueada{ font-size:12px; color:var(--text2); font-style:italic; }
+  .prod-terminado-nota{ font-size:12px; color:var(--green); font-weight:600; }
+  .prod-urgente{ border-left-color:var(--red) !important; }
+
   .subfields{ padding:12px; background:var(--surface3); border-radius:var(--radius-sm); margin:-4px 0 12px; border:1px dashed var(--border2); }
 
   .added-items{ margin-bottom:16px; }
@@ -795,12 +819,35 @@
         <div id="financieroLista"></div>
       </div>
 
+      <!-- SCREEN: USUARIOS (gestión, solo admin) -->
+      <div class="screen" id="screen-usuarios">
+        <button class="btn-primary" style="width:100%;margin-bottom:12px" data-action="abrir-nuevo-usuario">+ Nuevo usuario</button>
+        <div id="listaUsuarios"></div>
+      </div>
+
+      <!-- SCREEN: BANDEJA (vista del trabajador, una tarea a la vez) -->
+      <div class="screen" id="screen-bandeja">
+        <div id="bandejaContenido"></div>
+      </div>
+
+      <!-- SCREEN: PRODUCCIÓN -->
+      <div class="screen" id="screen-produccion">
+        <div class="tabs" id="prodTabs">
+          <div class="tab active" data-action="set-prod-tab" data-tab="pendiente">Por asignar</div>
+          <div class="tab" data-action="set-prod-tab" data-tab="asignado">Asignado</div>
+          <div class="tab" data-action="set-prod-tab" data-tab="terminado">Terminado</div>
+          <div class="tab" data-action="set-prod-tab" data-tab="nomina">Nómina</div>
+        </div>
+        <button class="btn-ghost" id="btnNuevoTrabajoExh" style="width:100%;margin-bottom:12px" data-action="abrir-nuevo-trabajo-exh">+ Nuevo trabajo para Exhibición</button>
+        <div id="listaProduccion"></div>
+      </div>
+
       <!-- SCREEN: PLACEHOLDER (otras secciones) -->
       <div class="screen" id="screen-placeholder">
         <div class="placeholder-screen">
           <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14.7 6.3a4 4 0 11-5.4 5.4L4 17v3h3l5.3-5.3"/></svg>
           <strong id="placeholderTitle">Próximamente</strong>
-          <span>Este módulo llega en una fase siguiente.</span>
+          <span id="placeholderSubtext">Este módulo llega en una fase siguiente.</span>
         </div>
       </div>
 
@@ -824,7 +871,7 @@
       <div class="nav-item" data-action="nav" data-screen="exhibicion" data-label="Exhibición">
         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v6"/></svg><span>Exhibición</span>
       </div>
-      <div class="nav-item" data-action="nav" data-screen="placeholder" data-label="Producción">
+      <div class="nav-item" data-action="nav" data-screen="produccion" data-label="Producción">
         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a4 4 0 11-5.4 5.4L4 17v3h3l5.3-5.3"/></svg><span>Producción</span>
       </div>
     </div>
@@ -1192,6 +1239,124 @@
     <img id="lightboxImg" src="" alt="Comprobante">
   </div>
 
+  <!-- SCRIM 9 + DRAWER PRODUCCIÓN (detalle de pedido: items, etapas, asignación) -->
+  <div class="scrim3" id="scrimProduccion" style="z-index:84" data-action="close-drawer-produccion"></div>
+  <div class="drawer-exh" id="drawerProduccion" style="z-index:85; max-height:88%">
+    <div class="drawer-handle"></div>
+    <div class="drawer-head">
+      <div>
+        <div style="font-size:11px;color:var(--text2)" id="prodDrawerCodigo">#PED-0000</div>
+        <h2 id="prodDrawerCliente">Cliente</h2>
+      </div>
+      <div class="icon-btn" data-action="close-drawer-produccion"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 6l12 12M18 6L6 18"/></svg></div>
+    </div>
+    <div class="drawer-body" id="prodDrawerItems"></div>
+  </div>
+
+  <!-- SCRIM 10 + DRAWER NUEVO TRABAJO PARA EXHIBICIÓN (sin cliente) -->
+  <div class="scrim3" id="scrimNuevoTrabajoExh" style="z-index:86" data-action="close-nuevo-trabajo-exh"></div>
+  <div class="drawer-exh" id="drawerNuevoTrabajoExh" style="z-index:87">
+    <div class="drawer-handle"></div>
+    <div class="drawer-head">
+      <h2>Nuevo trabajo para Exhibición</h2>
+      <div class="icon-btn" data-action="close-nuevo-trabajo-exh"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 6l12 12M18 6L6 18"/></svg></div>
+    </div>
+    <div class="drawer-body">
+      <div class="form-group">
+        <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Modelo del catálogo</label>
+        <select id="nteModelo" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px"></select>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Cantidad</label>
+          <input type="number" id="nteCantidad" min="1" value="1" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px">
+        </div>
+        <div class="field">
+          <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Precio unitario</label>
+          <div class="input-money"><input type="number" id="ntePrecio" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px"></div>
+        </div>
+      </div>
+      <button class="btn-primary" style="width:100%;margin-top:14px" id="btnCrearTrabajoExh" data-action="crear-trabajo-exh"><span class="btn-spin"></span><span>Crear trabajo</span></button>
+    </div>
+  </div>
+
+  <!-- SCRIM 11 + DRAWER NÓMINA (detalle de un trabajador) -->
+  <div class="scrim3" id="scrimNomina" style="z-index:88" data-action="close-drawer-nomina"></div>
+  <div class="drawer-exh" id="drawerNomina" style="z-index:89; max-height:88%">
+    <div class="drawer-handle"></div>
+    <div class="drawer-head">
+      <h2 id="nominaDrawerNombre">Trabajador</h2>
+      <div class="icon-btn" data-action="close-drawer-nomina"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 6l12 12M18 6L6 18"/></svg></div>
+    </div>
+    <div class="drawer-body">
+      <div class="section-label">Completado, sin pagar</div>
+      <div id="nominaItemsLista"></div>
+      <div class="section-label" style="margin-top:14px">Vales pendientes de descontar</div>
+      <div id="nominaValesLista"></div>
+      <div class="form-row" style="margin-top:12px">
+        <div class="field">
+          <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Nuevo vale</label>
+          <div class="input-money"><input type="number" id="nominaValeMonto" placeholder="0" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px"></div>
+        </div>
+        <div class="field">
+          <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Motivo (opcional)</label>
+          <input type="text" id="nominaValeMotivo" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px">
+        </div>
+      </div>
+      <button class="btn-ghost" style="width:100%;margin-top:8px" id="btnAgregarVale" data-action="agregar-vale"><span class="btn-spin"></span><span>+ Agregar vale</span></button>
+      <div class="ledger-box" style="margin-top:16px">
+        <div class="ledger-row"><span>Neto a pagar (seleccionado)</span><strong id="nominaNetoValor">$0</strong></div>
+      </div>
+      <button class="btn-primary" style="width:100%;margin-top:10px" id="btnRegistrarPagoTrabajador" data-action="registrar-pago-trabajador"><span class="btn-spin"></span><span>Registrar pago</span></button>
+    </div>
+  </div>
+
+  <!-- SCRIM 12 + DRAWER USUARIO (crear/editar, solo admin) -->
+  <div class="scrim3" id="scrimUsuario" style="z-index:92" data-action="close-drawer-usuario"></div>
+  <div class="drawer-exh" id="drawerUsuario" style="z-index:93">
+    <div class="drawer-handle"></div>
+    <div class="drawer-head">
+      <h2 id="usuarioDrawerTitulo">Nuevo usuario</h2>
+      <div class="icon-btn" data-action="close-drawer-usuario"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 6l12 12M18 6L6 18"/></svg></div>
+    </div>
+    <div class="drawer-body">
+      <div class="form-group">
+        <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Usuario (para iniciar sesión)</label>
+        <input type="text" id="usrUsuario" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px">
+      </div>
+      <div class="form-group">
+        <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Nombre</label>
+        <input type="text" id="usrNombre" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px">
+      </div>
+      <div class="form-group">
+        <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">PIN de acceso</label>
+        <input type="text" id="usrPassword" placeholder="Déjalo vacío para no cambiarlo" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px">
+      </div>
+      <div class="form-group">
+        <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Rol</label>
+        <select id="usrRol" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px">
+          <option value="vendedor">Vendedor</option>
+          <option value="admin">Admin</option>
+          <option value="trabajador">Trabajador</option>
+        </select>
+      </div>
+      <div class="form-group hidden" id="usrEspecialidadGroup">
+        <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Especialidad</label>
+        <select id="usrEspecialidad" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px">
+          <option value="Hierro">Hierro</option>
+          <option value="Masilla">Masilla</option>
+          <option value="Pintura">Pintura</option>
+          <option value="Detalles">Detalles</option>
+          <option value="Embalar">Embalar</option>
+          <option value="Ensamblar">Ensamblar</option>
+          <option value="Instalar ventana">Instalar ventana</option>
+        </select>
+      </div>
+      <button class="btn-primary" style="width:100%;margin-top:8px" id="btnGuardarUsuario" data-action="guardar-usuario"><span class="btn-spin"></span><span>Guardar</span></button>
+      <button class="btn-ghost hidden" style="width:100%;margin-top:10px;color:var(--red);border-color:var(--red)" id="btnEliminarUsuario" data-action="eliminar-usuario">Eliminar usuario</button>
+    </div>
+  </div>
+
   <!-- SCRIM 7 + DRAWER MENÚ DE AVATAR -->
   <div class="scrim3" id="scrim7" style="z-index:44" data-action="close-avatar-menu"></div>
   <div class="side-drawer" id="avatarMenu" style="z-index:45; padding-top:env(safe-area-inset-top)">
@@ -1204,10 +1369,13 @@
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>Pagos pendientes
       <span class="menu-badge-count hidden" id="badgeAbonosPendientes">0</span>
     </div>
-    <div class="avatar-menu-item" data-action="ir-catalogo">
+    <div class="avatar-menu-item hidden" id="menuItemUsuarios" data-action="ir-usuarios">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>Usuarios
+    </div>
+    <div class="avatar-menu-item" id="menuItemCatalogo" data-action="ir-catalogo">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v6"/></svg>Catálogo
     </div>
-    <div class="avatar-menu-item" data-action="ir-config">
+    <div class="avatar-menu-item" id="menuItemConfig" data-action="ir-config">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.9M4.6 9a1.7 1.7 0 00-.3-1.9"/></svg>Configuración
     </div>
     <div class="avatar-menu-item danger" data-action="cerrar-sesion">
@@ -1221,7 +1389,7 @@
 <script>
 /* ============ CONFIG ============ */
 const MODO_DEMO = false;
-const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbzfmLhP3_jzUqnikkA67qR2LZlaHpy3mmCHG8SUjqoFJ_d_TkmLkG6uxPVe8vLRDkPi/exec';
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbyM8yYxcJ09XXnj0BlD8AeIPjr3TPaUftkc3xVPMZwPxpZZbKSJhsOZRnvJ20jl2ZBu/exec';
 const NUMERO_NEGOCIO = '584220167079';
 const TELEFONO_ADMIN_ABONOS = '584146326465'; // Recibe el aviso por WhatsApp cuando hay un abono pendiente de confirmar
 
@@ -1318,6 +1486,7 @@ async function retomarSesion(sesion){
   state.cancelarRetomo = false;
   state.rol = sesion.rol || null;
   state.nombreUsuario = sesion.nombre || null;
+  state.usuario = sesion.usuario || null;
   document.getElementById('resumeNombre').textContent = sesion.nombre;
   document.getElementById('resumeAvatar').textContent = sesion.nombre.trim().slice(0,1).toUpperCase();
   document.getElementById('resumeScreen').classList.remove('hidden');
@@ -1327,6 +1496,8 @@ async function retomarSesion(sesion){
   if(state.cancelarRetomo) return;
   document.getElementById('resumeScreen').classList.add('hidden');
   document.getElementById('loginScreen').classList.add('hidden');
+  if(state.rol === 'trabajador'){ mostrarVistaTrabajador(); return; }
+  document.querySelector('.bottom-nav-wrap')?.classList.remove('hidden');
   procesarDeepLinkFinanciero();
 }
 function cambiarUsuario(){
@@ -2171,6 +2342,512 @@ function destellarNodo(el){
   el.classList.add('destello');
   setTimeout(()=> el.classList.remove('destello'), 900);
 }
+
+/* ============ PRODUCCIÓN ============ */
+let produccionData = [];
+let trabajadoresCache = [];
+let prodTabActual = 'pendiente';
+
+async function cargarProduccion(){
+  try{
+    if(MODO_DEMO){
+      produccionData = [];
+      trabajadoresCache = [];
+    } else {
+      const [prod, usuarios] = await Promise.all([
+        llamarBackend('getProduccion'),
+        llamarBackend('getUsuarios', {}, true)
+      ]);
+      produccionData = prod;
+      trabajadoresCache = usuarios.filter(u => u.rol === 'trabajador');
+    }
+  } catch(err){
+    // el toast de error ya lo muestra llamarBackend
+  }
+  document.getElementById('btnNuevoTrabajoExh').classList.toggle('hidden', prodTabActual==='nomina' || state.rol !== 'admin');
+  if(prodTabActual === 'nomina') cargarNomina();
+  else renderProduccion();
+}
+function cambiarTabProduccion(tab){
+  prodTabActual = tab;
+  document.querySelectorAll('#prodTabs .tab').forEach(t=>t.classList.toggle('active', t.dataset.tab===tab));
+  document.getElementById('btnNuevoTrabajoExh').classList.toggle('hidden', tab==='nomina' || state.rol !== 'admin');
+  if(tab === 'nomina') cargarNomina();
+  else renderProduccion();
+}
+// null = a tiempo, 'proximo' = 3 días o menos, 'vencido' = ya se pasó la fecha
+function urgenciaPedido(fechaEntrega){
+  if(!fechaEntrega) return null;
+  const dias = Math.ceil((new Date(fechaEntrega) - new Date()) / 86400000);
+  if(dias < 0) return 'vencido';
+  if(dias <= 3) return 'proximo';
+  return null;
+}
+function renderProduccion(){
+  const cont = document.getElementById('listaProduccion');
+  const filtrados = produccionData
+    .filter(p => p.bucket === prodTabActual)
+    .slice()
+    .sort((a,b) => new Date(a.fecha_entrega || '9999-12-31') - new Date(b.fecha_entrega || '9999-12-31'));
+
+  if(filtrados.length === 0){
+    cont.innerHTML = `<div class="empty-state">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 12l2 2 4-4M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      <strong>Nada por aquí</strong><span>No hay pedidos en esta vista.</span>
+    </div>`;
+    return;
+  }
+  cont.innerHTML = filtrados.map((p,i)=>{
+    const urgencia = urgenciaPedido(p.fecha_entrega);
+    const totalItems = p.items.length;
+    const itemsListos = p.items.filter(it => it.etapaActual === -1).length;
+    return `
+    <div class="fin-card ${urgencia ? 'prod-urgente' : ''}" style="--i:${i}" data-action="ver-produccion-pedido" data-origen="${p.origen}" data-id="${p.pedido_id != null ? p.pedido_id : p.trabajo_id}">
+      <div class="fin-card-head">
+        <div>
+          <div class="fin-card-cliente">${p.cliente_nombre}</div>
+          <div class="fin-card-meta">#${p.codigo} · ${itemsListos}/${totalItems} ítems listos</div>
+          ${p.fecha_entrega ? `<div class="fin-card-meta">Entrega: ${fechaCorta(p.fecha_entrega)}${urgencia==='vencido' ? ' · Vencido' : urgencia==='proximo' ? ' · Próximo' : ''}</div>` : ''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function nombreItemProd(it){
+  const base = it.autoGenerado ? 'Ventana del combo' : (it.nombreModelo || it.tipo);
+  return base + (it.cantidad > 1 ? ' ×' + it.cantidad : '');
+}
+function abrirDrawerProduccion(origen, id){
+  const p = produccionData.find(x => x.origen===origen && (x.pedido_id===Number(id) || x.trabajo_id===Number(id)));
+  if(!p) return;
+  document.getElementById('prodDrawerCodigo').textContent = '#' + p.codigo;
+  document.getElementById('prodDrawerCliente').textContent = p.cliente_nombre;
+  renderProdDrawerItems(p);
+  document.getElementById('scrimProduccion').classList.add('open');
+  document.getElementById('drawerProduccion').classList.add('open');
+}
+function cerrarDrawerProduccion(){
+  document.getElementById('scrimProduccion').classList.remove('open');
+  document.getElementById('drawerProduccion').classList.remove('open');
+}
+function renderProdDrawerItems(p){
+  const cont = document.getElementById('prodDrawerItems');
+  cont.innerHTML = p.items.map(it=>{
+    const chips = it.etapas.map((e,i)=>{
+      let cls = e.estado;
+      if(i === it.etapaActual) cls += ' actual';
+      return `<span class="prod-etapa-chip ${cls}">${e.nombre}</span>`;
+    }).join('');
+
+    let accionHtml = '';
+    if(it.etapaActual === -1){
+      accionHtml = `<div class="prod-terminado-nota">✓ Todas las etapas completadas</div>`;
+    } else if(it.bloqueada){
+      accionHtml = `<div class="prod-bloqueada">Esperando a que la ventana de este combo esté ensamblada.</div>`;
+    } else if(state.rol === 'admin'){
+      const etapa = it.etapas[it.etapaActual];
+      if(etapa.estado === 'pendiente'){
+        const disponibles = trabajadoresCache.filter(t => t.especialidad === etapa.nombre);
+        accionHtml = `
+          <div class="prod-asignar-box">
+            <select id="prodAsignarSelect-${it.index}">
+              <option value="">Elegir trabajador de ${etapa.nombre}...</option>
+              ${disponibles.map(t=>`<option value="${t.usuario}">${t.nombre}</option>`).join('')}
+            </select>
+            <button class="btn-primary" style="padding:11px 16px;flex-shrink:0" data-action="asignar-etapa" data-origen="${p.origen}" data-id="${p.pedido_id != null ? p.pedido_id : p.trabajo_id}" data-item-index="${it.index}"><span class="btn-spin"></span><span>Asignar</span></button>
+          </div>
+          ${disponibles.length===0 ? `<div class="prod-bloqueada" style="margin-top:6px">Todavía no hay ningún trabajador con la especialidad "${etapa.nombre}".</div>` : ''}
+        `;
+      } else {
+        accionHtml = `<div class="prod-bloqueada">Asignado a ${etapa.trabajador || '—'}, esperando a que lo marque terminado.</div>`;
+      }
+    }
+
+    return `
+    <div class="prod-item-card">
+      <div class="prod-item-head">
+        <div>
+          <div class="prod-item-nombre">${nombreItemProd(it)}</div>
+          <div class="prod-item-meta">${it.autoGenerado ? 'Incluida en combo' : 'Ítem a fabricar'}</div>
+        </div>
+      </div>
+      <div class="prod-etapas-row">${chips}</div>
+      ${accionHtml}
+    </div>`;
+  }).join('');
+}
+async function asignarEtapaUI(origen, id, itemIndex, btn){
+  const select = document.getElementById('prodAsignarSelect-' + itemIndex);
+  const trabajador = select ? select.value : '';
+  if(!trabajador){ showToast('Elige un trabajador primero', 'error'); return; }
+  setCargando(btn, true);
+  try{
+    const payload = { origen: origen, item_index: Number(itemIndex), trabajador: trabajador };
+    if(origen === 'exhibicion') payload.trabajo_id = id; else payload.pedido_id = id;
+    await llamarBackend('asignarEtapa', payload);
+    showToast('Etapa asignada', 'success');
+    await cargarProduccion();
+    abrirDrawerProduccion(origen, id);
+  } catch(err){
+    setCargando(btn, false);
+  }
+}
+
+/* ---- Nuevo trabajo especulativo hacia Exhibición ---- */
+function abrirNuevoTrabajoExh(){
+  const select = document.getElementById('nteModelo');
+  select.innerHTML = catalogo.map(m=>`<option value="${m.id}">${m.nombre} (${m.tipo})</option>`).join('');
+  document.getElementById('nteCantidad').value = 1;
+  document.getElementById('ntePrecio').value = catalogo[0] ? catalogo[0].precio_base : '';
+  document.getElementById('scrimNuevoTrabajoExh').classList.add('open');
+  document.getElementById('drawerNuevoTrabajoExh').classList.add('open');
+}
+function cerrarNuevoTrabajoExh(){
+  document.getElementById('scrimNuevoTrabajoExh').classList.remove('open');
+  document.getElementById('drawerNuevoTrabajoExh').classList.remove('open');
+}
+async function crearTrabajoExhUI(btn){
+  const modeloId = Number(document.getElementById('nteModelo').value);
+  const modelo = catalogo.find(m=>m.id===modeloId);
+  if(!modelo){ showToast('Elige un modelo', 'error'); return; }
+  const cantidad = parseInt(document.getElementById('nteCantidad').value) || 1;
+  const precio = parseFloat(document.getElementById('ntePrecio').value) || 0;
+  setCargando(btn, true);
+  try{
+    await llamarBackend('crearTrabajoExhibicion', {
+      catalogo_id: modelo.id, nombreModelo: modelo.nombre, tipo: modelo.tipo,
+      especificaciones: modelo.especificaciones_base, precio: precio, cantidad: cantidad
+    });
+    showToast('Trabajo creado', 'success');
+    cerrarNuevoTrabajoExh();
+    await cargarProduccion();
+  } catch(err){
+  } finally {
+    setCargando(btn, false);
+  }
+}
+
+/* ---- Nómina / vales ---- */
+let nominaData = [];
+let nominaTrabajadorActual = null;
+let nominaDetalle = { items: [], vales: [] };
+
+async function cargarNomina(){
+  try{ nominaData = MODO_DEMO ? [] : await llamarBackend('getTrabajadoresConAcumulado'); }
+  catch(err){ /* el toast de error ya lo muestra llamarBackend */ }
+  renderNomina();
+}
+function renderNomina(){
+  const cont = document.getElementById('listaProduccion');
+  if(nominaData.length === 0){
+    cont.innerHTML = `<div class="empty-state">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+      <strong>Sin trabajadores todavía</strong><span>Créalos desde el menú de Usuarios.</span>
+    </div>`;
+    return;
+  }
+  cont.innerHTML = nominaData.map((t,i)=>`
+    <div class="fin-card" style="--i:${i}" data-action="ver-nomina-trabajador" data-usuario="${t.usuario}">
+      <div class="fin-card-head">
+        <div>
+          <div class="fin-card-cliente">${t.nombre}</div>
+          <div class="fin-card-meta">${t.especialidad || 'Sin especialidad'} · ${t.cantidadItems} sin pagar</div>
+        </div>
+        <div class="fin-card-monto">${money(t.acumulado)}</div>
+      </div>
+    </div>`).join('');
+}
+async function abrirDrawerNomina(usuario){
+  const t = nominaData.find(x=>x.usuario===usuario);
+  if(!t) return;
+  nominaTrabajadorActual = t;
+  document.getElementById('nominaDrawerNombre').textContent = t.nombre;
+  document.getElementById('nominaValeMonto').value = '';
+  document.getElementById('nominaValeMotivo').value = '';
+  document.getElementById('scrimNomina').classList.add('open');
+  document.getElementById('drawerNomina').classList.add('open');
+  try{
+    nominaDetalle = await llamarBackend('getNominaTrabajador', { trabajador: usuario });
+  } catch(err){
+    nominaDetalle = { items: [], vales: [] };
+  }
+  renderNominaDrawer();
+}
+function cerrarDrawerNomina(){
+  document.getElementById('scrimNomina').classList.remove('open');
+  document.getElementById('drawerNomina').classList.remove('open');
+}
+function renderNominaDrawer(){
+  const contItems = document.getElementById('nominaItemsLista');
+  if(!nominaDetalle.items.length){
+    contItems.innerHTML = `<div style="font-size:12.5px;color:var(--text2);padding:8px 0">No hay etapas sin pagar.</div>`;
+  } else {
+    contItems.innerHTML = `
+      <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;color:var(--text2);margin-bottom:8px;cursor:pointer">
+        <input type="checkbox" id="nominaSeleccionarTodo" checked> Seleccionar todo
+      </label>
+      ${nominaDetalle.items.map((it,i)=>`
+        <div class="ledger-abono-item">
+          <label style="display:flex;align-items:center;gap:10px;flex:1;cursor:pointer">
+            <input type="checkbox" class="nomina-item-check" data-monto="${it.monto}" data-index="${i}" checked>
+            <div class="ledger-abono-info">
+              <strong>${it.nombre_etapa} · ${money(it.monto)}</strong>
+              <span>${it.codigo} · ${fechaHoraCorta(it.fecha_hecho)}</span>
+            </div>
+          </label>
+          ${it.foto_url ? `<div data-action="ver-comprobante" data-url="${it.foto_url}" class="ledger-abono-foto"><img src="${it.foto_url}"></div>` : ''}
+        </div>`).join('')}`;
+  }
+
+  const contVales = document.getElementById('nominaValesLista');
+  contVales.innerHTML = nominaDetalle.vales.length
+    ? nominaDetalle.vales.map(v=>`<div class="ledger-abono-item"><div class="ledger-abono-info"><strong>−${money(v.monto)}</strong><span>${v.motivo || 'Vale'} · ${fechaHoraCorta(v.fecha)}</span></div></div>`).join('')
+    : `<div style="font-size:12.5px;color:var(--text2);padding:8px 0">Sin vales pendientes.</div>`;
+
+  document.querySelectorAll('.nomina-item-check').forEach(cb => cb.addEventListener('change', actualizarNetoNomina));
+  const selAll = document.getElementById('nominaSeleccionarTodo');
+  if(selAll) selAll.addEventListener('change', e=>{
+    document.querySelectorAll('.nomina-item-check').forEach(cb => cb.checked = e.target.checked);
+    actualizarNetoNomina();
+  });
+  actualizarNetoNomina();
+}
+function actualizarNetoNomina(){
+  const seleccionados = Array.from(document.querySelectorAll('.nomina-item-check:checked'));
+  const totalItems = seleccionados.reduce((a,el)=> a + (parseFloat(el.dataset.monto)||0), 0);
+  const totalVales = (nominaDetalle.vales||[]).reduce((a,v)=>a+v.monto, 0);
+  document.getElementById('nominaNetoValor').textContent = money(totalItems - totalVales);
+}
+async function agregarValeUI(btn){
+  const monto = parseFloat(document.getElementById('nominaValeMonto').value);
+  if(!monto || monto<=0){ showToast('Ingresa un monto válido', 'error'); return; }
+  const motivo = document.getElementById('nominaValeMotivo').value.trim();
+  setCargando(btn, true);
+  try{
+    await llamarBackend('agregarVale', { trabajador: nominaTrabajadorActual.usuario, monto, motivo });
+    showToast('Vale agregado', 'success');
+    nominaDetalle = await llamarBackend('getNominaTrabajador', { trabajador: nominaTrabajadorActual.usuario });
+    renderNominaDrawer();
+  } catch(err){
+  } finally {
+    setCargando(btn, false);
+  }
+}
+async function registrarPagoTrabajadorUI(btn){
+  const seleccionados = Array.from(document.querySelectorAll('.nomina-item-check:checked')).map(el => nominaDetalle.items[Number(el.dataset.index)]);
+  if(seleccionados.length === 0){ showToast('Selecciona al menos un ítem', 'error'); return; }
+  setCargando(btn, true);
+  try{
+    await llamarBackend('registrarPagoTrabajador', {
+      items: seleccionados.map(it => ({ origen: it.origen, pedido_id: it.pedido_id, trabajo_id: it.trabajo_id, item_index: it.item_index, etapa_index: it.etapa_index })),
+      vale_ids: (nominaDetalle.vales || []).map(v=>v.id)
+    });
+    showToast('Pago registrado', 'success');
+    cerrarDrawerNomina();
+    await cargarNomina();
+  } catch(err){
+    setCargando(btn, false);
+  }
+}
+
+/* ---- Bandeja del trabajador ---- */
+async function cargarBandeja(){
+  let nomina = { items: [], vales: [] };
+  try{
+    const [prod, nom] = await Promise.all([
+      llamarBackend('getProduccion'),
+      llamarBackend('getNominaTrabajador', { trabajador: state.usuario })
+    ]);
+    produccionData = prod;
+    nomina = nom;
+  } catch(err){
+    // el toast de error ya lo muestra llamarBackend
+  }
+  renderBandeja(nomina);
+}
+function tareaActualDelTrabajador(){
+  const candidatos = [];
+  produccionData.forEach(p=>{
+    p.items.forEach(it=>{
+      if(it.etapaActual > -1 && !it.bloqueada){
+        const e = it.etapas[it.etapaActual];
+        if(e.estado === 'asignado' && e.trabajador === state.usuario){
+          candidatos.push({ pedido: p, item: it, etapa: e });
+        }
+      }
+    });
+  });
+  candidatos.sort((a,b)=>{
+    const fa = a.pedido.fecha_entrega ? new Date(a.pedido.fecha_entrega) : new Date('9999-12-31');
+    const fb = b.pedido.fecha_entrega ? new Date(b.pedido.fecha_entrega) : new Date('9999-12-31');
+    return fa - fb;
+  });
+  return candidatos[0] || null;
+}
+function renderBandeja(nomina){
+  const cont = document.getElementById('bandejaContenido');
+  const tarea = tareaActualDelTrabajador();
+  const acumulado = nomina.items.reduce((a,i)=>a+i.monto,0) - nomina.vales.reduce((a,v)=>a+v.monto,0);
+
+  const ledgerAcumulado = `
+    <div class="ledger-box" style="margin-top:16px">
+      <div class="ledger-row"><span>Acumulado sin pagar</span><strong>${money(acumulado)}</strong></div>
+    </div>`;
+
+  if(!tarea){
+    cont.innerHTML = `
+      <div class="empty-state">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 12l2 2 4-4M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <strong>Nada asignado por ahora</strong><span>Cuando te asignen una tarea, aparece aquí.</span>
+      </div>${ledgerAcumulado}`;
+    return;
+  }
+  const detalleTexto = tarea.etapa.nombre === 'Detalles' ? especTexto(tarea.item) : '';
+  cont.innerHTML = `
+    <div class="prod-item-card">
+      <div class="prod-item-head">
+        <div>
+          <div class="prod-item-nombre">${nombreItemProd(tarea.item)}</div>
+          <div class="prod-item-meta">${tarea.pedido.codigo} · ${tarea.pedido.cliente_nombre}</div>
+        </div>
+      </div>
+      <div class="prod-etapas-row"><span class="prod-etapa-chip actual asignado">${tarea.etapa.nombre}</span></div>
+      ${detalleTexto ? `<div class="prod-item-meta" style="margin-bottom:10px">${detalleTexto}</div>` : ''}
+      <label class="comprobante-box" for="bandejaFoto">
+        <div class="comprobante-empty" id="bandejaFotoEmpty">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          <span>Agregar foto de evidencia</span>
+        </div>
+        <img id="bandejaFotoPreview" class="comprobante-img hidden">
+      </label>
+      <input type="file" id="bandejaFoto" accept="image/*" class="file-input-hidden">
+      <button class="btn-primary" style="width:100%;margin-top:14px" id="btnBandejaTerminar" data-action="bandeja-terminar" data-origen="${tarea.pedido.origen}" data-pedido-id="${tarea.pedido.pedido_id||''}" data-trabajo-id="${tarea.pedido.trabajo_id||''}" data-item-index="${tarea.item.index}">
+        <span class="btn-spin"></span><span>Marcar como terminado</span>
+      </button>
+    </div>${ledgerAcumulado}`;
+  wireFotoPreview('bandejaFoto', 'bandejaFotoEmpty', 'bandejaFotoPreview');
+}
+async function completarTareaBandeja(btn){
+  const archivo = document.getElementById('bandejaFoto').files[0];
+  if(!archivo){ showToast('Sube una foto de evidencia', 'error'); return; }
+  setCargando(btn, true);
+  try{
+    const foto_base64 = await comprimirImagen(archivo, 900);
+    await llamarBackend('completarEtapa', {
+      origen: btn.dataset.origen,
+      pedido_id: btn.dataset.pedidoId || null,
+      trabajo_id: btn.dataset.trabajoId || null,
+      item_index: Number(btn.dataset.itemIndex),
+      foto_base64: foto_base64, mimeType: 'image/jpeg'
+    });
+    showToast('Tarea marcada como terminada', 'success');
+    await cargarBandeja();
+  } catch(err){
+    setCargando(btn, false);
+  }
+}
+
+/* ============ GESTIÓN DE USUARIOS (admin) ============ */
+let usuariosData = [];
+let usuarioEditandoOriginal = null; // guarda el "usuario" (login id) si estamos editando, null si es nuevo
+
+async function cargarUsuarios(){
+  try{ usuariosData = MODO_DEMO ? [] : await llamarBackend('getUsuariosAdmin', {}, true); }
+  catch(err){ /* el toast de error ya lo muestra llamarBackend */ }
+  renderUsuarios();
+}
+const ROL_LABEL = { admin:'Admin', vendedor:'Vendedor', trabajador:'Trabajador' };
+function renderUsuarios(){
+  const cont = document.getElementById('listaUsuarios');
+  if(usuariosData.length === 0){
+    cont.innerHTML = `<div class="empty-state">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+      <strong>Sin usuarios</strong><span>Crea el primero con el botón de arriba.</span>
+    </div>`;
+    return;
+  }
+  cont.innerHTML = usuariosData.map((u,i)=>`
+    <div class="fin-card" style="--i:${i}" data-action="editar-usuario" data-usuario="${u.usuario}">
+      <div class="fin-card-head">
+        <div>
+          <div class="fin-card-cliente">${u.nombre}</div>
+          <div class="fin-card-meta">@${u.usuario}${u.especialidad ? ' · ' + u.especialidad : ''}</div>
+        </div>
+        <span class="badge-abono confirmado">${ROL_LABEL[u.rol] || u.rol}</span>
+      </div>
+    </div>`).join('');
+}
+function actualizarVisibilidadEspecialidad(){
+  document.getElementById('usrEspecialidadGroup').classList.toggle('hidden', document.getElementById('usrRol').value !== 'trabajador');
+}
+function abrirNuevoUsuario(){
+  usuarioEditandoOriginal = null;
+  document.getElementById('usuarioDrawerTitulo').textContent = 'Nuevo usuario';
+  document.getElementById('usrUsuario').value = '';
+  document.getElementById('usrUsuario').disabled = false;
+  document.getElementById('usrNombre').value = '';
+  document.getElementById('usrPassword').value = '';
+  document.getElementById('usrPassword').placeholder = 'PIN de acceso';
+  document.getElementById('usrRol').value = 'vendedor';
+  document.getElementById('usrEspecialidad').value = 'Hierro';
+  document.getElementById('btnEliminarUsuario').classList.add('hidden');
+  actualizarVisibilidadEspecialidad();
+  document.getElementById('scrimUsuario').classList.add('open');
+  document.getElementById('drawerUsuario').classList.add('open');
+}
+function abrirEditarUsuario(usuario){
+  const u = usuariosData.find(x=>x.usuario===usuario);
+  if(!u) return;
+  usuarioEditandoOriginal = u.usuario;
+  document.getElementById('usuarioDrawerTitulo').textContent = 'Editar usuario';
+  document.getElementById('usrUsuario').value = u.usuario;
+  document.getElementById('usrUsuario').disabled = true; // el usuario (login id) no se cambia una vez creado
+  document.getElementById('usrNombre').value = u.nombre;
+  document.getElementById('usrPassword').value = '';
+  document.getElementById('usrPassword').placeholder = 'Déjalo vacío para no cambiarlo';
+  document.getElementById('usrRol').value = u.rol;
+  document.getElementById('usrEspecialidad').value = u.especialidad || 'Hierro';
+  document.getElementById('btnEliminarUsuario').classList.remove('hidden');
+  actualizarVisibilidadEspecialidad();
+  document.getElementById('scrimUsuario').classList.add('open');
+  document.getElementById('drawerUsuario').classList.add('open');
+}
+function cerrarDrawerUsuario(){
+  document.getElementById('scrimUsuario').classList.remove('open');
+  document.getElementById('drawerUsuario').classList.remove('open');
+}
+async function guardarUsuarioUI(btn){
+  const usuario = document.getElementById('usrUsuario').value.trim();
+  const nombre = document.getElementById('usrNombre').value.trim();
+  const password = document.getElementById('usrPassword').value.trim();
+  const rol = document.getElementById('usrRol').value;
+  const especialidad = rol === 'trabajador' ? document.getElementById('usrEspecialidad').value : '';
+  if(!usuario || !nombre){ showToast('Completa usuario y nombre', 'error'); return; }
+  if(!usuarioEditandoOriginal && !password){ showToast('Ingresa un PIN para el usuario nuevo', 'error'); return; }
+  setCargando(btn, true);
+  try{
+    await llamarBackend('guardarUsuario', { usuario, nombre, password, rol, especialidad });
+    showToast('Usuario guardado', 'success');
+    cerrarDrawerUsuario();
+    await cargarUsuarios();
+  } catch(err){
+  } finally {
+    setCargando(btn, false);
+  }
+}
+async function eliminarUsuarioUI(btn){
+  if(!usuarioEditandoOriginal) return;
+  setCargando(btn, true);
+  try{
+    await llamarBackend('eliminarUsuario', { usuario: usuarioEditandoOriginal });
+    showToast('Usuario eliminado', 'success');
+    cerrarDrawerUsuario();
+    await cargarUsuarios();
+  } catch(err){
+    setCargando(btn, false);
+  }
+}
+
 function abrirLightbox(url){
   if(!url) return;
   document.getElementById('lightboxImg').src = url;
@@ -2984,6 +3661,9 @@ function toggleAvatarMenu(){
     document.getElementById('avatarMenuNombre').textContent = state.nombreUsuario || 'Usuario';
     document.getElementById('avatarMenuRol').textContent = state.rol === 'admin' ? 'Admin' : (state.rol === 'vendedor' ? 'Vendedor' : '—');
     document.getElementById('menuItemFinanciero').classList.toggle('hidden', state.rol !== 'admin');
+    document.getElementById('menuItemUsuarios').classList.toggle('hidden', state.rol !== 'admin');
+    document.getElementById('menuItemCatalogo').classList.toggle('hidden', state.rol === 'trabajador');
+    document.getElementById('menuItemConfig').classList.toggle('hidden', state.rol === 'trabajador');
     if(state.rol === 'admin') cargarAbonosPendientes();
     document.getElementById('scrim7').classList.add('open');
     menu.classList.add('open');
@@ -3362,7 +4042,11 @@ function agregarItem(){
 
   agregarItemComun(item, 'Ítem agregado');
   if(item.tipo === 'Combo'){
-    const extra = { tipo:'Ventana', especificaciones:{ alto:1, ancho:1, color:item.especificaciones.color, proteccion:true, marco_decorativo:false }, precio:0, cantidad:2, autoGenerado:true };
+    // El combo se acaba de insertar al final del arreglo que corresponda (pedido existente o borrador nuevo);
+    // enlazamos la ventana incluida a su índice para que Producción sepa a qué combo pertenece.
+    const arr = typeof state.itemTarget === 'number' ? pedidos.find(x=>x.id===state.itemTarget).items : state.npItems;
+    const comboIndex = arr.length - 1;
+    const extra = { tipo:'Ventana', especificaciones:{ alto:1, ancho:1, color:item.especificaciones.color, proteccion:true, marco_decorativo:false }, precio:0, cantidad:2, autoGenerado:true, comboIndex: comboIndex };
     agregarItemComun(extra, 'Ventanas del combo incluidas');
   }
 }
@@ -3532,6 +4216,17 @@ async function guardarPedido(){
 }
 
 /* ============ NAVEGACIÓN ============ */
+// Vista del trabajador: entra directo a su bandeja (una tarea a la vez), sin acceso a pantallas de admin.
+function mostrarVistaTrabajador(){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active','entering'));
+  document.getElementById('screen-bandeja').classList.add('active');
+  document.getElementById('breadcrumb').textContent = 'Tu bandeja';
+  document.querySelector('.bottom-nav-wrap')?.classList.add('hidden');
+  document.getElementById('btnNuevoPedido')?.classList.add('hidden');
+  document.getElementById('btnNuevaExh')?.classList.add('hidden');
+  document.getElementById('btnNuevoModelo')?.classList.add('hidden');
+  cargarBandeja();
+}
 function irAScreen(name, label){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active','entering'));
   const nueva = document.getElementById('screen-' + name);
@@ -3541,12 +4236,14 @@ function irAScreen(name, label){
   document.getElementById('placeholderTitle').textContent = label;
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active', n.dataset.screen===name && n.dataset.label===label));
   document.getElementById('btnNuevoPedido').classList.toggle('hidden', name!=='ventas');
-  document.getElementById('btnNuevaExh').classList.toggle('hidden', name!=='exhibicion' || state.modoSeleccion);
+  document.getElementById('btnNuevaExh').classList.toggle('hidden', name!=='exhibicion' || state.modoSeleccion || state.rol !== 'admin');
   document.getElementById('btnNuevoModelo').classList.toggle('hidden', name!=='catalogo');
   actualizarBannerSeleccion();
   if(name === 'exhibicion') renderExhibicion();
   if(name === 'catalogo') renderCatalogo();
   if(name === 'financiero') renderFinanciero();
+  if(name === 'produccion') cargarProduccion();
+  if(name === 'usuarios') cargarUsuarios();
 }
 
 /* ============ EVENTOS (delegación) ============ */
@@ -3575,11 +4272,16 @@ document.getElementById('btnLogin').addEventListener('click', async ()=>{
     const usuario = await llamarBackend('login', { usuario: u.value.trim(), password: p.value.trim() });
     state.rol = usuario.rol || null;
     state.nombreUsuario = usuario.nombre || null;
+    state.usuario = usuario.usuario || null;
     document.getElementById('avatarInitials').textContent = usuario.nombre.trim().slice(0,2).toUpperCase();
     guardarSesion(usuario);
     document.getElementById('loginScreen').classList.add('hidden');
     await cargarDatosIniciales();
-    procesarDeepLinkFinanciero();
+    if(state.rol === 'trabajador'){ mostrarVistaTrabajador(); }
+    else {
+      document.querySelector('.bottom-nav-wrap')?.classList.remove('hidden');
+      procesarDeepLinkFinanciero();
+    }
   } catch(err){
     document.getElementById('fieldPassword').classList.add('error');
     document.querySelector('#fieldPassword .field-error').textContent = 'Usuario o PIN incorrecto';
@@ -3623,6 +4325,7 @@ wireFotoPreview('nmFotoNegro', 'nmFotoNegroEmpty', 'nmFotoNegroPreview');
 wireFotoPreview('inputFotoAbono', 'inputFotoAbonoEmpty', 'inputFotoAbonoPreview');
 document.getElementById('npDescuento').addEventListener('input', actualizarTotalNuevo);
 document.getElementById('npPrecioFinal').addEventListener('input', actualizarTotalItem);
+document.getElementById('usrRol').addEventListener('change', actualizarVisibilidadEspecialidad);
 document.getElementById('npTelefono').addEventListener('input', chequearClienteExistente);
 document.getElementById('npCedula').addEventListener('input', chequearClienteExistente);
 document.getElementById('exhSearchInput').addEventListener('input', e=>{
@@ -3734,6 +4437,7 @@ document.body.addEventListener('click', e=>{
   else if(action === 'toggle-avatar-menu') toggleAvatarMenu();
   else if(action === 'ir-catalogo'){ cerrarAvatarMenu(); irAScreen('catalogo', 'Catálogo'); }
   else if(action === 'ir-financiero'){ cerrarAvatarMenu(); irAScreen('financiero', 'Pagos pendientes'); cargarAbonosPendientes(); }
+  else if(action === 'ir-usuarios'){ cerrarAvatarMenu(); irAScreen('usuarios', 'Usuarios'); cargarUsuarios(); }
   else if(action === 'fin-confirmar') confirmarAbonoFinanciero(el.dataset.pedidoId, el.dataset.abonoId, el);
   else if(action === 'fin-rechazar'){
     const campoMotivo = document.getElementById(`finMotivo-${el.dataset.pedidoId}-${el.dataset.abonoId}`);
@@ -3749,6 +4453,23 @@ document.body.addEventListener('click', e=>{
   else if(action === 'avisar-admin-abono') avisarAdminAbono(el.dataset.abonoId);
   else if(action === 'ver-comprobante') abrirLightbox(el.dataset.url);
   else if(action === 'close-lightbox') cerrarLightbox();
+  else if(action === 'set-prod-tab') cambiarTabProduccion(el.dataset.tab);
+  else if(action === 'ver-produccion-pedido') abrirDrawerProduccion(el.dataset.origen, el.dataset.id);
+  else if(action === 'close-drawer-produccion') cerrarDrawerProduccion();
+  else if(action === 'asignar-etapa') asignarEtapaUI(el.dataset.origen, el.dataset.id, el.dataset.itemIndex, el);
+  else if(action === 'abrir-nuevo-trabajo-exh') abrirNuevoTrabajoExh();
+  else if(action === 'close-nuevo-trabajo-exh') cerrarNuevoTrabajoExh();
+  else if(action === 'crear-trabajo-exh') crearTrabajoExhUI(el);
+  else if(action === 'ver-nomina-trabajador') abrirDrawerNomina(el.dataset.usuario);
+  else if(action === 'close-drawer-nomina') cerrarDrawerNomina();
+  else if(action === 'agregar-vale') agregarValeUI(el);
+  else if(action === 'registrar-pago-trabajador') registrarPagoTrabajadorUI(el);
+  else if(action === 'bandeja-terminar') completarTareaBandeja(el);
+  else if(action === 'abrir-nuevo-usuario') abrirNuevoUsuario();
+  else if(action === 'editar-usuario') abrirEditarUsuario(el.dataset.usuario);
+  else if(action === 'close-drawer-usuario') cerrarDrawerUsuario();
+  else if(action === 'guardar-usuario') guardarUsuarioUI(el);
+  else if(action === 'eliminar-usuario') eliminarUsuarioUI(el);
   else if(action === 'ir-config'){ cerrarAvatarMenu(); irAScreen('placeholder', 'Configuración'); }
   else if(action === 'cerrar-sesion'){
     cerrarAvatarMenu();
