@@ -574,6 +574,25 @@
   .prod-terminado-nota{ font-size:12px; color:var(--green); font-weight:600; }
   .prod-urgente{ border-left-color:var(--red) !important; }
 
+  /* ============ SEGUIMIENTO PÚBLICO (reutiliza variables de tema, por eso se ve claro con data-theme="light") ============ */
+  .track-head-pub{ background:var(--gold); color:#fff; padding:calc(env(safe-area-inset-top) + 20px) 18px 18px; display:flex; gap:14px; align-items:center; }
+  [data-theme="dark"] .track-head-pub{ color:#0d1f1e; }
+  .track-head-pub-photo{ width:56px; height:56px; border-radius:14px; background:rgba(255,255,255,.3); flex-shrink:0; object-fit:cover; }
+  .track-head-pub .ped{ font-size:11px; opacity:.75; }
+  .track-head-pub .cliente{ font-size:19px; font-weight:700; margin-top:2px; }
+  .flow{ display:flex; gap:0; overflow-x:auto; padding-bottom:6px; }
+  .flow-step{ display:flex; flex-direction:column; align-items:center; min-width:62px; position:relative; }
+  .flow-step:not(:last-child)::after{ content:''; position:absolute; top:20px; left:calc(50% + 20px); width:calc(100% - 6px); height:2px; background:var(--border); }
+  .flow-step.done:not(:last-child)::after{ background:var(--gold); }
+  .flow-dot{ width:40px; height:40px; border-radius:50%; background:var(--surface2); border:2px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:15px; z-index:1; overflow:hidden; }
+  .flow-dot img{ width:100%; height:100%; object-fit:cover; }
+  .flow-step.done .flow-dot{ background:var(--gold-dim); border-color:var(--gold); }
+  .flow-step.wip .flow-dot{ border-color:var(--amber-dim); background:var(--amber-dim); position:relative; }
+  .flow-step.wip .flow-dot::before{ content:''; position:absolute; inset:-4px; border-radius:50%; border:2px solid var(--gold); opacity:.6; animation:flowPulse 1.4s ease-out infinite; }
+  @keyframes flowPulse{ 0%{ transform:scale(.85); opacity:.7; } 100%{ transform:scale(1.35); opacity:0; } }
+  .flow-label{ font-size:9.5px; color:var(--text2); font-weight:700; text-align:center; margin-top:6px; max-width:58px; }
+  .flow-step.done .flow-label{ color:var(--gold); }
+
   .subfields{ padding:12px; background:var(--surface3); border-radius:var(--radius-sm); margin:-4px 0 12px; border:1px dashed var(--border2); }
 
   .added-items{ margin-bottom:16px; }
@@ -689,6 +708,11 @@
 </style>
 </head>
 <body>
+<!-- MÓDULO PÚBLICO: seguimiento del pedido por token, sin login. Mismo archivo, mismo backend,
+     tema claro forzado (reutiliza los mismos componentes ya construidos: ledger-box, prod-etapa-chip, etc.) -->
+<div class="phone" data-theme="light" id="phonePublico" style="display:none">
+  <div id="seguimientoPublicoContenido"></div>
+</div>
 <div class="phone" data-theme="dark" id="phone">
 
   <!-- LOGIN -->
@@ -930,6 +954,7 @@
           <span id="btnEnviarNotaEtiqueta">Enviar</span>
         </button>
       </div>
+      <button class="btn-ghost" id="btnVerSeguimientoCliente" style="width:100%;margin-top:10px" data-action="ver-seguimiento-cliente" title="Abre la página pública que ve el cliente, para revisarla">👁️ Ver seguimiento del cliente</button>
       <div class="section-label">Ítems del pedido</div>
       <div id="detItems"></div>
       <button class="btn-add-item-existing" id="btnAgregarItemExistente" data-action="agregar-item-existente">+ Agregar ítem a este pedido</button>
@@ -1373,6 +1398,9 @@
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>Pagos pendientes
       <span class="menu-badge-count hidden" id="badgeAbonosPendientes">0</span>
     </div>
+    <div class="avatar-menu-item hidden" id="menuItemCatalogoPublico" data-action="ir-catalogo-publico">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Catálogo público
+    </div>
     <div class="avatar-menu-item hidden" id="menuItemUsuarios" data-action="ir-usuarios">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>Usuarios
     </div>
@@ -1393,7 +1421,7 @@
 <script>
 /* ============ CONFIG ============ */
 const MODO_DEMO = false;
-const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbwHcAbO6HsdNz61y7DbAkY34wbQ0ExMQ_TDFk54cTPnMmru3IwGvZUAFinVGp9cDxv8/exec';
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbz1p6cRc-VjxIOZ8kRSxLfKDKc2sn85X9gLjDJ4B96FTRrO-Bk4OZge-OASkA1GTmU2/exec';
 const NUMERO_NEGOCIO = '584220167079';
 const TELEFONO_ADMIN_ABONOS = '584146326465'; // Recibe el aviso por WhatsApp cuando hay un abono pendiente de confirmar
 
@@ -2834,6 +2862,15 @@ function renderBandeja(nomina){
     </div>${ledgerAcumulado}`;
   wireFotoPreview('bandejaFoto', 'bandejaFotoEmpty', 'bandejaFotoPreview');
 }
+// Arma la URL base del hosting, para el link al catálogo público (que sí es un archivo aparte).
+function urlBaseHosting(){
+  return window.location.origin + window.location.pathname.replace(/index\.html$/, '');
+}
+function verSeguimientoCliente(){
+  const p = pedidos.find(x=>x.id===state.openPedidoId);
+  if(!p || !p.link_token){ showToast('Este pedido todavía no tiene link de seguimiento', 'error'); return; }
+  window.open(window.location.pathname + '?seguimiento=' + p.link_token, '_blank');
+}
 async function completarTareaBandeja(btn){
   const archivo = document.getElementById('bandejaFoto').files[0];
   if(!archivo){ showToast('Sube una foto de evidencia', 'error'); return; }
@@ -2974,18 +3011,21 @@ function mensajeWhatsappNota(p, urlNota){
   const saldo = money(saldoNum);
   const abono50 = money(totalNum * 0.5);
   const lineaLink = urlNota ? `\n\n${urlNota}` : '';
+  const lineaSeguimiento = p.link_token
+    ? `\n\nSigue tu pedido en vivo aquí:\n${window.location.origin}${window.location.pathname}?seguimiento=${p.link_token}`
+    : '';
 
   if(p.estado === 'cotizacion'){
-    return `Hola ${p.cliente.nombre} 👋\nAquí tienes tu cotización de Herrería Artesanos:\n📄 Cotización #${p.codigo} — Total: ${total}\n\nPara comenzar a fabricar necesitamos un abono del 50% (${abono50}). Cualquier duda, quedamos atentos: ¿deseas continuar con el pedido?\n\n_Creando con distinción_ ✨${lineaLink}`;
+    return `Hola ${p.cliente.nombre} 👋\nAquí tienes tu cotización de Herrería Artesanos:\n📄 Cotización #${p.codigo} — Total: ${total}\n\nPara comenzar a fabricar necesitamos un abono del 50% (${abono50}). Cualquier duda, quedamos atentos: ¿deseas continuar con el pedido?\n\n_Creando con distinción_ ✨${lineaLink}${lineaSeguimiento}`;
   }
   if(p.estado === 'listo'){
     const lineaSaldo = saldoNum > 0 ? `\nRecuerda traer el saldo restante de ${saldo} para la entrega.` : '';
-    return `Hola ${p.cliente.nombre} 👋\n¡Tu pedido #${p.codigo} ya está listo! Puedes pasar a retirarlo.${lineaSaldo}${lineaLink}`;
+    return `Hola ${p.cliente.nombre} 👋\n¡Tu pedido #${p.codigo} ya está listo! Puedes pasar a retirarlo.${lineaSaldo}${lineaLink}${lineaSeguimiento}`;
   }
   if(p.estado === 'entregado'){
     return `Hola ${p.cliente.nombre} 👋\n¡Gracias por tu compra! Tu pedido #${p.codigo} fue entregado${saldoNum<=0 ? ' y el pago quedó completo ✅' : ''}.\nAdjunto tu nota de entrega.${lineaLink}`;
   }
-  return `Hola ${p.cliente.nombre} 👋\n¡Tu pedido fue confirmado! 📄 Pedido #${p.codigo} — Total: ${total}\nAbonado: ${money(p.abono)} · Saldo: ${saldo}\n\nTe avisamos en cuanto haya novedades.${lineaLink}`;
+  return `Hola ${p.cliente.nombre} 👋\n¡Tu pedido fue confirmado! 📄 Pedido #${p.codigo} — Total: ${total}\nAbonado: ${money(p.abono)} · Saldo: ${saldo}\n\nTe avisamos en cuanto haya novedades.${lineaLink}${lineaSeguimiento}`;
 }
 // Normaliza cualquier forma en la que llegue un teléfono venezolano al formato
 // internacional que wa.me necesita (58 + 10 dígitos, sin el 0 inicial).
@@ -3770,6 +3810,7 @@ function toggleAvatarMenu(){
     document.getElementById('avatarMenuRol').textContent = state.rol === 'admin' ? 'Admin' : (state.rol === 'vendedor' ? 'Vendedor' : '—');
     document.getElementById('menuItemFinanciero').classList.toggle('hidden', state.rol !== 'admin');
     document.getElementById('menuItemUsuarios').classList.toggle('hidden', state.rol !== 'admin');
+    document.getElementById('menuItemCatalogoPublico').classList.toggle('hidden', state.rol !== 'admin');
     document.getElementById('menuItemCatalogo').classList.toggle('hidden', state.rol === 'trabajador');
     document.getElementById('menuItemConfig').classList.toggle('hidden', state.rol === 'trabajador');
     if(state.rol === 'admin') cargarAbonosPendientes();
@@ -4539,7 +4580,9 @@ document.body.addEventListener('click', e=>{
   else if(action === 'toggle-avatar-menu') toggleAvatarMenu();
   else if(action === 'ir-catalogo'){ cerrarAvatarMenu(); irAScreen('catalogo', 'Catálogo'); }
   else if(action === 'ir-financiero'){ cerrarAvatarMenu(); irAScreen('financiero', 'Pagos pendientes'); cargarAbonosPendientes(); }
+  else if(action === 'ver-seguimiento-cliente') verSeguimientoCliente();
   else if(action === 'ir-usuarios'){ cerrarAvatarMenu(); irAScreen('usuarios', 'Usuarios'); cargarUsuarios(); }
+  else if(action === 'ir-catalogo-publico'){ cerrarAvatarMenu(); window.open(urlBaseHosting() + 'catalogo-publico.html', '_blank'); }
   else if(action === 'fin-confirmar') confirmarAbonoFinanciero(el.dataset.pedidoId, el.dataset.abonoId, el);
   else if(action === 'fin-rechazar'){
     const campoMotivo = document.getElementById(`finMotivo-${el.dataset.pedidoId}-${el.dataset.abonoId}`);
@@ -4676,15 +4719,111 @@ function cambiarTipoCatalogoSwipe(direccion){
   zona.addEventListener('touchcancel', ()=>{ siguiendo = false; }, { passive:true });
 })();
 
+/* ============ SEGUIMIENTO PÚBLICO (sin login, mismo archivo) ============ */
+let seguimientoPublicoData = null;
+let seguimientoPublicoToken = null;
+
+async function mostrarSeguimientoPublico(token){
+  seguimientoPublicoToken = token;
+  document.getElementById('phone').style.display = 'none';
+  document.getElementById('phonePublico').style.display = 'flex';
+  const cont = document.getElementById('seguimientoPublicoContenido');
+  cont.innerHTML = '<div class="empty-state"><div class="mini-spin" style="margin:60px auto"></div></div>';
+  try{
+    seguimientoPublicoData = await llamarBackend('getSeguimientoPedido', { token: token }, true);
+    renderSeguimientoPublico();
+  } catch(err){
+    cont.innerHTML = `<div class="empty-state" style="padding-top:80px">
+      <strong>No encontramos ese pedido</strong><span>Verifica el link con la tienda.</span>
+    </div>`;
+  }
+}
+function flowHtmlPublico(etapas){
+  return `<div class="flow">${etapas.map(e=>{
+    const cls = e.estado === 'hecho' ? 'done' : (e.estado === 'asignado' ? 'wip' : '');
+    let dot;
+    if(e.foto_url) dot = `<img src="${e.foto_url}">`;
+    else if(e.estado === 'hecho') dot = '✓';
+    else if(e.estado === 'asignado') dot = '●';
+    else dot = '⏳';
+    return `<div class="flow-step ${cls}"><div class="flow-dot">${dot}</div><div class="flow-label">${e.nombre}</div></div>`;
+  }).join('')}</div>`;
+}
+function renderSeguimientoPublico(){
+  const s = seguimientoPublicoData;
+  const cont = document.getElementById('seguimientoPublicoContenido');
+  const primeraFoto = (s.items.find(it=>it.foto) || {}).foto;
+  const saldoPagado = s.saldo <= 0;
+
+  const itemsHtml = s.items.map(it=>{
+    const foto = it.foto ? `<div class="item-thumb"><img src="${it.foto}" style="width:100%;height:100%;object-fit:cover"></div>` : `<div class="item-thumb"></div>`;
+    if(it.esDeExhibicion || !it.etapas){
+      return `<div class="prod-item-card">
+        <div class="prod-item-head"><div style="display:flex;gap:10px;align-items:center">${foto}<div class="prod-item-nombre">${it.nombre}${it.cantidad>1?' ×'+it.cantidad:''}</div></div></div>
+        <div class="prod-terminado-nota">✓ Ya disponible</div>
+      </div>`;
+    }
+    const flowVentana = it.etapaVentana ? `<div class="section-label" style="margin-top:10px">Ventana</div>${flowHtmlPublico([it.etapaVentana])}` : '';
+    return `<div class="prod-item-card">
+      <div class="prod-item-head"><div style="display:flex;gap:10px;align-items:center">${foto}<div class="prod-item-nombre">${it.nombre}${it.cantidad>1?' ×'+it.cantidad:''}</div></div></div>
+      ${flowHtmlPublico(it.etapas)}
+      ${flowVentana}
+    </div>`;
+  }).join('');
+
+  cont.innerHTML = `
+    <div class="track-head-pub">
+      ${primeraFoto ? `<img class="track-head-pub-photo" src="${primeraFoto}">` : '<div class="track-head-pub-photo"></div>'}
+      <div><div class="ped">#${s.codigo}</div><div class="cliente">${s.cliente_nombre}</div></div>
+    </div>
+    <div style="padding:0 16px">
+      <div class="ledger-box" style="margin-top:-14px">
+        <div class="ledger-row ledger-total"><span>Total</span><strong>${money(s.total)}</strong></div>
+        <div class="ledger-row" style="margin-top:8px"><span>Abonado</span><strong style="color:var(--green)">${money(s.abono)}</strong></div>
+        <div class="ledger-row" style="margin-top:6px"><span>Resta por pagar</span><strong style="color:${saldoPagado?'var(--green)':'var(--red)'}">${money(s.saldo)}</strong></div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:14px">
+        <button class="btn-primary" style="flex:1" id="btnWaSeguimientoPub">💬 WhatsApp</button>
+        <button class="btn-ghost" style="flex:1" id="btnVerReciboPub">📄 Ver recibo</button>
+      </div>
+      <div class="section-label" style="margin-top:18px">Tus productos</div>
+      ${itemsHtml}
+      <div id="reciboPublicoWrap"></div>
+      <div style="height:30px"></div>
+    </div>
+  `;
+  document.getElementById('btnWaSeguimientoPub').addEventListener('click', ()=>{
+    const texto = encodeURIComponent(`Hola! Quisiera información sobre mi pedido #${s.codigo}`);
+    window.open(`https://wa.me/${NUMERO_NEGOCIO}?text=${texto}`, '_blank');
+  });
+  document.getElementById('btnVerReciboPub').addEventListener('click', verReciboPublico);
+}
+async function verReciboPublico(){
+  const wrap = document.getElementById('reciboPublicoWrap');
+  if(wrap.innerHTML.trim()){ wrap.innerHTML = ''; return; }
+  wrap.innerHTML = '<div class="mini-spin" style="margin:20px auto"></div>';
+  try{
+    const datos = await llamarBackend('generarNotaPublica', { token: seguimientoPublicoToken }, true);
+    wrap.innerHTML = `<a class="btn-primary" style="width:100%;display:block;text-align:center;text-decoration:none;box-sizing:border-box;margin-top:10px" href="data:application/pdf;base64,${datos.pdf_base64}" download="Nota_${seguimientoPublicoData.codigo}.pdf">⬇️ Descargar PDF</a>`;
+  } catch(err){
+    wrap.innerHTML = '<div class="prod-bloqueada" style="margin-top:10px">No pudimos generar el recibo, intenta de nuevo.</div>';
+  }
+}
+
 /* ============ INIT ============ */
-document.getElementById('demoBanner').classList.toggle('hidden', !MODO_DEMO);
-document.getElementById('loginHint').classList.toggle('hidden', !MODO_DEMO);
-renderLista();
-cargarListaUsuarios();
-(function initSesion(){
-  const sesion = leerSesionGuardada();
-  if(sesion) retomarSesion(sesion);
-})();
+const tokenSeguimientoURL = new URLSearchParams(window.location.search).get('seguimiento');
+if(tokenSeguimientoURL){
+  mostrarSeguimientoPublico(tokenSeguimientoURL);
+} else {
+  document.getElementById('demoBanner').classList.toggle('hidden', !MODO_DEMO);
+  document.getElementById('loginHint').classList.toggle('hidden', !MODO_DEMO);
+  renderLista();
+  cargarListaUsuarios();
+  (function initSesion(){
+    const sesion = leerSesionGuardada();
+    if(sesion) retomarSesion(sesion);
+  })();
+}
 </script>
 </body>
 </html>
