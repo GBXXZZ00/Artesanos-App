@@ -471,6 +471,14 @@
   .swatch-blanco{ background:#f2ede3; }
   .swatch-negro{ background:#1c1a17; }
   .foto-modelo-img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+  .proteccion-elegida-box{
+    display:flex; align-items:center; justify-content:space-between; padding:12px 14px; background:var(--surface2);
+    border:1px solid var(--border); border-radius:var(--radius-sm); cursor:pointer; font-size:14px; color:var(--text);
+    transition:transform .1s var(--ease-out);
+  }
+  .proteccion-elegida-box:active{ transform:scale(0.98); }
+  .proteccion-elegida-box.elegido{ color:var(--text); font-weight:600; }
+  .proteccion-elegida-flecha{ color:var(--text2); font-size:16px; }
   .comprobante-box{
     display:flex; align-items:center; justify-content:center; height:64px; border-radius:var(--radius);
     border:1.5px dashed var(--border2); background:var(--surface2); position:relative; overflow:hidden; cursor:pointer;
@@ -574,20 +582,22 @@
   .prod-terminado-nota{ font-size:12px; color:var(--green); font-weight:600; }
   .prod-urgente{ border-left-color:var(--red) !important; }
 
-  /* ============ SEGUIMIENTO PÚBLICO (reutiliza variables de tema, por eso se ve claro con data-theme="light") ============ */
-  .track-head-pub{ background:var(--gold); color:#fff; padding:calc(env(safe-area-inset-top) + 20px) 18px 18px; display:flex; gap:14px; align-items:center; }
-  [data-theme="dark"] .track-head-pub{ color:#0d1f1e; }
-  .track-head-pub-photo{ width:56px; height:56px; border-radius:14px; background:rgba(255,255,255,.3); flex-shrink:0; object-fit:cover; }
-  .track-head-pub .ped{ font-size:11px; opacity:.75; }
-  .track-head-pub .cliente{ font-size:19px; font-weight:700; margin-top:2px; }
+  /* ============ SEGUIMIENTO PÚBLICO (mismo look oscuro/dorado del catálogo) ============ */
+  .track-head-pub{ padding:calc(env(safe-area-inset-top) + 32px) 20px 20px; text-align:center; }
+  .track-head-pub .logo-pub{ font-family:'Cormorant Garamond',serif; font-size:26px; font-weight:300; letter-spacing:-.01em; }
+  .track-head-pub .logo-pub span{ color:var(--gold); }
+  .track-head-pub .logo-line-pub{ width:60px; height:1px; background:linear-gradient(90deg,transparent,var(--gold),transparent); margin:8px auto 10px; }
+  .track-head-pub-photo{ width:64px; height:64px; border-radius:14px; background:var(--surface2); margin:0 auto 10px; object-fit:cover; display:block; border:1px solid var(--border2); }
+  .track-head-pub .ped{ font-size:11px; color:var(--text2); }
+  .track-head-pub .cliente{ font-size:19px; font-weight:600; margin-top:2px; }
   .flow{ display:flex; gap:0; overflow-x:auto; padding-bottom:6px; }
   .flow-step{ display:flex; flex-direction:column; align-items:center; min-width:62px; position:relative; }
   .flow-step:not(:last-child)::after{ content:''; position:absolute; top:20px; left:calc(50% + 20px); width:calc(100% - 6px); height:2px; background:var(--border); }
   .flow-step.done:not(:last-child)::after{ background:var(--gold); }
-  .flow-dot{ width:40px; height:40px; border-radius:50%; background:var(--surface2); border:2px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:15px; z-index:1; overflow:hidden; }
+  .flow-dot{ width:40px; height:40px; border-radius:50%; background:var(--surface2); border:2px solid var(--border2); display:flex; align-items:center; justify-content:center; font-size:15px; z-index:1; overflow:hidden; }
   .flow-dot img{ width:100%; height:100%; object-fit:cover; }
   .flow-step.done .flow-dot{ background:var(--gold-dim); border-color:var(--gold); }
-  .flow-step.wip .flow-dot{ border-color:var(--amber-dim); background:var(--amber-dim); position:relative; }
+  .flow-step.wip .flow-dot{ border-color:var(--gold); background:var(--gold-dim); position:relative; }
   .flow-step.wip .flow-dot::before{ content:''; position:absolute; inset:-4px; border-radius:50%; border:2px solid var(--gold); opacity:.6; animation:flowPulse 1.4s ease-out infinite; }
   @keyframes flowPulse{ 0%{ transform:scale(.85); opacity:.7; } 100%{ transform:scale(1.35); opacity:0; } }
   .flow-label{ font-size:9.5px; color:var(--text2); font-weight:700; text-align:center; margin-top:6px; max-width:58px; }
@@ -710,7 +720,7 @@
 <body>
 <!-- MÓDULO PÚBLICO: seguimiento del pedido por token, sin login. Mismo archivo, mismo backend,
      tema claro forzado (reutiliza los mismos componentes ya construidos: ledger-box, prod-etapa-chip, etc.) -->
-<div class="phone" data-theme="light" id="phonePublico" style="display:none">
+<div class="phone" data-theme="dark" id="phonePublico" style="display:none">
   <div id="seguimientoPublicoContenido"></div>
 </div>
 <div class="phone" data-theme="dark" id="phone">
@@ -1204,6 +1214,7 @@
           <option value="Portón">Portón</option>
           <option value="Puerta Multilock" selected>Puerta Multilock</option>
           <option value="Combo">Combo</option>
+          <option value="Protección Ventana">Protección de ventana</option>
         </select>
       </div>
       <div id="nmCamposDinamicos"></div>
@@ -1284,6 +1295,17 @@
       <div class="icon-btn" data-action="close-drawer-produccion"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 6l12 12M18 6L6 18"/></svg></div>
     </div>
     <div class="drawer-body" id="prodDrawerItems"></div>
+  </div>
+
+  <!-- SCRIM 13 + DRAWER ELEGIR PROTECCIÓN (drawer sobre drawer, encima del formulario de item) -->
+  <div class="scrim3" id="scrimElegirProteccion" style="z-index:94" data-action="cerrar-elegir-proteccion"></div>
+  <div class="drawer-exh" id="drawerElegirProteccion" style="z-index:95">
+    <div class="drawer-handle"></div>
+    <div class="drawer-head">
+      <h2>Elegir protección</h2>
+      <div class="icon-btn" data-action="cerrar-elegir-proteccion"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 6l12 12M18 6L6 18"/></svg></div>
+    </div>
+    <div class="drawer-body" id="listaProteccionesDrawer"></div>
   </div>
 
   <!-- SCRIM 10 + DRAWER NUEVO TRABAJO PARA EXHIBICIÓN (sin cliente) -->
@@ -1421,7 +1443,7 @@
 <script>
 /* ============ CONFIG ============ */
 const MODO_DEMO = false;
-const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbz1p6cRc-VjxIOZ8kRSxLfKDKc2sn85X9gLjDJ4B96FTRrO-Bk4OZge-OASkA1GTmU2/exec';
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbztduFXZKoQDNd0SA6urIlfV5k6wjWPugsuGXM3Rq4d9YG_pYZxEEqylJ0aXBIOCR2J/exec';
 const NUMERO_NEGOCIO = '584220167079';
 const TELEFONO_ADMIN_ABONOS = '584146326465'; // Recibe el aviso por WhatsApp cuando hay un abono pendiente de confirmar
 
@@ -1760,13 +1782,13 @@ function especTexto(item){
   if(e.sentido) parts.push('abre ' + e.sentido.toLowerCase());
   if(e.posicion) parts.push(e.posicion.toLowerCase());
   if(e.bloque) parts.push('bloque ' + e.bloque);
-  if(e.proteccion) parts.push('con protección');
+  if(e.proteccion) parts.push('con protección' + (e.proteccion_nombre ? ` (${e.proteccion_nombre})` : ''));
   if(e.proteccion_sentido) parts.push('protección abre ' + e.proteccion_sentido.toLowerCase());
   if(e.vidrio_o_farquilla) parts.push(e.vidrio_o_farquilla + (e.color_vidrio ? ' ' + e.color_vidrio.toLowerCase() : ''));
   if(e.manillon) parts.push('manillón ' + (e.manillon_tipo || ''));
   if(e.marco_decorativo) parts.push('marco decorativo');
-  if(e.papel_ahumado) parts.push('papel ahumado');
-  if(e.mas_hojas) parts.push('más de 2 hojas');
+  if(e.papel_ahumado) parts.push('papel ahumado' + (e.color_ahumado ? ' ' + e.color_ahumado.toLowerCase() : ''));
+  if(e.hojas_extra > 0) parts.push(e.hojas_extra + ' hoja(s) extra');
   if(e.instalacion) parts.push('instalación incluida');
   if(item.tipo==='Combo') parts.push('incluye 2 ventanas 1×1');
   return parts.join(' · ');
@@ -1838,7 +1860,8 @@ function renderLista(){
   reveal(cont);
 }
 function fechaCorta(iso){
-  const d = new Date(iso + 'T00:00:00');
+  if(!iso) return '';
+  const d = String(iso).length <= 10 ? new Date(iso + 'T00:00:00') : new Date(iso);
   return d.toLocaleDateString('es-VE', {day:'numeric', month:'short'});
 }
 
@@ -2583,6 +2606,7 @@ function renderProdDrawerItems(p){
     return `
     <div class="prod-item-card">
       <div class="prod-item-head">
+        ${it.foto ? `<img src="${it.foto}" style="width:44px;height:44px;border-radius:9px;object-fit:cover;border:1px solid var(--border);flex-shrink:0">` : '<div style="width:44px;height:44px;border-radius:9px;background:var(--surface3);flex-shrink:0"></div>'}
         <div>
           <div class="prod-item-nombre">${nombreItemProd(it)}</div>
           <div class="prod-item-meta">Ítem a fabricar</div>
@@ -3703,6 +3727,7 @@ function precargarEspecificaciones(e, idPrefix, radioPrefix){
   setRadio('proteccion_sentido', e.proteccion_sentido);
   setRadio('manillon_tipo', e.manillon_tipo);
   setRadio('variante', e.variante);
+  setRadio('color_ahumado', e.color_ahumado);
   const setToggle = (id, val) => { const el = g(id); if(el) el.checked = !!val; };
   setToggle('PapelAhumado', e.papel_ahumado);
   setToggle('Proteccion', e.proteccion);
@@ -3710,6 +3735,16 @@ function precargarEspecificaciones(e, idPrefix, radioPrefix){
   setToggle('MasHojas', e.mas_hojas);
   setToggle('Manillon', e.manillon);
   setToggle('Instalacion', e.instalacion);
+  if(g('HojasExtra') && e.hojas_extra != null) g('HojasExtra').value = e.hojas_extra;
+  if(g('MontoHojasExtra') && e.monto_hojas_extra != null) g('MontoHojasExtra').value = e.monto_hojas_extra;
+  if(g('ProteccionMonto') && e.proteccion_monto != null) g('ProteccionMonto').value = e.proteccion_monto;
+  if(e.proteccion_catalogo_id){
+    state.proteccionElegidaVentana = { id: e.proteccion_catalogo_id, nombre: e.proteccion_nombre, precio_base: e.proteccion_precio_base };
+    const cajaTexto = document.getElementById(ip + 'ProteccionElegidaTexto');
+    const caja = document.getElementById(ip + 'ProteccionElegidaBox');
+    if(cajaTexto){ cajaTexto.textContent = e.proteccion_nombre + ' — ' + money(e.proteccion_precio_base) + '/m²'; }
+    if(caja) caja.classList.add('elegido');
+  }
   actualizarSubfields(ip);
 }
 function usarModeloCatalogo(){
@@ -3858,10 +3893,23 @@ function renderCamposDinamicosGenerico(tipo, contId, idPrefix, radioPrefix){
   if(tipo === 'ventana'){
     html += CM();
     html += CR('color','Color', ['Blanco','Negro'], 'Blanco');
-    html += CT('PapelAhumado', 'Papel ahumado (+$20)');
+    html += CT('PapelAhumado', 'Papel ahumado (+$20 por m²)');
+    html += SUB('PapelAhumado', CR('color_ahumado','Color del ahumado', ['Gris','Bronce','Negro'], 'Gris'));
     html += CT('Proteccion', 'Protección');
-    html += SUB('Proteccion', CT('MarcoDecorativo','Marco decorativo en protección'));
-    html += CT('MasHojas', 'Más de 2 hojas');
+    html += SUB('Proteccion', `
+      <div class="form-group">
+        <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Modelo de protección</label>
+        <div class="proteccion-elegida-box" id="${idPrefix}ProteccionElegidaBox" data-action="abrir-elegir-proteccion">
+          <span id="${idPrefix}ProteccionElegidaTexto">Toca para elegir del catálogo de protecciones</span>
+          <span class="proteccion-elegida-flecha">›</span>
+        </div>
+      </div>
+      ${CR('bloque','Tipo de bloque', ['10','15','Tubo'], '15')}
+      <div class="form-row">
+        <div class="field"><label>Hojas extra (manual)</label><input type="number" min="0" value="0" id="${idPrefix}HojasExtra"></div>
+        <div class="field"><label>Monto por hojas extra</label><div class="input-money"><input type="number" id="${idPrefix}MontoHojasExtra" value="0"></div></div>
+      </div>
+    `);
   }
   else if(tipo === 'porton'){
     html += CM();
@@ -3884,6 +3932,7 @@ function renderCamposDinamicosGenerico(tipo, contId, idPrefix, radioPrefix){
     html += SUB('Manillon', CR('manillon_tipo','Tipo de manillón', ['H','S','Luna'], 'Luna'));
     html += CT('MarcoDecorativo', 'Marco decorativo');
     html += CT('Proteccion', 'Protección');
+    html += SUB('Proteccion', `<div class="field"><label>Costo de la protección (manual)</label><div class="input-money"><input type="number" id="${idPrefix}ProteccionMonto" value="0"></div></div>`);
     html += CR('sentido','Sentido de apertura', ['Derecha','Izquierda'], 'Derecha');
     html += CR('posicion','Posición de apertura', ['Adentro','Afuera'], 'Afuera');
     html += CR('bloque','Tipo de bloque', ['10','15','Tubo'], '15');
@@ -3903,12 +3952,13 @@ function renderCamposDinamicosGenerico(tipo, contId, idPrefix, radioPrefix){
 
 function renderCamposDinamicos(){
   const tipo = document.getElementById('npTipoProducto').value;
+  state.proteccionElegidaVentana = null;
   renderCamposDinamicosGenerico(tipo, 'npCamposDinamicos', 'np', '');
   actualizarPrecioSugerido();
   actualizarColorVidrio();
 }
 
-const TIPO_LABEL_A_KEY = { Ventana:'ventana', 'Portón':'porton', Puerta:'puerta', 'Puerta Multilock':'puerta_multilock', Combo:'combo' };
+const TIPO_LABEL_A_KEY = { Ventana:'ventana', 'Portón':'porton', Puerta:'puerta', 'Puerta Multilock':'puerta_multilock', Combo:'combo', 'Protección Ventana':'proteccion_ventana' };
 /* El modelo de catálogo es la base "de fábrica": no incluye sentido de apertura, posición de instalación,
    tipo de bloque ni instalación incluida, porque eso se decide por pedido, no por modelo.
    Sí incluye lo que sí define al producto: medidas típicas, color, marco decorativo, protección y manillón. */
@@ -3948,6 +3998,9 @@ function renderCamposDinamicosModelo(){
     html += CR('variante','Variante del combo', ['Sin protección en puerta','Con protección en puerta'], 'Con protección en puerta');
     html += CM();
   }
+  else if(tipoKey === 'proteccion_ventana'){
+    html += `<div style="font-size:12px;color:var(--text2);margin-bottom:14px;padding:10px 12px;background:var(--surface3);border-radius:var(--radius-sm)">El precio base de este modelo se toma como el costo por m² (1×1). Al usarlo en una ventana, se multiplica por el área real.</div>`;
+  }
 
   cont.innerHTML = html;
   actualizarColorVidrio();
@@ -3975,14 +4028,94 @@ function actualizarColorVidrio(){
 const PRECIO_BASE = { ventana:90, porton:150, puerta:200, puerta_multilock:260, combo:380 };
 function actualizarPrecioSugerido(){
   const tipo = document.getElementById('npTipoProducto').value;
+  if(tipo === 'ventana'){ actualizarPrecioVentana(); return; }
   const alto = parseFloat(document.getElementById('npAlto')?.value) || 1;
   const ancho = parseFloat(document.getElementById('npAncho')?.value) || 1;
   const area = alto * ancho;
   const base = PRECIO_BASE[tipo] || 100;
-  const sugerido = area > 1 ? Math.round(base * area) : base;
+  let sugerido = area > 1 ? Math.round(base * area) : base;
+  if(tipo === 'puerta' || tipo === 'puerta_multilock'){
+    if(document.getElementById('npManillon')?.checked) sugerido += 20;
+    const montoProteccion = parseFloat(document.getElementById('npProteccionMonto')?.value) || 0;
+    if(document.getElementById('npProteccion')?.checked) sugerido += montoProteccion;
+  }
   document.getElementById('npPrecioSugerido').textContent = `Precio sugerido: ${money(sugerido)} (editable abajo)`;
   document.getElementById('npPrecioFinal').value = sugerido;
   actualizarTotalItem();
+}
+// El corazón del cálculo de ventana: base por m² del modelo elegido (o genérico si es personalizada),
+// + papel ahumado por m², + protección elegida por m², + hojas extra manuales. Las ventanas muy chicas
+// (menos de 60×40cm) cuestan $50 fijo, con o sin protección, sin importar el resto del cálculo.
+function actualizarPrecioVentana(){
+  const alto = parseFloat(document.getElementById('npAlto')?.value) || 0;
+  const ancho = parseFloat(document.getElementById('npAncho')?.value) || 0;
+  const area = alto * ancho;
+  const esChiquita = (alto <= 0.6 && ancho <= 0.4) || (alto <= 0.4 && ancho <= 0.6);
+  const conProteccion = document.getElementById('npProteccion')?.checked || false;
+
+  let sugerido;
+  let detalle;
+  if(esChiquita){
+    sugerido = 50;
+    detalle = `Ventana pequeña (menos de 60×40cm): precio fijo ${money(50)}${conProteccion ? ', con protección incluida en ese mismo precio' : ''}.`;
+  } else {
+    const modeloElegido = state.catalogoIdElegido ? catalogo.find(m=>m.id===state.catalogoIdElegido) : null;
+    const precioBaseM2 = modeloElegido ? modeloElegido.precio_base : PRECIO_BASE.ventana;
+    let total = precioBaseM2 * area;
+    const partes = [`${money(precioBaseM2)}/m² × ${area.toFixed(2)}m²`];
+
+    if(document.getElementById('npPapelAhumado')?.checked){
+      total += 20 * area;
+      partes.push(`+ papel ahumado ${money(20)}/m²`);
+    }
+    if(conProteccion && state.proteccionElegidaVentana){
+      total += state.proteccionElegidaVentana.precio_base * area;
+      partes.push(`+ protección ${money(state.proteccionElegidaVentana.precio_base)}/m²`);
+    }
+    const montoHojas = parseFloat(document.getElementById('npMontoHojasExtra')?.value) || 0;
+    if(conProteccion && montoHojas > 0){
+      total += montoHojas;
+      partes.push(`+ hojas extra ${money(montoHojas)}`);
+    }
+    sugerido = Math.round(total);
+    detalle = partes.join(' ');
+  }
+  document.getElementById('npPrecioSugerido').textContent = `Precio sugerido: ${money(sugerido)} (editable abajo) · ${detalle}`;
+  document.getElementById('npPrecioFinal').value = sugerido;
+  actualizarTotalItem();
+}
+function abrirElegirProteccion(){
+  renderListaProteccionesDrawer();
+  document.getElementById('scrimElegirProteccion').classList.add('open');
+  document.getElementById('drawerElegirProteccion').classList.add('open');
+}
+function cerrarElegirProteccion(){
+  document.getElementById('scrimElegirProteccion').classList.remove('open');
+  document.getElementById('drawerElegirProteccion').classList.remove('open');
+}
+function renderListaProteccionesDrawer(){
+  const cont = document.getElementById('listaProteccionesDrawer');
+  const protecciones = catalogo.filter(m => m.tipo === 'Protección Ventana');
+  if(protecciones.length === 0){
+    cont.innerHTML = `<div class="empty-state"><strong>Sin modelos todavía</strong><span>Crea modelos de protección desde Catálogo.</span></div>`;
+    return;
+  }
+  cont.innerHTML = protecciones.map(m=>`
+    <div class="order-card" data-action="elegir-proteccion" data-id="${m.id}" style="cursor:pointer">
+      <div>
+        <div class="item-name">${m.nombre}</div>
+        <div class="item-spec">${money(m.precio_base)} por m² (1×1)</div>
+      </div>
+    </div>`).join('');
+}
+function elegirProteccion(modeloId){
+  const m = catalogo.find(x=>x.id===Number(modeloId));
+  if(!m) return;
+  state.proteccionElegidaVentana = { id: m.id, nombre: m.nombre, precio_base: m.precio_base };
+  document.getElementById('npProteccionElegidaTexto').textContent = m.nombre + ' — ' + money(m.precio_base) + '/m²';
+  document.getElementById('npProteccionElegidaBox').classList.add('elegido');
+  cerrarElegirProteccion();
+  actualizarPrecioVentana();
 }
 function setCantidadNP(n){
   document.getElementById('npCantidad').value = n;
@@ -4021,9 +4154,16 @@ function leerEspecificacionesGenerico(tipo, idPrefix, radioPrefix){
 
   if(tipo==='ventana'){
     e.papel_ahumado = g('PapelAhumado')?.checked || false;
+    e.color_ahumado = e.papel_ahumado ? radioVal('color_ahumado') : null;
     e.proteccion = g('Proteccion')?.checked || false;
-    e.marco_decorativo = g('MarcoDecorativo')?.checked || false;
-    e.mas_hojas = g('MasHojas')?.checked || false;
+    if(e.proteccion && state.proteccionElegidaVentana){
+      e.proteccion_catalogo_id = state.proteccionElegidaVentana.id;
+      e.proteccion_nombre = state.proteccionElegidaVentana.nombre;
+      e.proteccion_precio_base = state.proteccionElegidaVentana.precio_base;
+    }
+    e.bloque = e.proteccion ? radioVal('bloque') : null;
+    e.hojas_extra = e.proteccion ? (parseInt(g('HojasExtra')?.value) || 0) : 0;
+    e.monto_hojas_extra = e.proteccion ? (parseFloat(g('MontoHojasExtra')?.value) || 0) : 0;
   } else if(tipo==='porton'){
     e.sentido = radioVal('sentido'); e.posicion = radioVal('posicion');
     e.vidrio_o_farquilla = radioVal('vidrio_o_farquilla'); e.color_vidrio = e.vidrio_o_farquilla === 'Vidrio' ? radioVal('color_vidrio') : 'Plateado';
@@ -4039,6 +4179,7 @@ function leerEspecificacionesGenerico(tipo, idPrefix, radioPrefix){
     e.manillon = g('Manillon')?.checked || false;
     e.manillon_tipo = e.manillon ? radioVal('manillon_tipo') : null;
     e.proteccion = g('Proteccion')?.checked || false;
+    e.proteccion_monto = e.proteccion ? (parseFloat(g('ProteccionMonto')?.value) || 0) : 0;
   } else if(tipo==='combo'){
     e.variante = radioVal('variante');
     e.sentido = radioVal('sentido'); e.posicion = radioVal('posicion'); e.bloque = radioVal('bloque');
@@ -4058,6 +4199,7 @@ function leerCamposActuales(){
 
 /* ---- Drawer compartido de ítem (catálogo/exhibición + personalizado) ---- */
 function resetItemDrawerASeleccion(){
+  state.proteccionElegidaVentana = null;
   document.getElementById('itemDrawerOpciones').classList.remove('hidden');
   document.getElementById('npModeloHeader').classList.add('hidden');
   document.getElementById('npFormWrap').classList.add('hidden');
@@ -4482,12 +4624,16 @@ document.getElementById('catSearchInput').addEventListener('input', e=>{
 
 document.body.addEventListener('input', e=>{
   if(e.target.id === 'npAlto' || e.target.id === 'npAncho') actualizarPrecioSugerido();
+  if(e.target.id === 'npMontoHojasExtra' || e.target.id === 'npHojasExtra') actualizarPrecioVentana();
+  if(e.target.id === 'npProteccionMonto') actualizarPrecioSugerido();
 });
 document.body.addEventListener('change', e=>{
   const id = e.target.id;
   if(/^(np|nm)(Proteccion|Manillon)$/.test(id)){
     actualizarSubfields(id.slice(0,2));
   }
+  if(id === 'npPapelAhumado' || id === 'npProteccion') actualizarPrecioVentana();
+  if(id === 'npManillon') actualizarPrecioSugerido();
 });
 
 document.body.addEventListener('click', e=>{
@@ -4612,6 +4758,9 @@ document.body.addEventListener('click', e=>{
   else if(action === 'registrar-pago-trabajador') registrarPagoTrabajadorUI(el);
   else if(action === 'bandeja-terminar') completarTareaBandeja(el);
   else if(action === 'abrir-nuevo-usuario') abrirNuevoUsuario();
+  else if(action === 'abrir-elegir-proteccion') abrirElegirProteccion();
+  else if(action === 'cerrar-elegir-proteccion') cerrarElegirProteccion();
+  else if(action === 'elegir-proteccion') elegirProteccion(el.dataset.id);
   else if(action === 'editar-usuario') abrirEditarUsuario(el.dataset.usuario);
   else if(action === 'close-drawer-usuario') cerrarDrawerUsuario();
   else if(action === 'guardar-usuario') guardarUsuarioUI(el);
@@ -4773,23 +4922,32 @@ function renderSeguimientoPublico(){
 
   cont.innerHTML = `
     <div class="track-head-pub">
-      ${primeraFoto ? `<img class="track-head-pub-photo" src="${primeraFoto}">` : '<div class="track-head-pub-photo"></div>'}
-      <div><div class="ped">#${s.codigo}</div><div class="cliente">${s.cliente_nombre}</div></div>
+      ${primeraFoto ? `<img class="track-head-pub-photo" src="${primeraFoto}">` : ''}
+      <div class="logo-pub">HERRERÍA <span>ARTESANOS</span></div>
+      <div class="logo-line-pub"></div>
+      <div class="ped">#${s.codigo}</div>
+      <div class="cliente">${s.cliente_nombre}</div>
     </div>
-    <div style="padding:0 16px">
-      <div class="ledger-box" style="margin-top:-14px">
+    <div style="padding:0 16px 30px">
+      <div class="ledger-box">
         <div class="ledger-row ledger-total"><span>Total</span><strong>${money(s.total)}</strong></div>
-        <div class="ledger-row" style="margin-top:8px"><span>Abonado</span><strong style="color:var(--green)">${money(s.abono)}</strong></div>
+        <div class="ledger-row" style="margin-top:8px"><span>Abonado</span><strong style="color:var(--gold)">${money(s.abono)}</strong></div>
         <div class="ledger-row" style="margin-top:6px"><span>Resta por pagar</span><strong style="color:${saldoPagado?'var(--green)':'var(--red)'}">${money(s.saldo)}</strong></div>
       </div>
-      <div style="display:flex;gap:10px;margin-top:14px">
-        <button class="btn-primary" style="flex:1" id="btnWaSeguimientoPub">💬 WhatsApp</button>
-        <button class="btn-ghost" style="flex:1" id="btnVerReciboPub">📄 Ver recibo</button>
+      <div style="display:flex;gap:8px;margin-top:14px">
+        <button class="quick-action-btn wa" id="btnWaSeguimientoPub">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 00-8.6 15L2 22l5.2-1.4A10 10 0 1012 2zm5.8 14.2c-.2.7-1.4 1.3-2 1.4-.5.1-1.1.2-3.6-.8-3-1.2-5-4.2-5.1-4.4-.2-.2-1.2-1.6-1.2-3.1s.8-2.2 1.1-2.5c.3-.3.6-.4.8-.4h.6c.2 0 .5 0 .7.5l1 2.4c.1.2.1.4 0 .6l-.5.7c-.1.2-.2.3 0 .6.2.3.9 1.4 1.9 2.3 1.3 1.1 2.4 1.5 2.7 1.6.3.1.5.1.7-.1l.9-1c.2-.3.4-.2.7-.1l2.1 1c.2.1.4.2.5.3.1.2.1.9-.1 1.6z"/></svg>
+          <span>Chat</span>
+        </button>
+        <button class="quick-action-btn gold" id="btnVerReciboPub">
+          <span class="btn-spin"></span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+          <span>Ver recibo</span>
+        </button>
       </div>
       <div class="section-label" style="margin-top:18px">Tus productos</div>
       ${itemsHtml}
       <div id="reciboPublicoWrap"></div>
-      <div style="height:30px"></div>
     </div>
   `;
   document.getElementById('btnWaSeguimientoPub').addEventListener('click', ()=>{
@@ -4799,14 +4957,20 @@ function renderSeguimientoPublico(){
   document.getElementById('btnVerReciboPub').addEventListener('click', verReciboPublico);
 }
 async function verReciboPublico(){
+  const btn = document.getElementById('btnVerReciboPub');
   const wrap = document.getElementById('reciboPublicoWrap');
   if(wrap.innerHTML.trim()){ wrap.innerHTML = ''; return; }
-  wrap.innerHTML = '<div class="mini-spin" style="margin:20px auto"></div>';
+  setCargando(btn, true);
   try{
     const datos = await llamarBackend('generarNotaPublica', { token: seguimientoPublicoToken }, true);
-    wrap.innerHTML = `<a class="btn-primary" style="width:100%;display:block;text-align:center;text-decoration:none;box-sizing:border-box;margin-top:10px" href="data:application/pdf;base64,${datos.pdf_base64}" download="Nota_${seguimientoPublicoData.codigo}.pdf">⬇️ Descargar PDF</a>`;
+    // Abrimos ya mismo (antes del resto), igual que en el resto de la app, para que Safari/iOS no bloquee el popup.
+    const ventana = window.open('', '_blank');
+    if(ventana) ventana.location.href = datos.preview_url;
+    wrap.innerHTML = `<a class="btn-ghost" style="width:100%;display:block;text-align:center;text-decoration:none;box-sizing:border-box;margin-top:10px" href="${datos.url}" target="_blank" rel="noopener">⬇️ Descargar PDF</a>`;
   } catch(err){
     wrap.innerHTML = '<div class="prod-bloqueada" style="margin-top:10px">No pudimos generar el recibo, intenta de nuevo.</div>';
+  } finally {
+    setCargando(btn, false);
   }
 }
 
