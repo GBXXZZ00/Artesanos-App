@@ -582,26 +582,50 @@
   .prod-terminado-nota{ font-size:12px; color:var(--green); font-weight:600; }
   .prod-urgente{ border-left-color:var(--red) !important; }
 
-  /* ============ SEGUIMIENTO PÚBLICO (mismo look oscuro/dorado del catálogo) ============ */
-  .track-head-pub{ padding:calc(env(safe-area-inset-top) + 32px) 20px 20px; text-align:center; }
-  .track-head-pub .logo-pub{ font-family:'Cormorant Garamond',serif; font-size:26px; font-weight:300; letter-spacing:-.01em; }
-  .track-head-pub .logo-pub span{ color:var(--gold); }
-  .track-head-pub .logo-line-pub{ width:60px; height:1px; background:linear-gradient(90deg,transparent,var(--gold),transparent); margin:8px auto 10px; }
-  .track-head-pub-photo{ width:64px; height:64px; border-radius:14px; background:var(--surface2); margin:0 auto 10px; object-fit:cover; display:block; border:1px solid var(--border2); }
-  .track-head-pub .ped{ font-size:11px; color:var(--text2); }
-  .track-head-pub .cliente{ font-size:19px; font-weight:600; margin-top:2px; }
-  .flow{ display:flex; gap:0; overflow-x:auto; padding-bottom:6px; }
-  .flow-step{ display:flex; flex-direction:column; align-items:center; min-width:62px; position:relative; }
-  .flow-step:not(:last-child)::after{ content:''; position:absolute; top:20px; left:calc(50% + 20px); width:calc(100% - 6px); height:2px; background:var(--border); }
-  .flow-step.done:not(:last-child)::after{ background:var(--gold); }
-  .flow-dot{ width:40px; height:40px; border-radius:50%; background:var(--surface2); border:2px solid var(--border2); display:flex; align-items:center; justify-content:center; font-size:15px; z-index:1; overflow:hidden; }
+  /* ============ SEGUIMIENTO PÚBLICO (siempre claro para el cliente, colores propios del catálogo, no del tema admin) ============ */
+  #phonePublico{ --sp-bg:#faf8f4; --sp-surface:#ffffff; --sp-surface2:#f4f1ea; --sp-border:#e8e2d5;
+    --sp-text:#241f18; --sp-text2:#6b6255; --sp-green:#1f4d3a; --sp-green-dim:#eaf2ee;
+    --sp-gold:#c69a4a; --sp-gold-dim:#faf1de; --sp-red:#b5493f;
+    background:var(--sp-bg) !important; color:var(--sp-text) !important;
+  }
+  .track-head-pub{ background:var(--sp-green); color:#fff; padding:calc(env(safe-area-inset-top) + 20px) 18px 18px; display:flex; gap:12px; align-items:center; }
+  .collage-pub{ width:60px; height:60px; border-radius:14px; overflow:hidden; flex-shrink:0; display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr; gap:2px; background:rgba(255,255,255,.15); }
+  .collage-pub img, .collage-pub .vacio{ width:100%; height:100%; object-fit:cover; background:rgba(255,255,255,.12); }
+  .collage-pub.una-foto{ grid-template-columns:1fr; grid-template-rows:1fr; }
+  .track-head-pub .ped{ font-size:11px; opacity:.75; }
+  .track-head-pub .cliente{ font-size:18px; font-weight:700; margin-top:1px; }
+  .saldo-box-pub{ display:flex; margin:0 18px; margin-top:-12px; background:var(--sp-surface); border-radius:14px; overflow:hidden; box-shadow:0 3px 12px rgba(0,0,0,.08); position:relative; z-index:2; }
+  .saldo-box-pub div{ flex:1; padding:11px 8px; text-align:center; border-right:1px solid var(--sp-border); }
+  .saldo-box-pub div:last-child{ border-right:none; }
+  .saldo-box-pub span{ display:block; font-size:9.5px; color:var(--sp-text2); }
+  .saldo-box-pub strong{ font-size:15px; color:var(--sp-text); }
+  .actions-row-pub{ display:flex; gap:8px; padding:16px 18px 4px; }
+  .action-btn-pub{ flex:1; text-align:center; font-size:12.5px; font-weight:700; padding:12px 6px; border-radius:12px; display:flex; align-items:center; justify-content:center; gap:6px; cursor:pointer; border:none; }
+  .action-btn-pub.wa{ background:var(--sp-green); color:#fff; }
+  .action-btn-pub.recibo{ background:var(--sp-surface2); color:var(--sp-green); border:1px solid var(--sp-border); }
+  .section-label-pub{ font-size:11px; font-weight:700; color:var(--sp-text2); text-transform:uppercase; letter-spacing:.05em; margin:20px 18px 10px; }
+  .item-block-pub{ margin:0 18px 12px; background:var(--sp-surface); border-radius:14px; padding:13px; border:1px solid var(--sp-border); }
+  .item-head-pub{ display:flex; gap:10px; align-items:center; margin-bottom:11px; }
+  .item-photo-pub{ width:38px; height:38px; border-radius:9px; background:var(--sp-surface2); flex-shrink:0; object-fit:cover; }
+  .item-name-pub{ font-weight:700; font-size:13.5px; color:var(--sp-text); }
+  .listo-nota-pub{ font-size:12.5px; font-weight:700; color:var(--sp-green); }
+  .flow{ display:flex; gap:0; overflow-x:auto; padding-bottom:4px; }
+  .flow-step{ display:flex; flex-direction:column; align-items:center; min-width:58px; position:relative; }
+  .flow-step:not(:last-child)::after{ content:''; position:absolute; top:18px; left:calc(50% + 18px); width:calc(100% - 6px); height:2px; background:var(--sp-border); }
+  .flow-step.done:not(:last-child)::after{ background:var(--sp-green); }
+  .flow-dot{ width:36px; height:36px; border-radius:50%; background:var(--sp-surface2); border:2px solid var(--sp-border); display:flex; align-items:center; justify-content:center; font-size:13px; z-index:1; overflow:hidden; }
   .flow-dot img{ width:100%; height:100%; object-fit:cover; }
-  .flow-step.done .flow-dot{ background:var(--gold-dim); border-color:var(--gold); }
-  .flow-step.wip .flow-dot{ border-color:var(--gold); background:var(--gold-dim); position:relative; }
-  .flow-step.wip .flow-dot::before{ content:''; position:absolute; inset:-4px; border-radius:50%; border:2px solid var(--gold); opacity:.6; animation:flowPulse 1.4s ease-out infinite; }
+  .flow-step.done .flow-dot{ background:var(--sp-green-dim); border-color:var(--sp-green); }
+  .flow-step.wip .flow-dot{ border-color:var(--sp-gold); background:var(--sp-gold-dim); position:relative; }
+  .flow-step.wip .flow-dot::before{ content:''; position:absolute; inset:-4px; border-radius:50%; border:2px solid var(--sp-gold); opacity:.6; animation:flowPulse 1.4s ease-out infinite; }
   @keyframes flowPulse{ 0%{ transform:scale(.85); opacity:.7; } 100%{ transform:scale(1.35); opacity:0; } }
-  .flow-label{ font-size:9.5px; color:var(--text2); font-weight:700; text-align:center; margin-top:6px; max-width:58px; }
-  .flow-step.done .flow-label{ color:var(--gold); }
+  .flow-label{ font-size:9px; color:var(--sp-text2); font-weight:700; text-align:center; margin-top:5px; }
+  .flow-step.done .flow-label{ color:var(--sp-green); }
+  .recibo-sheet-pub{ background:var(--sp-surface); border-radius:16px; margin:16px 18px; padding:16px; border:1px solid var(--sp-border); }
+  .recibo-title-pub{ font-weight:800; font-size:13px; margin-bottom:10px; color:var(--sp-text2); text-transform:uppercase; letter-spacing:.04em; }
+  .recibo-line-pub{ display:flex; justify-content:space-between; font-size:12.5px; padding:6px 0; border-bottom:1px solid var(--sp-border); color:var(--sp-text); }
+  .recibo-line-pub.total-pub{ font-weight:800; border-bottom:none; padding-top:8px; }
+  .download-btn-pub{ display:flex; align-items:center; justify-content:center; gap:8px; background:var(--sp-gold); color:#3a2c0f; font-weight:700; font-size:13.5px; padding:13px; border-radius:10px; margin-top:12px; text-decoration:none; cursor:pointer; }
 
   .subfields{ padding:12px; background:var(--surface3); border-radius:var(--radius-sm); margin:-4px 0 12px; border:1px dashed var(--border2); }
 
@@ -720,7 +744,7 @@
 <body>
 <!-- MÓDULO PÚBLICO: seguimiento del pedido por token, sin login. Mismo archivo, mismo backend,
      tema claro forzado (reutiliza los mismos componentes ya construidos: ledger-box, prod-etapa-chip, etc.) -->
-<div class="phone" data-theme="dark" id="phonePublico" style="display:none">
+<div class="phone" id="phonePublico" style="display:none">
   <div id="seguimientoPublicoContenido"></div>
 </div>
 <div class="phone" data-theme="dark" id="phone">
@@ -1297,44 +1321,6 @@
     <div class="drawer-body" id="prodDrawerItems"></div>
   </div>
 
-  <!-- SCRIM 13 + DRAWER ELEGIR PROTECCIÓN (drawer sobre drawer, encima del formulario de item) -->
-  <div class="scrim3" id="scrimElegirProteccion" style="z-index:94" data-action="cerrar-elegir-proteccion"></div>
-  <div class="drawer-exh" id="drawerElegirProteccion" style="z-index:95">
-    <div class="drawer-handle"></div>
-    <div class="drawer-head">
-      <h2>Elegir protección</h2>
-      <div class="icon-btn" data-action="cerrar-elegir-proteccion"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 6l12 12M18 6L6 18"/></svg></div>
-    </div>
-    <div class="drawer-body" id="listaProteccionesDrawer"></div>
-  </div>
-
-  <!-- SCRIM 10 + DRAWER NUEVO TRABAJO PARA EXHIBICIÓN (sin cliente) -->
-  <div class="scrim3" id="scrimNuevoTrabajoExh" style="z-index:86" data-action="close-nuevo-trabajo-exh"></div>
-  <div class="drawer-exh" id="drawerNuevoTrabajoExh" style="z-index:87">
-    <div class="drawer-handle"></div>
-    <div class="drawer-head">
-      <h2>Nuevo trabajo para Exhibición</h2>
-      <div class="icon-btn" data-action="close-nuevo-trabajo-exh"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 6l12 12M18 6L6 18"/></svg></div>
-    </div>
-    <div class="drawer-body">
-      <div class="form-group">
-        <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Modelo del catálogo</label>
-        <select id="nteModelo" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px"></select>
-      </div>
-      <div class="form-row">
-        <div class="field">
-          <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Cantidad</label>
-          <input type="number" id="nteCantidad" min="1" value="1" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px">
-        </div>
-        <div class="field">
-          <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Precio unitario</label>
-          <div class="input-money"><input type="number" id="ntePrecio" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px"></div>
-        </div>
-      </div>
-      <button class="btn-primary" style="width:100%;margin-top:14px" id="btnCrearTrabajoExh" data-action="crear-trabajo-exh"><span class="btn-spin"></span><span>Crear trabajo</span></button>
-    </div>
-  </div>
-
   <!-- SCRIM 11 + DRAWER NÓMINA (detalle de un trabajador) -->
   <div class="scrim3" id="scrimNomina" style="z-index:88" data-action="close-drawer-nomina"></div>
   <div class="drawer-exh" id="drawerNomina" style="z-index:89; max-height:88%">
@@ -1443,7 +1429,7 @@
 <script>
 /* ============ CONFIG ============ */
 const MODO_DEMO = false;
-const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbztduFXZKoQDNd0SA6urIlfV5k6wjWPugsuGXM3Rq4d9YG_pYZxEEqylJ0aXBIOCR2J/exec';
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbxLGZGJUrkhG-3To9okT-Zo08MFSk-mPAfk2DMy5yElsZxMlZfcR2PM_PNfHRfr5aIg/exec';
 const NUMERO_NEGOCIO = '584220167079';
 const TELEFONO_ADMIN_ABONOS = '584146326465'; // Recibe el aviso por WhatsApp cuando hay un abono pendiente de confirmar
 
@@ -2542,6 +2528,11 @@ function abrirDrawerProduccion(origen, id){
   document.getElementById('prodDrawerCodigo').textContent = '#' + p.codigo;
   document.getElementById('prodDrawerCliente').textContent = p.cliente_nombre;
   renderProdDrawerItems(p);
+  if(p.origen === 'exhibicion' && state.rol === 'admin'){
+    document.getElementById('prodDrawerItems').insertAdjacentHTML('beforeend',
+      `<button class="btn-ghost" style="width:100%;color:var(--red);border-color:var(--red);margin-top:6px" data-action="cancelar-trabajo-exh" data-id="${p.trabajo_id}"><span class="btn-spin"></span><span>Cancelar este trabajo</span></button>`
+    );
+  }
   document.getElementById('scrimProduccion').classList.add('open');
   document.getElementById('drawerProduccion').classList.add('open');
 }
@@ -2619,6 +2610,17 @@ function renderProdDrawerItems(p){
     </div>`;
   }).join('');
 }
+async function cancelarTrabajoExhUI(trabajoId, btn){
+  setCargando(btn, true);
+  try{
+    await llamarBackend('cancelarTrabajoExhibicion', { trabajo_id: trabajoId });
+    showToast('Trabajo cancelado', 'success');
+    cerrarDrawerProduccion();
+    await cargarProduccion();
+  } catch(err){
+    setCargando(btn, false);
+  }
+}
 async function completarEmbalajeUI(origen, id, itemIndex, pista, btn){
   setCargando(btn, true);
   try{
@@ -2649,38 +2651,9 @@ async function asignarEtapaUI(origen, id, itemIndex, pista, btn){
   }
 }
 
-/* ---- Nuevo trabajo especulativo hacia Exhibición ---- */
+/* ---- Nuevo trabajo especulativo hacia Exhibición: mismo drawer real de siempre ---- */
 function abrirNuevoTrabajoExh(){
-  const select = document.getElementById('nteModelo');
-  select.innerHTML = catalogo.map(m=>`<option value="${m.id}">${m.nombre} (${m.tipo})</option>`).join('');
-  document.getElementById('nteCantidad').value = 1;
-  document.getElementById('ntePrecio').value = catalogo[0] ? catalogo[0].precio_base : '';
-  document.getElementById('scrimNuevoTrabajoExh').classList.add('open');
-  document.getElementById('drawerNuevoTrabajoExh').classList.add('open');
-}
-function cerrarNuevoTrabajoExh(){
-  document.getElementById('scrimNuevoTrabajoExh').classList.remove('open');
-  document.getElementById('drawerNuevoTrabajoExh').classList.remove('open');
-}
-async function crearTrabajoExhUI(btn){
-  const modeloId = Number(document.getElementById('nteModelo').value);
-  const modelo = catalogo.find(m=>m.id===modeloId);
-  if(!modelo){ showToast('Elige un modelo', 'error'); return; }
-  const cantidad = parseInt(document.getElementById('nteCantidad').value) || 1;
-  const precio = parseFloat(document.getElementById('ntePrecio').value) || 0;
-  setCargando(btn, true);
-  try{
-    await llamarBackend('crearTrabajoExhibicion', {
-      catalogo_id: modelo.id, nombreModelo: modelo.nombre, tipo: modelo.tipo,
-      especificaciones: modelo.especificaciones_base, precio: precio, cantidad: cantidad
-    });
-    showToast('Trabajo creado', 'success');
-    cerrarNuevoTrabajoExh();
-    await cargarProduccion();
-  } catch(err){
-  } finally {
-    setCargando(btn, false);
-  }
+  abrirItemDrawer('exhibicion-especulativa');
 }
 
 /* ---- Nómina / vales ---- */
@@ -3508,8 +3481,8 @@ function pintarDetalleCatalogo(m){
   if(e.vidrio_o_farquilla) chips.push([e.vidrio_o_farquilla === 'Vidrio' ? 'Vidrio' : 'Farquilla', e.color_vidrio || '—']);
   document.getElementById('catSpecs').innerHTML = chips.map(c=>`<div class="exh-spec-chip"><span>${c[0]}</span><strong>${c[1]}</strong></div>`).join('');
   document.getElementById('catPrecio').textContent = money(m.precio_base);
-  document.getElementById('btnUsarModelo').classList.toggle('hidden', state.modoSeleccion !== 'catalogo');
-  document.getElementById('catInfoLibre').classList.toggle('hidden', state.modoSeleccion === 'catalogo');
+  document.getElementById('btnUsarModelo').classList.toggle('hidden', !['catalogo','proteccion'].includes(state.modoSeleccion));
+  document.getElementById('catInfoLibre').classList.toggle('hidden', ['catalogo','proteccion'].includes(state.modoSeleccion));
 }
 function cerrarCatDrawer(){
   document.getElementById('scrim4').classList.remove('open');
@@ -3751,6 +3724,19 @@ function usarModeloCatalogo(){
   const m = catalogo.find(c=>c.id===state.openCatId);
   if(!m) return;
   const colorElegido = state.openCatColor;
+  if(state.modoSeleccion === 'proteccion'){
+    state.proteccionElegidaVentana = { id: m.id, nombre: m.nombre, precio_base: m.precio_base };
+    cerrarCatDrawer();
+    state.modoSeleccion = null;
+    state.catTipoFiltro = 'Todos';
+    volverAOrigenItem();
+    const cajaTexto = document.getElementById('npProteccionElegidaTexto');
+    const caja = document.getElementById('npProteccionElegidaBox');
+    if(cajaTexto) cajaTexto.textContent = m.nombre + ' — ' + money(m.precio_base) + '/m²';
+    if(caja) caja.classList.add('elegido');
+    actualizarPrecioVentana();
+    return;
+  }
   cerrarCatDrawer();
   state.modoSeleccion = null;
   volverAOrigenItem();
@@ -3808,6 +3794,11 @@ function volverAOrigenItem(){
     abrirItemDrawer('exhibicion-nueva');
     return;
   }
+  if(state.itemTarget === 'exhibicion-especulativa'){
+    irAScreen('produccion', 'Producción');
+    abrirItemDrawer('exhibicion-especulativa');
+    return;
+  }
   irAScreen('ventas', 'Ventas');
   mostrarDrawerNuevoOExistente();
   abrirItemDrawer(state.itemTarget);
@@ -3816,7 +3807,7 @@ function actualizarBannerSeleccion(){
   document.querySelectorAll('.seleccion-banner').forEach(b=>b.classList.toggle('hidden', !state.modoSeleccion));
   const textoCat = document.getElementById('catSeleccionBannerTexto');
   if(textoCat){
-    textoCat.textContent = state.itemTarget === 'exhibicion-nueva'
+    textoCat.textContent = state.itemTarget === 'exhibicion-nueva' || state.itemTarget === 'exhibicion-especulativa'
       ? 'Escoge un modelo para registrar en exhibición'
       : 'Elige un modelo para fabricar a medida';
   }
@@ -3832,6 +3823,7 @@ function irASeleccionExhibicion(){
   irAScreen('exhibicion', 'Exhibición');
 }
 function cancelarSeleccion(){
+  if(state.modoSeleccion === 'proteccion') state.catTipoFiltro = 'Todos';
   state.modoSeleccion = null;
   volverAOrigenItem();
 }
@@ -4015,6 +4007,10 @@ function actualizarSubfields(prefix){
   const manillon = document.getElementById(p + 'Manillon');
   const subManillon = document.getElementById(p + 'SubManillon');
   if(manillon && subManillon) subManillon.classList.toggle('hidden', !manillon.checked);
+
+  const papelAhumado = document.getElementById(p + 'PapelAhumado');
+  const subPapelAhumado = document.getElementById(p + 'SubPapelAhumado');
+  if(papelAhumado && subPapelAhumado) subPapelAhumado.classList.toggle('hidden', !papelAhumado.checked);
 }
 /* El color de vidrio solo aplica si se eligió "Vidrio" (la farquilla no varía de color) */
 function actualizarColorVidrio(){
@@ -4084,38 +4080,15 @@ function actualizarPrecioVentana(){
   document.getElementById('npPrecioFinal').value = sugerido;
   actualizarTotalItem();
 }
+// Reusa exactamente el mismo mecanismo de "elegir modelo del catálogo" que ya usas al
+// armar un ítem de pedido: manda a la pantalla real de Catálogo (con fotos, buscador,
+// y "+ Nuevo modelo" por si la protección que buscas todavía no existe), filtrada a
+// "Protección Ventana". El regreso lo resuelve usarModeloCatalogo() más arriba.
 function abrirElegirProteccion(){
-  renderListaProteccionesDrawer();
-  document.getElementById('scrimElegirProteccion').classList.add('open');
-  document.getElementById('drawerElegirProteccion').classList.add('open');
-}
-function cerrarElegirProteccion(){
-  document.getElementById('scrimElegirProteccion').classList.remove('open');
-  document.getElementById('drawerElegirProteccion').classList.remove('open');
-}
-function renderListaProteccionesDrawer(){
-  const cont = document.getElementById('listaProteccionesDrawer');
-  const protecciones = catalogo.filter(m => m.tipo === 'Protección Ventana');
-  if(protecciones.length === 0){
-    cont.innerHTML = `<div class="empty-state"><strong>Sin modelos todavía</strong><span>Crea modelos de protección desde Catálogo.</span></div>`;
-    return;
-  }
-  cont.innerHTML = protecciones.map(m=>`
-    <div class="order-card" data-action="elegir-proteccion" data-id="${m.id}" style="cursor:pointer">
-      <div>
-        <div class="item-name">${m.nombre}</div>
-        <div class="item-spec">${money(m.precio_base)} por m² (1×1)</div>
-      </div>
-    </div>`).join('');
-}
-function elegirProteccion(modeloId){
-  const m = catalogo.find(x=>x.id===Number(modeloId));
-  if(!m) return;
-  state.proteccionElegidaVentana = { id: m.id, nombre: m.nombre, precio_base: m.precio_base };
-  document.getElementById('npProteccionElegidaTexto').textContent = m.nombre + ' — ' + money(m.precio_base) + '/m²';
-  document.getElementById('npProteccionElegidaBox').classList.add('elegido');
-  cerrarElegirProteccion();
-  actualizarPrecioVentana();
+  state.modoSeleccion = 'proteccion';
+  state.catTipoFiltro = 'Protección Ventana';
+  ocultarDrawerActivo();
+  irAScreen('catalogo', 'Catálogo');
 }
 function setCantidadNP(n){
   document.getElementById('npCantidad').value = n;
@@ -4129,7 +4102,7 @@ function cambiarCantidadNP(delta){
 function actualizarTotalItem(){
   const precio = parseFloat(document.getElementById('npPrecioFinal').value) || 0;
   const cantidad = parseInt(document.getElementById('npCantidad').value) || 1;
-  const esExhibicionNueva = state.itemTarget === 'exhibicion-nueva';
+  const esExhibicionNueva = state.itemTarget === 'exhibicion-nueva' || state.itemTarget === 'exhibicion-especulativa';
   // En exhibición cada pieza es independiente (no hay "venta total" que calcular);
   // en un pedido sí, porque cantidad × precio es el total real de esa línea.
   document.getElementById('npTotalRow').classList.toggle('hidden', esExhibicionNueva);
@@ -4203,9 +4176,10 @@ function resetItemDrawerASeleccion(){
   document.getElementById('itemDrawerOpciones').classList.remove('hidden');
   document.getElementById('npModeloHeader').classList.add('hidden');
   document.getElementById('npFormWrap').classList.add('hidden');
-  document.getElementById('itemDrawerTitulo').textContent = state.itemTarget === 'exhibicion-nueva' ? 'Nueva pieza en exhibición' : 'Agregar ítem';
+  const titulos = { 'exhibicion-nueva': 'Nueva pieza en exhibición', 'exhibicion-especulativa': 'Nuevo trabajo para Exhibición' };
+  document.getElementById('itemDrawerTitulo').textContent = titulos[state.itemTarget] || 'Agregar ítem';
   document.getElementById('btnAgregarItemLabel').textContent = '+ Agregar este ítem';
-  document.getElementById('optCardExhibicion').classList.toggle('hidden', state.itemTarget === 'exhibicion-nueva');
+  document.getElementById('optCardExhibicion').classList.toggle('hidden', state.itemTarget === 'exhibicion-nueva' || state.itemTarget === 'exhibicion-especulativa');
   const btn = document.getElementById('btnAgregarItemAccion');
   if(btn){ btn.disabled = false; btn.classList.remove('loading'); }
   state.itemEditIndex = null;
@@ -4272,6 +4246,29 @@ async function agregarItemComun(item, mensaje){
   }
   showToast(mensaje, 'success');
 }
+async function guardarTrabajoExhibicionDesdeForm(item){
+  const cantidad = Math.max(1, item.cantidad || 1);
+  const tipoLabelInverso = { ventana:'Ventana', porton:'Portón', puerta:'Puerta', puerta_multilock:'Puerta Multilock', combo:'Combo' };
+  const tipoLabel = tipoLabelInverso[document.getElementById('npTipoProducto').value] || item.tipo;
+
+  cerrarItemDrawer();
+  irAScreen('produccion', 'Producción');
+
+  try{
+    await llamarBackend('crearTrabajoExhibicion', {
+      catalogo_id: state.catalogoIdElegido || null,
+      nombreModelo: state.modeloElegidoNombre || null,
+      tipo: tipoLabel,
+      especificaciones: item.especificaciones,
+      precio: item.precio,
+      cantidad: cantidad
+    });
+    showToast(cantidad > 1 ? `${cantidad} trabajos creados` : 'Trabajo creado', 'success');
+    await cargarProduccion();
+  } catch(err){
+    showToast('No se pudo crear el trabajo, intenta de nuevo', 'error');
+  }
+}
 async function guardarNuevaPiezaDesdeForm(item){
   const cantidad = Math.max(1, item.cantidad || 1);
   const piezaBase = { catalogo_id: state.catalogoIdElegido || null, especificaciones: item.especificaciones, precio: item.precio, estado: 'Disponible' };
@@ -4328,6 +4325,10 @@ function agregarItem(){
   }
   if(state.itemTarget === 'exhibicion-nueva'){
     guardarNuevaPiezaDesdeForm(item);
+    return;
+  }
+  if(state.itemTarget === 'exhibicion-especulativa'){
+    guardarTrabajoExhibicionDesdeForm(item);
     return;
   }
 
@@ -4629,7 +4630,7 @@ document.body.addEventListener('input', e=>{
 });
 document.body.addEventListener('change', e=>{
   const id = e.target.id;
-  if(/^(np|nm)(Proteccion|Manillon)$/.test(id)){
+  if(/^(np|nm)(Proteccion|Manillon|PapelAhumado)$/.test(id)){
     actualizarSubfields(id.slice(0,2));
   }
   if(id === 'npPapelAhumado' || id === 'npProteccion') actualizarPrecioVentana();
@@ -4749,9 +4750,8 @@ document.body.addEventListener('click', e=>{
   else if(action === 'close-drawer-produccion') cerrarDrawerProduccion();
   else if(action === 'asignar-etapa') asignarEtapaUI(el.dataset.origen, el.dataset.id, el.dataset.itemIndex, el.dataset.pista, el);
   else if(action === 'completar-embalaje') completarEmbalajeUI(el.dataset.origen, el.dataset.id, el.dataset.itemIndex, el.dataset.pista, el);
+  else if(action === 'cancelar-trabajo-exh') cancelarTrabajoExhUI(el.dataset.id, el);
   else if(action === 'abrir-nuevo-trabajo-exh') abrirNuevoTrabajoExh();
-  else if(action === 'close-nuevo-trabajo-exh') cerrarNuevoTrabajoExh();
-  else if(action === 'crear-trabajo-exh') crearTrabajoExhUI(el);
   else if(action === 'ver-nomina-trabajador') abrirDrawerNomina(el.dataset.usuario);
   else if(action === 'close-drawer-nomina') cerrarDrawerNomina();
   else if(action === 'agregar-vale') agregarValeUI(el);
@@ -4759,8 +4759,6 @@ document.body.addEventListener('click', e=>{
   else if(action === 'bandeja-terminar') completarTareaBandeja(el);
   else if(action === 'abrir-nuevo-usuario') abrirNuevoUsuario();
   else if(action === 'abrir-elegir-proteccion') abrirElegirProteccion();
-  else if(action === 'cerrar-elegir-proteccion') cerrarElegirProteccion();
-  else if(action === 'elegir-proteccion') elegirProteccion(el.dataset.id);
   else if(action === 'editar-usuario') abrirEditarUsuario(el.dataset.usuario);
   else if(action === 'close-drawer-usuario') cerrarDrawerUsuario();
   else if(action === 'guardar-usuario') guardarUsuarioUI(el);
@@ -4901,53 +4899,69 @@ function flowHtmlPublico(etapas){
 function renderSeguimientoPublico(){
   const s = seguimientoPublicoData;
   const cont = document.getElementById('seguimientoPublicoContenido');
-  const primeraFoto = (s.items.find(it=>it.foto) || {}).foto;
   const saldoPagado = s.saldo <= 0;
 
+  // Collage: hasta 4 fotos distintas de los productos del pedido, para representar todo el pedido de un vistazo.
+  const fotosUnicas = Array.from(new Set(s.items.map(it=>it.foto).filter(Boolean)));
+  let collageHtml;
+  if(fotosUnicas.length === 0){
+    collageHtml = `<div class="collage-pub"><div class="vacio"></div><div class="vacio"></div><div class="vacio"></div><div class="vacio"></div></div>`;
+  } else if(fotosUnicas.length === 1){
+    collageHtml = `<div class="collage-pub una-foto"><img src="${fotosUnicas[0]}"></div>`;
+  } else {
+    const celdas = [0,1,2,3].map(i => fotosUnicas[i] ? `<img src="${fotosUnicas[i]}">` : (fotosUnicas[0] ? `<img src="${fotosUnicas[0]}">` : '<div class="vacio"></div>'));
+    collageHtml = `<div class="collage-pub">${celdas.join('')}</div>`;
+  }
+
   const itemsHtml = s.items.map(it=>{
-    const foto = it.foto ? `<div class="item-thumb"><img src="${it.foto}" style="width:100%;height:100%;object-fit:cover"></div>` : `<div class="item-thumb"></div>`;
+    const foto = it.foto ? `<img class="item-photo-pub" src="${it.foto}">` : `<div class="item-photo-pub"></div>`;
     if(it.esDeExhibicion || !it.etapas){
-      return `<div class="prod-item-card">
-        <div class="prod-item-head"><div style="display:flex;gap:10px;align-items:center">${foto}<div class="prod-item-nombre">${it.nombre}${it.cantidad>1?' ×'+it.cantidad:''}</div></div></div>
-        <div class="prod-terminado-nota">✓ Ya disponible</div>
+      return `<div class="item-block-pub">
+        <div class="item-head-pub">${foto}<div class="item-name-pub">${it.nombre}${it.cantidad>1?' ×'+it.cantidad:''}</div></div>
+        <div class="listo-nota-pub">✓ Ya disponible</div>
       </div>`;
     }
-    const flowVentana = it.etapaVentana ? `<div class="section-label" style="margin-top:10px">Ventana</div>${flowHtmlPublico([it.etapaVentana])}` : '';
-    return `<div class="prod-item-card">
-      <div class="prod-item-head"><div style="display:flex;gap:10px;align-items:center">${foto}<div class="prod-item-nombre">${it.nombre}${it.cantidad>1?' ×'+it.cantidad:''}</div></div></div>
+    const flowVentana = it.etapaVentana ? `<div class="section-label-pub" style="margin:10px 0 6px">Ventana</div>${flowHtmlPublico([it.etapaVentana])}` : '';
+    return `<div class="item-block-pub">
+      <div class="item-head-pub">${foto}<div class="item-name-pub">${it.nombre}${it.cantidad>1?' ×'+it.cantidad:''}</div></div>
       ${flowHtmlPublico(it.etapas)}
       ${flowVentana}
     </div>`;
   }).join('');
 
+  const resumenLineas = s.items.map(it=>
+    `<div class="recibo-line-pub"><span>${it.nombre}${it.cantidad>1?' ×'+it.cantidad:''}</span></div>`
+  ).join('');
+
   cont.innerHTML = `
     <div class="track-head-pub">
-      ${primeraFoto ? `<img class="track-head-pub-photo" src="${primeraFoto}">` : ''}
-      <div class="logo-pub">HERRERÍA <span>ARTESANOS</span></div>
-      <div class="logo-line-pub"></div>
-      <div class="ped">#${s.codigo}</div>
-      <div class="cliente">${s.cliente_nombre}</div>
+      ${collageHtml}
+      <div><div class="ped">#${s.codigo}</div><div class="cliente">${s.cliente_nombre}</div></div>
     </div>
-    <div style="padding:0 16px 30px">
-      <div class="ledger-box">
-        <div class="ledger-row ledger-total"><span>Total</span><strong>${money(s.total)}</strong></div>
-        <div class="ledger-row" style="margin-top:8px"><span>Abonado</span><strong style="color:var(--gold)">${money(s.abono)}</strong></div>
-        <div class="ledger-row" style="margin-top:6px"><span>Resta por pagar</span><strong style="color:${saldoPagado?'var(--green)':'var(--red)'}">${money(s.saldo)}</strong></div>
-      </div>
-      <div style="display:flex;gap:8px;margin-top:14px">
-        <button class="quick-action-btn wa" id="btnWaSeguimientoPub">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 00-8.6 15L2 22l5.2-1.4A10 10 0 1012 2zm5.8 14.2c-.2.7-1.4 1.3-2 1.4-.5.1-1.1.2-3.6-.8-3-1.2-5-4.2-5.1-4.4-.2-.2-1.2-1.6-1.2-3.1s.8-2.2 1.1-2.5c.3-.3.6-.4.8-.4h.6c.2 0 .5 0 .7.5l1 2.4c.1.2.1.4 0 .6l-.5.7c-.1.2-.2.3 0 .6.2.3.9 1.4 1.9 2.3 1.3 1.1 2.4 1.5 2.7 1.6.3.1.5.1.7-.1l.9-1c.2-.3.4-.2.7-.1l2.1 1c.2.1.4.2.5.3.1.2.1.9-.1 1.6z"/></svg>
-          <span>Chat</span>
-        </button>
-        <button class="quick-action-btn gold" id="btnVerReciboPub">
-          <span class="btn-spin"></span>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
-          <span>Ver recibo</span>
-        </button>
-      </div>
-      <div class="section-label" style="margin-top:18px">Tus productos</div>
-      ${itemsHtml}
-      <div id="reciboPublicoWrap"></div>
+    <div class="saldo-box-pub">
+      <div><span>Total</span><strong>${money(s.total)}</strong></div>
+      <div><span>Abonado</span><strong>${money(s.abono)}</strong></div>
+      <div><span>Resta</span><strong style="color:${saldoPagado?'var(--sp-green)':'var(--sp-red)'}">${money(s.saldo)}</strong></div>
+    </div>
+    <div class="actions-row-pub">
+      <button class="action-btn-pub wa" id="btnWaSeguimientoPub">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 00-8.6 15L2 22l5.2-1.4A10 10 0 1012 2zm5.8 14.2c-.2.7-1.4 1.3-2 1.4-.5.1-1.1.2-3.6-.8-3-1.2-5-4.2-5.1-4.4-.2-.2-1.2-1.6-1.2-3.1s.8-2.2 1.1-2.5c.3-.3.6-.4.8-.4h.6c.2 0 .5 0 .7.5l1 2.4c.1.2.1.4 0 .6l-.5.7c-.1.2-.2.3 0 .6.2.3.9 1.4 1.9 2.3 1.3 1.1 2.4 1.5 2.7 1.6.3.1.5.1.7-.1l.9-1c.2-.3.4-.2.7-.1l2.1 1c.2.1.4.2.5.3.1.2.1.9-.1 1.6z"/></svg>
+        <span>WhatsApp</span>
+      </button>
+      <button class="action-btn-pub recibo" id="btnVerReciboPub">
+        <span class="btn-spin"></span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+        <span>Ver recibo</span>
+      </button>
+    </div>
+    <div class="section-label-pub">Tus productos</div>
+    ${itemsHtml}
+    <div class="recibo-sheet-pub">
+      <div class="recibo-title-pub">Resumen del pedido</div>
+      ${resumenLineas}
+      <div class="recibo-line-pub total-pub"><span>Total</span><span>${money(s.total)}</span></div>
+      <div class="recibo-line-pub total-pub" style="color:var(--sp-red)"><span>Resta por pagar</span><span>${money(s.saldo)}</span></div>
+      <button class="download-btn-pub" id="btnDescargarPub"><span class="btn-spin"></span><span>⬇️ Descargar PDF</span></button>
     </div>
   `;
   document.getElementById('btnWaSeguimientoPub').addEventListener('click', ()=>{
@@ -4955,20 +4969,32 @@ function renderSeguimientoPublico(){
     window.open(`https://wa.me/${NUMERO_NEGOCIO}?text=${texto}`, '_blank');
   });
   document.getElementById('btnVerReciboPub').addEventListener('click', verReciboPublico);
+  document.getElementById('btnDescargarPub').addEventListener('click', descargarNotaPublica);
 }
 async function verReciboPublico(){
   const btn = document.getElementById('btnVerReciboPub');
-  const wrap = document.getElementById('reciboPublicoWrap');
-  if(wrap.innerHTML.trim()){ wrap.innerHTML = ''; return; }
+  const ventana = window.open('', '_blank');
   setCargando(btn, true);
   try{
     const datos = await llamarBackend('generarNotaPublica', { token: seguimientoPublicoToken }, true);
-    // Abrimos ya mismo (antes del resto), igual que en el resto de la app, para que Safari/iOS no bloquee el popup.
-    const ventana = window.open('', '_blank');
     if(ventana) ventana.location.href = datos.preview_url;
-    wrap.innerHTML = `<a class="btn-ghost" style="width:100%;display:block;text-align:center;text-decoration:none;box-sizing:border-box;margin-top:10px" href="${datos.url}" target="_blank" rel="noopener">⬇️ Descargar PDF</a>`;
   } catch(err){
-    wrap.innerHTML = '<div class="prod-bloqueada" style="margin-top:10px">No pudimos generar el recibo, intenta de nuevo.</div>';
+    if(ventana) ventana.close();
+    showToast('No pudimos abrir el recibo, intenta de nuevo', 'error');
+  } finally {
+    setCargando(btn, false);
+  }
+}
+async function descargarNotaPublica(){
+  const btn = document.getElementById('btnDescargarPub');
+  const ventana = window.open('', '_blank');
+  setCargando(btn, true);
+  try{
+    const datos = await llamarBackend('generarNotaPublica', { token: seguimientoPublicoToken }, true);
+    if(ventana) ventana.location.href = datos.url;
+  } catch(err){
+    if(ventana) ventana.close();
+    showToast('No pudimos generar la descarga, intenta de nuevo', 'error');
   } finally {
     setCargando(btn, false);
   }
