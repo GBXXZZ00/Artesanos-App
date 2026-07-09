@@ -588,6 +588,7 @@
     --sp-gold:#c69a4a; --sp-gold-dim:#faf1de; --sp-red:#b5493f;
     background:var(--sp-bg) !important; color:var(--sp-text) !important;
   }
+  #seguimientoPublicoContenido{ flex:1; overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch; }
   .track-head-pub{ background:var(--sp-green); color:#fff; padding:calc(env(safe-area-inset-top) + 20px) 18px 18px; display:flex; gap:12px; align-items:center; }
   .collage-pub{ width:60px; height:60px; border-radius:14px; overflow:hidden; flex-shrink:0; display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr; gap:2px; background:rgba(255,255,255,.15); }
   .collage-pub img, .collage-pub .vacio{ width:100%; height:100%; object-fit:cover; background:rgba(255,255,255,.12); }
@@ -746,6 +747,7 @@
      tema claro forzado (reutiliza los mismos componentes ya construidos: ledger-box, prod-etapa-chip, etc.) -->
 <div class="phone" id="phonePublico" style="display:none">
   <div id="seguimientoPublicoContenido"></div>
+  <div class="toast-container" id="toastContainerPublico"></div>
 </div>
 <div class="phone" data-theme="dark" id="phone">
 
@@ -1690,7 +1692,8 @@ function idsExhibicion(it){
 }
 function esDeExhibicion(it){ return idsExhibicion(it).length > 0; }
 function showToast(msg, type){
-  const c = document.getElementById('toastContainer');
+  const enVistaPublica = document.getElementById('phonePublico').style.display !== 'none';
+  const c = document.getElementById(enVistaPublica ? 'toastContainerPublico' : 'toastContainer');
   const t = document.createElement('div');
   t.className = 'toast ' + (type||'success');
   t.textContent = msg;
@@ -3060,6 +3063,7 @@ function construirDatosNota(p){
   }));
   const metodos = [...new Set((p.abonos || []).map(a => a.metodo))];
   return {
+    id: p.id,
     codigo: p.codigo,
     cliente: p.cliente,
     fecha: p.fecha,
@@ -3853,8 +3857,8 @@ function cerrarAvatarMenu(){
 }
 
 /* ============ FORMULARIO NUEVO PEDIDO (motor de campos dinámicos, reusado por Nuevo Modelo) ============ */
-function campoToggle(id, label){
-  return `<div class="field-toggle"><span>${label}</span><label class="switch"><input type="checkbox" id="${id}"><span class="slider"></span></label></div>`;
+function campoToggle(id, label, marcadoPorDefecto){
+  return `<div class="field-toggle"><span>${label}</span><label class="switch"><input type="checkbox" id="${id}" ${marcadoPorDefecto ? 'checked' : ''}><span class="slider"></span></label></div>`;
 }
 function campoRadio(name, label, opciones, seleccion, radioPrefix){
   const radioName = (radioPrefix || '') + name;
@@ -3876,7 +3880,7 @@ function campoMedidas(idPrefix){
 function renderCamposDinamicosGenerico(tipo, contId, idPrefix, radioPrefix){
   const cont = document.getElementById(contId);
   if(!cont) return;
-  const CT = (id, label) => campoToggle(idPrefix + id, label);
+  const CT = (id, label, marcado) => campoToggle(idPrefix + id, label, marcado);
   const CR = (name, label, opciones, sel) => campoRadio(name, label, opciones, sel, radioPrefix);
   const CM = () => campoMedidas(idPrefix);
   const SUB = (id, inner) => `<div id="${idPrefix}Sub${id}" class="subfields hidden">${inner}</div>`;
@@ -3885,8 +3889,8 @@ function renderCamposDinamicosGenerico(tipo, contId, idPrefix, radioPrefix){
   if(tipo === 'ventana'){
     html += CM();
     html += CR('color','Color', ['Blanco','Negro'], 'Blanco');
-    html += CT('PapelAhumado', 'Papel ahumado (+$20 por m²)');
-    html += SUB('PapelAhumado', CR('color_ahumado','Color del ahumado', ['Gris','Bronce','Negro'], 'Gris'));
+    html += CT('PapelAhumado', 'Papel ahumado (incluido de fábrica)', true);
+    html += SUB('PapelAhumado', CR('color_ahumado','Color del ahumado', ['Espejo','Azul','Negro'], 'Espejo'));
     html += CT('Proteccion', 'Protección');
     html += SUB('Proteccion', `
       <div class="form-group">
@@ -3957,7 +3961,7 @@ const TIPO_LABEL_A_KEY = { Ventana:'ventana', 'Portón':'porton', Puerta:'puerta
 function renderCamposDinamicosModelo(){
   const tipoKey = TIPO_LABEL_A_KEY[document.getElementById('nmTipo').value] || 'puerta';
   const cont = document.getElementById('nmCamposDinamicos');
-  const CT = (id, label) => campoToggle('nm' + id, label);
+  const CT = (id, label, marcado) => campoToggle('nm' + id, label, marcado);
   const CR = (name, label, opciones, sel) => campoRadio(name, label, opciones, sel, 'nm');
   const CM = () => campoMedidas('nm');
   const SUB = (id, inner) => `<div id="nmSub${id}" class="subfields hidden">${inner}</div>`;
@@ -4060,9 +4064,9 @@ function actualizarPrecioVentana(){
     let total = precioBaseM2 * area;
     const partes = [`${money(precioBaseM2)}/m² × ${area.toFixed(2)}m²`];
 
-    if(document.getElementById('npPapelAhumado')?.checked){
-      total += 20 * area;
-      partes.push(`+ papel ahumado ${money(20)}/m²`);
+    if(!document.getElementById('npPapelAhumado')?.checked){
+      total -= 20 * area;
+      partes.push(`− sin papel ahumado ${money(20)}/m²`);
     }
     if(conProteccion && state.proteccionElegidaVentana){
       total += state.proteccionElegidaVentana.precio_base * area;
@@ -4886,13 +4890,17 @@ async function mostrarSeguimientoPublico(token){
   }
 }
 function flowHtmlPublico(etapas){
-  return `<div class="flow">${etapas.map(e=>{
-    const cls = e.estado === 'hecho' ? 'done' : (e.estado === 'asignado' ? 'wip' : '');
-    let dot;
-    if(e.foto_url) dot = `<img src="${e.foto_url}">`;
-    else if(e.estado === 'hecho') dot = '✓';
-    else if(e.estado === 'asignado') dot = '●';
-    else dot = '⏳';
+  const idxActual = etapas.findIndex(e => e.estado !== 'hecho');
+  return `<div class="flow">${etapas.map((e,i)=>{
+    let cls = '';
+    let dot = '';
+    if(e.estado === 'hecho'){
+      cls = 'done';
+      dot = e.foto_url ? `<img src="${e.foto_url}">` : '✓';
+    } else if(i === idxActual){
+      cls = 'wip';
+      dot = '⏳';
+    }
     return `<div class="flow-step ${cls}"><div class="flow-dot">${dot}</div><div class="flow-label">${e.nombre}</div></div>`;
   }).join('')}</div>`;
 }
@@ -4973,11 +4981,21 @@ function renderSeguimientoPublico(){
 }
 async function verReciboPublico(){
   const btn = document.getElementById('btnVerReciboPub');
+  const s = seguimientoPublicoData;
+  // Ya existe una nota generada (se cachea cada vez que el taller la envía o la ve) — no hace
+  // falta regenerar nada, se abre directo.
+  if(s.ultima_nota_preview_url){
+    window.open(s.ultima_nota_preview_url, '_blank');
+    return;
+  }
   const ventana = window.open('', '_blank');
   setCargando(btn, true);
+  showToast('Preparando tu recibo, puede tardar unos segundos...', 'success');
   try{
     const datos = await llamarBackend('generarNotaPublica', { token: seguimientoPublicoToken }, true);
     if(ventana) ventana.location.href = datos.preview_url;
+    s.ultima_nota_url = datos.url;
+    s.ultima_nota_preview_url = datos.preview_url;
   } catch(err){
     if(ventana) ventana.close();
     showToast('No pudimos abrir el recibo, intenta de nuevo', 'error');
@@ -4987,11 +5005,19 @@ async function verReciboPublico(){
 }
 async function descargarNotaPublica(){
   const btn = document.getElementById('btnDescargarPub');
+  const s = seguimientoPublicoData;
+  if(s.ultima_nota_url){
+    window.open(s.ultima_nota_url, '_blank');
+    return;
+  }
   const ventana = window.open('', '_blank');
   setCargando(btn, true);
+  showToast('Preparando tu recibo, puede tardar unos segundos...', 'success');
   try{
     const datos = await llamarBackend('generarNotaPublica', { token: seguimientoPublicoToken }, true);
     if(ventana) ventana.location.href = datos.url;
+    s.ultima_nota_url = datos.url;
+    s.ultima_nota_preview_url = datos.preview_url;
   } catch(err){
     if(ventana) ventana.close();
     showToast('No pudimos generar la descarga, intenta de nuevo', 'error');
