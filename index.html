@@ -110,6 +110,8 @@
     transition: transform .12s var(--ease-out);
   }
   .btn-primary:active{ transform:scale(0.97); }
+  .btn-primary:disabled{ opacity:.55; cursor:not-allowed; }
+  .btn-primary:disabled:active{ transform:none; }
   .login-hint{ font-size:11px; color:var(--text3); z-index:1; }
   .login-hint.hidden{ display:none; }
 
@@ -1028,7 +1030,7 @@
             </label>
             <input type="file" id="inputFotoAbono" accept="image/*" class="file-input-hidden">
           </div>
-          <button class="btn-primary" id="btnRegistrarAbono" data-action="registrar-abono" style="width:100%;margin-top:16px"><span class="btn-spin"></span><span id="btnRegistrarAbonoLabel">Registrar abono</span></button>
+          <button class="btn-primary" id="btnRegistrarAbono" data-action="registrar-abono" style="width:100%;margin-top:16px;background:var(--teal);color:#fff"><span class="btn-spin"></span><span id="btnRegistrarAbonoLabel">Registrar abono</span></button>
         </div>
       </div>
       <div class="ledger-box ledger-saldo-box" id="ledgerSaldoBox">
@@ -1389,6 +1391,7 @@
           <option value="Herrero">Herrero</option>
           <option value="Masillador">Masillador</option>
           <option value="Ventanero">Ventanero</option>
+          <option value="Acabados">Acabados</option>
         </select>
       </div>
       <button class="btn-primary" style="width:100%;margin-top:8px" id="btnGuardarUsuario" data-action="guardar-usuario"><span class="btn-spin"></span><span>Guardar</span></button>
@@ -1431,7 +1434,7 @@
 <script>
 /* ============ CONFIG ============ */
 const MODO_DEMO = false;
-const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbzQQE5XFiRJ-KFOBFVKzAkeplhxeZOHsFpu0yOdZrisXWxYYgqMfaDejMDF9ICWVwQF/exec';
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbz3rZVquCssTW3rgxCRsNzvNtDkt7QOwMTe0fYX9K3zYPJJJdaLQlltiwsb-_1vA3xu/exec';
 const NUMERO_NEGOCIO = '584220167079';
 const TELEFONO_ADMIN_ABONOS = '584146326465'; // Recibe el aviso por WhatsApp cuando hay un abono pendiente de confirmar
 
@@ -1734,6 +1737,17 @@ function totalPedido(p){
   const desc = p.descuento || 0;
   return Math.max(0, sub - desc);
 }
+// El saldo "normal" (totalPedido - p.abono) baja apenas se registra un abono, aunque esté pendiente
+// de confirmar. Para decisiones que involucran cerrar de verdad el pedido (marcar como entregado),
+// usamos este saldo aparte, que solo cuenta el dinero que un admin ya confirmó. Los pedidos viejos
+// que no tienen desglose de abonos (solo el campo abono a secas) se asumen confirmados de por sí.
+function saldoConfirmadoPedido(p){
+  const abonos = p.abonos || [];
+  const totalConfirmado = abonos.length
+    ? abonos.reduce((a,ab)=> a + (((ab.estado || 'confirmado') === 'confirmado') ? (Number(ab.monto)||0) : 0), 0)
+    : (p.abono || 0);
+  return Math.max(0, totalPedido(p) - totalConfirmado);
+}
 function iconoGenericoTipo(){
   return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>`;
 }
@@ -2015,8 +2029,18 @@ function poblarDetalle(id){
   document.getElementById('btnConfirmarPedido').classList.toggle('hidden', p.estado !== 'cotizacion');
   document.getElementById('btnCancelarPedido').classList.toggle('hidden', p.estado === 'entregado' || p.estado === 'cancelado');
   const saldoPendiente = Math.max(0, totalPedido(p) - (p.abono||0));
-  document.getElementById('btnMarcarEntregado').classList.toggle('hidden',
-    p.estado === 'entregado' || p.estado === 'cancelado' || p.estado === 'cotizacion' || saldoPendiente > 0);
+  const btnEntregado = document.getElementById('btnMarcarEntregado');
+  const puedeMostrarEntregado = !(p.estado === 'entregado' || p.estado === 'cancelado' || p.estado === 'cotizacion' || saldoPendiente > 0);
+  btnEntregado.classList.toggle('hidden', !puedeMostrarEntregado);
+  if(puedeMostrarEntregado){
+    // El saldo visible puede llegar a $0 con abonos todavía sin confirmar por un admin.
+    // No se permite cerrar la entrega hasta que ese dinero esté realmente confirmado.
+    const faltaConfirmar = saldoConfirmadoPedido(p) > 0;
+    btnEntregado.disabled = faltaConfirmar;
+    document.getElementById('btnMarcarEntregadoLabel').textContent = faltaConfirmar
+      ? 'Esperando confirmar el abono'
+      : 'Marcar como entregado';
+  }
   const pedidoCerrado = p.estado === 'entregado' || p.estado === 'cancelado';
   document.getElementById('btnAgregarItemExistente').classList.toggle('hidden', p.estado !== 'cotizacion');
   document.getElementById('abonoCajaWrap').classList.toggle('hidden', pedidoCerrado || saldoPendiente <= 0);
@@ -2159,6 +2183,10 @@ async function cambiarEstado(estado){
 async function marcarComoEntregado(){
   const p = pedidos.find(x=>x.id===state.openPedidoId);
   if(!p) return;
+  if(saldoConfirmadoPedido(p) > 0){
+    showToast('Todavía hay un abono sin confirmar, no se puede entregar', 'error');
+    return;
+  }
   const anterior = p.estado;
   p.estado = 'entregado';
   cerrarTodo();
@@ -2297,6 +2325,10 @@ function fechaHoraCorta(iso){
 /* ============ MÓDULO FINANCIERO (confirmación de abonos) ============ */
 async function cargarAbonosPendientes(){
   if(state.rol !== 'admin') return;
+  const cont = document.getElementById('financieroLista');
+  if(cont && document.getElementById('screen-financiero').classList.contains('active')){
+    cont.innerHTML = '<div class="mini-spin" style="margin:40px auto"></div>';
+  }
   try{
     abonosPendientes = MODO_DEMO ? [] : await llamarBackend('getAbonosPendientes');
   } catch(err){
@@ -2342,6 +2374,9 @@ function renderFinanciero(){
 function actualizarAbonoLocal(pedidoId, abonos, abonoTotal){
   const p = pedidos.find(x=>x.id===Number(pedidoId));
   if(p){ p.abonos = abonos; if(abonoTotal !== undefined) p.abono = abonoTotal; }
+  // Si el pedido de este abono ya estaba abierto en Ventas (drawer de fondo), su ledger no se
+  // repinta solo: hay que forzarlo, o el badge "Pendiente" se queda congelado hasta reabrir.
+  if(p && state.openPedidoId === Number(pedidoId)) poblarDetalle(Number(pedidoId));
 }
 async function confirmarAbonoFinanciero(pedidoId, abonoId, btn){
   setCargando(btn, true);
@@ -2396,12 +2431,23 @@ async function procesarDeepLinkFinanciero(){
   const abonoId = params.get('financiero');
   if(!abonoId) return;
   history.replaceState({}, '', window.location.pathname);
-  if(state.rol !== 'admin') return;
+  if(state.rol !== 'admin'){
+    showToast('Este link es para confirmar un abono, necesitas iniciar sesión como admin', 'error');
+    return;
+  }
   cerrarAvatarMenu();
   irAScreen('financiero', 'Pagos pendientes');
   await cargarAbonosPendientes();
+  // Un pequeño respiro para que el DOM ya haya pintado las tarjetas antes de buscar la indicada.
+  await new Promise(r => setTimeout(r, 60));
   const tarjeta = document.querySelector(`[data-action="fin-confirmar"][data-abono-id="${abonoId}"]`)?.closest('.fin-card');
-  if(tarjeta){ tarjeta.scrollIntoView({behavior:'smooth', block:'center'}); destellarNodo(tarjeta); }
+  if(tarjeta){
+    tarjeta.scrollIntoView({behavior:'smooth', block:'center'});
+    destellarNodo(tarjeta);
+  } else {
+    // Puede que ya lo hayan confirmado/rechazado antes de que este admin abriera el link.
+    showToast('Ese abono ya no está pendiente de confirmar', 'success');
+  }
 }
 function destellarNodo(el){
   el.classList.add('destello');
@@ -2512,12 +2558,13 @@ function renderProduccion(){
   }).join('');
 }
 // El masillador hace masilla Y pintura (dos etapas, la misma persona); el ventanero ensambla
-// las ventanas e instala en el combo. Embalar no requiere especialidad: lo marca el admin directo.
+// las ventanas e instala en el combo; el de Acabados coloca vidrio/manillón después de pintura.
+// Embalar no requiere especialidad: lo marca el admin directo.
 const ETAPA_A_ESPECIALIDAD = {
   'Hierro': 'Herrero',
   'Masilla': 'Masillador',
   'Pintura': 'Masillador',
-  'Detalles': 'Herrero',
+  'Detalles': 'Acabados',
   'Ensamblar': 'Ventanero',
   'Instalar ventana': 'Ventanero'
 };
@@ -2645,7 +2692,12 @@ async function asignarEtapaUI(origen, id, itemIndex, pista, btn){
   try{
     const payload = { origen: origen, item_index: Number(itemIndex), trabajador: trabajador, pista: pista };
     if(origen === 'exhibicion') payload.trabajo_id = id; else payload.pedido_id = id;
-    await llamarBackend('asignarEtapa', payload);
+    const resultado = await llamarBackend('asignarEtapa', payload);
+    if(origen === 'pedido' && resultado && resultado.pasoAProduccion){
+      const p = pedidos.find(x=>x.id===Number(id));
+      if(p) p.estado = 'produccion';
+      renderLista();
+    }
     showToast('Etapa asignada', 'success');
     await cargarProduccion();
     abrirDrawerProduccion(origen, id);
@@ -3037,6 +3089,15 @@ function normalizarTelefonoVE(telefono){
   if(digitos.startsWith('0')) return '58' + digitos.slice(1);
   return '58' + digitos;
 }
+// Pestaña "puente" que se abre en blanco antes de redirigir a WhatsApp (para esquivar el bloqueo
+// de popups de Safari tras un await). Al volver a la app, ya no hace falta y se cierra sola.
+let ventanaExternaAbierta = null;
+document.addEventListener('visibilitychange', ()=>{
+  if(document.visibilityState === 'visible' && ventanaExternaAbierta){
+    try{ if(!ventanaExternaAbierta.closed) ventanaExternaAbierta.close(); } catch(e){}
+    ventanaExternaAbierta = null;
+  }
+});
 function esAppAnclada(){
   return window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
 }
@@ -3125,9 +3186,10 @@ async function enviarNotaWhatsapp(){
   // se abre la pestaña en blanco de forma síncrona y se redirige después.
   // En modo anclado (standalone) window.open() no sirve de nada, así que ahí no lo usamos.
   const ventana = anclada ? null : window.open('', '_blank');
+  ventanaExternaAbierta = ventana;
   const resultado = await generarNotaPdf(p);
   setCargando(btn, false);
-  if(!resultado){ if(ventana) ventana.close(); return; }
+  if(!resultado){ if(ventana) ventana.close(); ventanaExternaAbierta = null; return; }
   const numero = normalizarTelefonoVE(p.cliente.telefono);
   const texto = encodeURIComponent(mensajeWhatsappNota(p, resultado.url));
   const destino = `https://wa.me/${numero}?text=${texto}`;
@@ -5026,6 +5088,83 @@ async function descargarNotaPublica(){
   }
 }
 
+/* ============ PULL TO REFRESH ============ */
+// Sabe cómo recargar cada pantalla según cuál esté activa en este momento.
+async function refrescarPantallaActual(){
+  const activa = document.querySelector('.screen.active');
+  if(!activa) return;
+  try{
+    if(activa.id === 'screen-ventas'){
+      await cargarDatosIniciales();
+    } else if(activa.id === 'screen-exhibicion'){
+      await cargarDatosIniciales();
+      renderExhibicion();
+    } else if(activa.id === 'screen-catalogo'){
+      await cargarDatosIniciales();
+      renderCatalogo();
+    } else if(activa.id === 'screen-financiero'){
+      await cargarAbonosPendientes();
+      renderFinanciero();
+    } else if(activa.id === 'screen-produccion'){
+      if(prodTabActual === 'nomina') await cargarNomina();
+      else await cargarProduccion();
+    } else if(activa.id === 'screen-usuarios'){
+      await cargarUsuarios();
+    } else if(activa.id === 'screen-bandeja'){
+      await cargarBandeja();
+    }
+  } catch(err){ /* llamarBackend ya muestra el toast de error */ }
+}
+// Gesto simple de "jalar para recargar" sobre el contenedor de contenido (compartido por
+// todas las pantallas). Solo actúa si el scroll ya está en el tope y no hay ningún drawer abierto.
+(function habilitarPullToRefresh(){
+  const cont = document.getElementById('content');
+  if(!cont) return;
+  const UMBRAL = 70, MAX = 100;
+  let startY = 0, arrastrando = false, listo = false;
+
+  const indicador = document.createElement('div');
+  indicador.id = 'pullRefreshIndicator';
+  indicador.innerHTML = '<div class="mini-spin"></div>';
+  indicador.style.cssText = 'position:absolute;top:-42px;left:0;right:0;display:flex;justify-content:center;align-items:center;height:36px;opacity:0;transition:opacity .15s var(--ease-out);pointer-events:none;';
+  cont.insertBefore(indicador, cont.firstChild);
+
+  function hayDrawerAbierto(){
+    return !!document.querySelector('.scrim.open, .scrim2.open, .scrim3.open');
+  }
+
+  cont.addEventListener('touchstart', e=>{
+    if(cont.scrollTop > 0 || hayDrawerAbierto()){ arrastrando = false; return; }
+    startY = e.touches[0].clientY;
+    arrastrando = true;
+    listo = false;
+  }, { passive: true });
+
+  cont.addEventListener('touchmove', e=>{
+    if(!arrastrando) return;
+    const delta = e.touches[0].clientY - startY;
+    if(delta <= 0 || cont.scrollTop > 0){ return; }
+    const avance = Math.min(MAX, delta * 0.5);
+    cont.style.transform = `translateY(${avance}px)`;
+    indicador.style.opacity = Math.min(1, avance / UMBRAL);
+    listo = avance >= UMBRAL;
+  }, { passive: true });
+
+  cont.addEventListener('touchend', ()=>{
+    if(!arrastrando) return;
+    arrastrando = false;
+    cont.style.transition = 'transform .25s var(--ease-out)';
+    cont.style.transform = 'translateY(0)';
+    setTimeout(()=>{ cont.style.transition = ''; }, 260);
+    if(listo){
+      indicador.style.opacity = '1';
+      refrescarPantallaActual().finally(()=>{ indicador.style.opacity = '0'; });
+    } else {
+      indicador.style.opacity = '0';
+    }
+  });
+})();
+
 /* ============ INIT ============ */
 const tokenSeguimientoURL = new URLSearchParams(window.location.search).get('seguimiento');
 if(tokenSeguimientoURL){
@@ -5043,4 +5182,3 @@ if(tokenSeguimientoURL){
 </script>
 </body>
 </html>
-
