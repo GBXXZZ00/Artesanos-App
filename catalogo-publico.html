@@ -212,8 +212,27 @@ function ordenarTarjetas(lista){
     if(a.tieneBadge !== b.tieneBadge) return a.tieneBadge ? -1 : 1;
     return 0;
   });
+
+  // La grilla es de 2 columnas: un modelo de un solo color nunca debe quedar "suelto"
+  // justo antes de un modelo de doble color, porque eso corre el conteo y separa esa
+  // pareja Blanco/Negro entre dos filas distintas. Por eso los modelos de un solo color
+  // se van guardando en un buffer y solo se sueltan de a pares (llenando su propia fila);
+  // los de doble color se insertan siempre completos, nunca partidos.
   const resultado = [];
-  grupos.forEach(g => resultado.push(...g.tarjetas));
+  let bufferUnico = null;
+  grupos.forEach(g => {
+    if(g.tarjetas.length === 1){
+      if(bufferUnico){
+        resultado.push(bufferUnico, g.tarjetas[0]);
+        bufferUnico = null;
+      } else {
+        bufferUnico = g.tarjetas[0];
+      }
+    } else {
+      resultado.push(...g.tarjetas); // en este punto resultado.length siempre es par
+    }
+  });
+  if(bufferUnico) resultado.push(bufferUnico); // si sobra uno solo, cae al final, solo
   return resultado;
 }
 
@@ -266,8 +285,9 @@ function volverHome(){
   document.getElementById('screen-home').classList.add('active');
 }
 function renderChipsColor(){
-  const colores = ['Todos', ...Array.from(new Set(tarjetas.filter(t=>t.tipo===categoriaActual).map(t=>t.color)))];
-  document.getElementById('chipsColor').innerHTML = colores.map(c=>
+  const colores = Array.from(new Set(tarjetas.filter(t=>t.tipo===categoriaActual).map(t=>t.color)));
+  const opciones = ['Todos', 'Disponible', ...colores];
+  document.getElementById('chipsColor').innerHTML = opciones.map(c=>
     `<div class="chip ${c===colorFiltro?'active':''}" data-color="${c}">${c}</div>`
   ).join('');
   document.querySelectorAll('.chip').forEach(el=>{
@@ -276,7 +296,12 @@ function renderChipsColor(){
 }
 function renderGrid(){
   const cont = document.getElementById('gridModelos');
-  const filtradas = tarjetas.filter(t => t.tipo === categoriaActual && (colorFiltro==='Todos' || t.color===colorFiltro));
+  const filtradas = tarjetas.filter(t => {
+    if(t.tipo !== categoriaActual) return false;
+    if(colorFiltro === 'Todos') return true;
+    if(colorFiltro === 'Disponible') return t.disponible;
+    return t.color === colorFiltro;
+  });
   if(filtradas.length === 0){
     cont.innerHTML = '<div class="empty-msg" style="grid-column:1/-1">No hay modelos en este filtro.</div>';
     return;
