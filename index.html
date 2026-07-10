@@ -586,6 +586,13 @@
   }
   .prod-bloqueada{ font-size:12px; color:var(--text2); font-style:italic; }
   .prod-terminado-nota{ font-size:12px; color:var(--green); font-weight:600; }
+  .mp-box{ position:relative; background:var(--surface3); border:1px solid var(--border2); border-radius:var(--radius-sm); padding:14px; margin-top:8px; overflow:hidden; }
+  .mp-sello{ position:absolute; top:11px; right:-30px; background:var(--amber); color:#241C08; font-size:10px; font-weight:800; padding:3px 36px; transform:rotate(35deg); box-shadow:0 2px 6px rgba(0,0,0,.3); }
+  .mp-title{ font-size:12.5px; color:var(--text2); margin-bottom:8px; font-weight:600; }
+  .mp-bar{ height:9px; border-radius:99px; background:var(--surface); overflow:hidden; }
+  .mp-bar .fill{ height:100%; background:var(--green); transition:width .3s var(--ease-out); }
+  .mp-labels{ display:flex; justify-content:space-between; font-size:11px; color:var(--text2); margin-top:6px; }
+  .mp-asignado{ font-size:11.5px; color:var(--text2); margin-top:8px; }
   .prod-urgente{ border-left-color:var(--red) !important; }
   .bitacora-item{ display:flex; gap:10px; padding:9px 0; border-bottom:1px solid var(--border); }
   .bitacora-thumb{ width:32px; height:32px; border-radius:7px; background:var(--surface3) center/cover; flex-shrink:0; }
@@ -1432,7 +1439,9 @@
       <div class="nomina-subpanel" id="nominaSubTrabajo">
         <div id="nominaItemsLista"></div>
         <div class="ledger-box" style="margin-top:16px">
-          <div class="ledger-row"><span>Neto a pagar (seleccionado)</span><strong id="nominaNetoValor">$0</strong></div>
+          <div class="ledger-row"><span>Ítems seleccionados</span><strong id="nominaSubtotalItems">$0</strong></div>
+          <div class="ledger-row"><span>Vales</span><strong id="nominaSubtotalVales" style="color:var(--red)">−$0</strong></div>
+          <div class="ledger-row" style="border-top:1px solid var(--border);margin-top:4px;padding-top:8px"><span>Neto a pagar</span><strong id="nominaNetoValor">$0</strong></div>
         </div>
         <button class="btn-primary" style="width:100%;margin-top:10px" id="btnRegistrarPagoTrabajador" data-action="registrar-pago-trabajador"><span class="btn-spin"></span><span>Registrar pago</span></button>
       </div>
@@ -1549,12 +1558,8 @@
         <div class="input-money"><input type="number" id="catPagoHerrero" placeholder="0" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px"></div>
       </div>
       <div class="form-group">
-        <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Masilla (se puede cobrar aunque falte la pintura)</label>
-        <div class="input-money"><input type="number" id="catPagoMasilla" placeholder="0" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px"></div>
-      </div>
-      <div class="form-group">
-        <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Pintura</label>
-        <div class="input-money"><input type="number" id="catPagoPintura" placeholder="0" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px"></div>
+        <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Masilla y Pintura (un solo monto — se puede cobrar completo apenas esté la masilla, aunque falte pintar)</label>
+        <div class="input-money"><input type="number" id="catPagoMasillaPintura" placeholder="0" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px"></div>
       </div>
       <div class="form-group">
         <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Acabados (etapa Detalles)</label>
@@ -1609,7 +1614,7 @@
 <script>
 /* ============ CONFIG ============ */
 const MODO_DEMO = false;
-const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbwTQOxmIbRoXLiajXS9Gml8Z63-FGS3VVLYhoGabR9o8WANSqbyDXaSMwEn2VUYQzxt/exec';
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbxQbGFjMzrzZKEr97fZi8A6xq2vzuYqru4kBy9kc4Ldcq1JToA5L83-LFMWKTSPz1g/exec';
 const NUMERO_NEGOCIO = '584220167079';
 const TELEFONO_ADMIN_ABONOS = '584146326465'; // Recibe el aviso por WhatsApp cuando hay un abono pendiente de confirmar
 
@@ -2904,22 +2909,22 @@ function renderAccionEtapa(p, it, etapa, pista, etapaIndex, ventanaIndex){
     `;
   }
   if(etapa.tipo === 'combinada'){
-    const filaSub = (label, sub, subKey) => {
-      if(sub.hecho){
-        const cobrar = !sub.pagado ? `<button class="btn-ghost" style="padding:5px 10px;font-size:11.5px;margin-left:8px" data-action="pagar-inmediato" data-origen="${p.origen}" data-id="${idParam}" data-item-index="${it.index}" data-etapa-index="${etapaIndex}" data-sub="${subKey}" data-trabajador="${etapa.trabajador}">Cobrar ${money(sub.monto||0)} ya</button>` : '';
-        return `<div class="prod-terminado-nota">✓ ${label} lista${sub.pagado ? ' · pagada' : ''}${cobrar}</div>`;
-      }
-      return `<div class="prod-bloqueada">${label}: todavía pendiente</div>`;
-    };
+    const mitad = etapa.masilla.hecho ? (etapa.pintura.hecho ? 100 : 50) : 0;
+    const esAdelanto = etapa.pagado && !etapa.pintura.hecho;
+    const labelIzq = etapa.masilla.hecho ? '✓ Masilla lista' : 'Masilla pendiente';
+    const labelDer = etapa.pintura.hecho ? '✓ Pintura lista' : 'Pintura pendiente';
     return `
-      <div class="prod-bloqueada" style="margin-bottom:6px">Asignado a ${etapa.trabajador || '—'}</div>
-      ${filaSub('Masilla', etapa.masilla, 'masilla')}
-      ${filaSub('Pintura', etapa.pintura, 'pintura')}
+      <div class="mp-box">
+        ${esAdelanto ? `<div class="mp-sello">ADELANTO</div>` : ''}
+        <div class="mp-title">Masilla y Pintura</div>
+        <div class="mp-bar"><div class="fill" style="width:${mitad}%"></div></div>
+        <div class="mp-labels"><span>${labelIzq}</span><span>${labelDer}</span></div>
+        <div class="mp-asignado">Asignado a ${etapa.trabajador || '—'}${etapa.pagado ? ' · pagado' : ''}</div>
+      </div>
     `;
   }
   if(etapa.estado === 'hecho'){
-    const cobrar = !etapa.pagado ? `<button class="btn-ghost" style="padding:5px 10px;font-size:11.5px;margin-left:8px" data-action="pagar-inmediato" data-origen="${p.origen}" data-id="${idParam}" data-item-index="${it.index}" data-ventana-index="${ventanaIndex!=null?ventanaIndex:''}" data-trabajador="${etapa.trabajador}">Cobrar ${money(etapa.monto||0)} ya</button>` : '';
-    return `<div class="prod-terminado-nota">✓ Terminado${etapa.pagado ? ' · pagado' : ''}${cobrar}</div>`;
+    return `<div class="prod-terminado-nota">✓ Terminado${etapa.pagado ? ' · pagado' : ' · el pago se registra desde Nómina'}</div>`;
   }
   return `<div class="prod-bloqueada">Asignado a ${etapa.trabajador || '—'}, esperando a que lo marque terminado.</div>`;
 }
@@ -3049,29 +3054,6 @@ async function cancelarTrabajoExhUI(trabajoId, btn){
     setCargando(btn, false);
   }
 }
-async function pagarInmediatoUI(btn){
-  setCargando(btn, true);
-  try{
-    const payload = {
-      trabajador: btn.dataset.trabajador,
-      origen: btn.dataset.origen, item_index: Number(btn.dataset.itemIndex)
-    };
-    if(btn.dataset.ventanaIndex){
-      payload.ventana_index = Number(btn.dataset.ventanaIndex);
-    } else {
-      payload.etapa_index = Number(btn.dataset.etapaIndex);
-      payload.sub = btn.dataset.sub;
-    }
-    if(btn.dataset.origen === 'exhibicion') payload.trabajo_id = btn.dataset.id; else payload.pedido_id = btn.dataset.id;
-    await llamarBackend('pagarInmediato', payload);
-    showToast('Cobro registrado', 'success');
-    await cargarProduccion();
-    abrirDrawerProduccion(btn.dataset.origen, btn.dataset.id);
-    abrirDrawerProdItem(btn.dataset.itemIndex);
-  } catch(err){
-    setCargando(btn, false);
-  }
-}
 async function asignarEtapaUI(origen, id, itemIndex, pista, btn, ventanaIndex){
   const selectId = 'prodAsignarSelect-' + itemIndex + '-' + pista + (ventanaIndex!=null && ventanaIndex!=='' ? '-'+ventanaIndex : '');
   const select = document.getElementById(selectId);
@@ -3188,7 +3170,7 @@ function renderNominaDrawer(){
           </label>
           <div class="ledger-abono-info" data-action="ver-nomina-item-detalle" data-index="${i}" style="flex:1;cursor:pointer">
             <strong>${it.nombre_item || ''} — ${it.nombre_etapa} · ${money(it.monto)}</strong>
-            <span>${it.codigo} · ${fechaHoraCorta(it.fecha_hecho)}${it.pendiente_de_terminar ? ' · pintura pendiente' : ''}</span>
+            <span>${it.codigo} · ${fechaHoraCorta(it.fecha_hecho)}${it.pendiente_de_terminar ? ' · <span style="color:var(--amber)">adelanto, pintura pendiente</span>' : ''}</span>
           </div>
         </div>`).join('')}
       <div style="font-size:11px;color:var(--text2);margin:6px 2px 0">Toca una fila para ver su detalle. El check es solo para incluirla en el pago.</div>
@@ -3229,6 +3211,8 @@ function actualizarNetoNomina(){
   const seleccionados = Array.from(document.querySelectorAll('.nomina-item-check:checked'));
   const totalItems = seleccionados.reduce((a,el)=> a + (parseFloat(el.dataset.monto)||0), 0);
   const totalVales = (nominaDetalle.vales||[]).reduce((a,v)=>a+v.monto, 0);
+  document.getElementById('nominaSubtotalItems').textContent = money(totalItems);
+  document.getElementById('nominaSubtotalVales').textContent = '−' + money(totalVales);
   document.getElementById('nominaNetoValor').textContent = money(totalItems - totalVales);
 }
 // Drawer anidado: detalle de un ítem de "trabajo por pagar" — foto del producto, tu evidencia, y link al pedido.
@@ -3457,7 +3441,7 @@ function abrirDrawerBandejaTarea(index){
     ? (tarea.etapa.nombre + ' — ' + (tarea.sub==='masilla' ? 'masilla' : 'pintura'))
     : tarea.etapa.nombre + (tarea.ventanaIndex!=null && pistasVentana(tarea.item).length>1 ? ' (ventana '+(tarea.ventanaIndex+1)+')' : '');
   const notaSub = tarea.sub === 'pintura'
-    ? `<div class="prod-terminado-nota" style="margin-bottom:10px">✓ Masilla ya quedó marcada${tarea.etapa.masilla.pagado ? ' y cobrada' : ' (todavía sin cobrar)'} — ahora falta la pintura.</div>`
+    ? `<div class="prod-terminado-nota" style="margin-bottom:10px">✓ Masilla ya quedó marcada${tarea.etapa.pagado ? ' y cobrada por adelantado' : ' (todavía sin cobrar)'} — ahora falta la pintura.</div>`
     : '';
   cont.innerHTML = `
     <h2 style="font-size:16px;margin:0 0 2px">${nombreItemProd(tarea.item)}</h2>
@@ -3693,7 +3677,7 @@ function renderCategoriasPago(){
       <div class="fin-card-head">
         <div>
           <div class="fin-card-cliente">${c.nombre}</div>
-          <div class="fin-card-meta">${c.modo === 'm2' ? 'Por m²' : 'Monto fijo'} · Herrero ${money(c.herrero)} · Masilla ${money(c.masilla)} · Pintura ${money(c.pintura)} · Acabados ${money(c.acabados)} · Ventanero ${money(c.ventanero)}</div>
+          <div class="fin-card-meta">${c.modo === 'm2' ? 'Por m²' : 'Monto fijo'} · Herrero ${money(c.herrero)} · Masilla y Pintura ${money(c.masillapintura)} · Acabados ${money(c.acabados)} · Ventanero ${money(c.ventanero)}</div>
         </div>
       </div>
     </div>`;
@@ -3705,8 +3689,7 @@ function abrirNuevaCategoria(){
   document.getElementById('catPagoNombre').value = '';
   document.getElementById('catPagoModo').value = 'fijo';
   document.getElementById('catPagoHerrero').value = '';
-  document.getElementById('catPagoMasilla').value = '';
-  document.getElementById('catPagoPintura').value = '';
+  document.getElementById('catPagoMasillaPintura').value = '';
   document.getElementById('catPagoAcabados').value = '';
   document.getElementById('catPagoVentanero').value = '';
   document.getElementById('btnEliminarCategoria').classList.add('hidden');
@@ -3721,8 +3704,7 @@ function abrirEditarCategoria(id){
   document.getElementById('catPagoNombre').value = c.nombre;
   document.getElementById('catPagoModo').value = c.modo || 'fijo';
   document.getElementById('catPagoHerrero').value = c.herrero || '';
-  document.getElementById('catPagoMasilla').value = c.masilla || '';
-  document.getElementById('catPagoPintura').value = c.pintura || '';
+  document.getElementById('catPagoMasillaPintura').value = c.masillapintura || '';
   document.getElementById('catPagoAcabados').value = c.acabados || '';
   document.getElementById('catPagoVentanero').value = c.ventanero || '';
   document.getElementById('btnEliminarCategoria').classList.remove('hidden');
@@ -3739,8 +3721,7 @@ async function guardarCategoriaUI(btn){
   const payload = {
     nombre, modo: document.getElementById('catPagoModo').value,
     herrero: parseFloat(document.getElementById('catPagoHerrero').value) || 0,
-    masilla: parseFloat(document.getElementById('catPagoMasilla').value) || 0,
-    pintura: parseFloat(document.getElementById('catPagoPintura').value) || 0,
+    masillapintura: parseFloat(document.getElementById('catPagoMasillaPintura').value) || 0,
     acabados: parseFloat(document.getElementById('catPagoAcabados').value) || 0,
     ventanero: parseFloat(document.getElementById('catPagoVentanero').value) || 0
   };
@@ -5584,7 +5565,7 @@ document.body.addEventListener('click', e=>{
   else if(action === 'ir-financiero'){ cerrarAvatarMenu(); irAScreen('financiero', 'Confirmación de pagos'); cargarAbonosPendientes(); }
   else if(action === 'ver-seguimiento-cliente') verSeguimientoCliente();
   else if(action === 'ir-usuarios'){ cerrarAvatarMenu(); irAScreen('usuarios', 'Usuarios'); cargarUsuarios(); }
-  else if(action === 'ir-categorias-pago'){ cerrarAvatarMenu(); irAScreen('categorias-pago', 'Categorías de pago'); cargarCategoriasPago(); }
+  else if(action === 'ir-categorias-pago'){ cerrarAvatarMenu(); irAScreen('categorias-pago', 'Categorías de pago'); renderCategoriasPago(); cargarCategoriasPago(); }
   else if(action === 'ir-catalogo-publico'){ cerrarAvatarMenu(); window.open(urlBaseHosting() + 'catalogo-publico.html', '_blank'); }
   else if(action === 'fin-confirmar') confirmarAbonoFinanciero(el.dataset.pedidoId, el.dataset.abonoId, el);
   else if(action === 'fin-rechazar'){
@@ -5611,7 +5592,6 @@ document.body.addEventListener('click', e=>{
   else if(action === 'ver-prod-item-specs') abrirDrawerProdItemSpecs(el.dataset.itemIndex);
   else if(action === 'close-drawer-prod-item-specs') cerrarDrawerProdItemSpecs();
   else if(action === 'asignar-etapa') asignarEtapaUI(el.dataset.origen, el.dataset.id, el.dataset.itemIndex, el.dataset.pista, el, el.dataset.ventanaIndex);
-  else if(action === 'pagar-inmediato') pagarInmediatoUI(el);
   else if(action === 'cancelar-trabajo-exh') cancelarTrabajoExhUI(el.dataset.id, el);
   else if(action === 'abrir-nuevo-trabajo-exh') abrirNuevoTrabajoExh();
   else if(action === 'ver-nomina-trabajador') abrirDrawerNomina(el.dataset.usuario);
