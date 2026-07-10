@@ -175,11 +175,11 @@
   .avatar-menu-rol{ font-size:12px; color:var(--text2); margin-top:2px; text-transform:capitalize; }
   .avatar-menu-item{
     display:flex; align-items:center; gap:11px; padding:15px 18px; font-size:14.5px; font-weight:600; color:var(--text);
-    cursor:pointer; transition: transform .1s var(--ease-out); border-bottom:1px solid var(--border);
+    cursor:pointer; transition: transform .1s var(--ease-out);
   }
-  .avatar-menu-item:last-child{ border-bottom:none; }
   .avatar-menu-item:active{ transform:scale(0.98); }
   .avatar-menu-item.danger{ color:var(--red); }
+  .menu-divider{ height:1px; background:var(--border); margin:8px 18px; }
   .menu-badge-count{
     margin-left:auto; background:var(--gold); color:#1A1409; font-size:11px; font-weight:800;
     border-radius:20px; padding:2px 8px; min-width:20px; text-align:center;
@@ -274,6 +274,9 @@
   .order-code{ font-size:12.5px; color:var(--text3); font-weight:600; }
   .order-client{ font-size:15px; font-weight:700; margin-top:1px; }
   .order-bottom{ display:flex; justify-content:space-between; align-items:flex-end; gap:8px; margin-top:3px; }
+  .listo-avisar-strip{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:8px; padding:8px 10px; background:var(--green-dim); border:1px solid var(--green); border-radius:var(--radius-sm); font-size:12.5px; font-weight:700; color:var(--green); animation:listoPulso 1.8s ease-in-out infinite; }
+  .listo-avisar-strip button{ background:var(--green); color:#fff; border:none; border-radius:6px; padding:6px 12px; font-size:12px; font-weight:700; }
+  @keyframes listoPulso{ 0%,100%{ box-shadow:0 0 0 0 rgba(63,185,80,.35); } 50%{ box-shadow:0 0 0 5px rgba(63,185,80,0); } }
   .order-meta{ font-size:12.5px; color:var(--text2); min-width:0; }
   .order-saldo{ font-size:13px; font-weight:800; color:var(--gold); flex-shrink:0; white-space:nowrap; }
   .order-saldo.paid{ color:var(--text3); font-weight:600; font-size:11.5px; }
@@ -596,7 +599,9 @@
     background:var(--sp-bg) !important; color:var(--sp-text) !important;
   }
   #seguimientoPublicoContenido{ flex:1; overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch; }
-  .track-head-pub{ background:var(--sp-green); color:#fff; padding:calc(env(safe-area-inset-top) + 20px) 18px 18px; display:flex; gap:12px; align-items:center; }
+  .back-btn-pub{ position:absolute; top:calc(env(safe-area-inset-top) + 16px); left:14px; z-index:5; display:flex; align-items:center; gap:4px; background:rgba(0,0,0,.18); color:#fff; border:none; border-radius:999px; padding:7px 12px 7px 8px; font-size:13px; font-weight:600; }
+  .listo-banner-pub{ background:var(--sp-green); color:#fff; text-align:center; font-weight:700; font-size:15px; padding:14px 16px; margin:0; }
+  .track-head-pub{ background:var(--sp-green); color:#fff; padding:calc(env(safe-area-inset-top) + 20px) 18px 18px; display:flex; gap:12px; align-items:center; position:relative; }
   .collage-pub{ width:60px; height:60px; border-radius:14px; overflow:hidden; flex-shrink:0; display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr; gap:2px; background:rgba(255,255,255,.15); }
   .collage-pub img, .collage-pub .vacio{ width:100%; height:100%; object-fit:cover; background:rgba(255,255,255,.12); }
   .collage-pub.una-foto{ grid-template-columns:1fr; grid-template-rows:1fr; }
@@ -628,8 +633,8 @@
   /* El anillo de pulso vive en .flow-step (no en .flow-dot), porque .flow-dot tiene
      overflow:hidden para recortar las fotos en círculo, y eso mismo cortaba el anillo
      antes de que llegara a verse. Aquí no hay recorte, así que sí se nota. */
-  .flow-step.wip::before{ content:''; position:absolute; top:-4px; left:50%; width:44px; height:44px; transform:translateX(-50%); border-radius:50%; border:2px solid var(--sp-gold); opacity:.6; animation:flowPulseCentrado 1.4s ease-out infinite; pointer-events:none; }
-  @keyframes flowPulseCentrado{ 0%{ transform:translateX(-50%) scale(.85); opacity:.7; } 100%{ transform:translateX(-50%) scale(1.35); opacity:0; } }
+  .flow-step.wip::before{ content:''; position:absolute; top:-1px; left:50%; width:38px; height:38px; transform:translateX(-50%); border-radius:50%; border:2px solid var(--sp-gold); opacity:.6; animation:flowPulseCentrado 1.4s ease-out infinite; pointer-events:none; z-index:0; }
+  @keyframes flowPulseCentrado{ 0%{ transform:translateX(-50%) scale(.9); opacity:.7; } 100%{ transform:translateX(-50%) scale(1.15); opacity:0; } }
   .flow-label{ font-size:9px; color:var(--sp-text2); font-weight:700; text-align:center; margin-top:5px; }
   .flow-step.done .flow-label{ color:var(--sp-green); }
   .recibo-sheet-pub{ background:var(--sp-surface); border-radius:16px; margin:16px 18px; padding:16px; border:1px solid var(--sp-border); }
@@ -1505,13 +1510,13 @@
         </select>
       </div>
       <div class="form-group hidden" id="usrEspecialidadGroup">
-        <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Especialidad</label>
-        <select id="usrEspecialidad" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px">
-          <option value="Herrero">Herrero</option>
-          <option value="Masillador">Masillador</option>
-          <option value="Ventanero">Ventanero</option>
-          <option value="Acabados">Acabados</option>
-        </select>
+        <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Especialidad (puede tener más de una)</label>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <label style="display:flex;align-items:center;gap:8px;font-size:14px"><input type="checkbox" class="usr-especialidad-check" value="Herrero"> Herrero</label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:14px"><input type="checkbox" class="usr-especialidad-check" value="Masillador"> Masillador</label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:14px"><input type="checkbox" class="usr-especialidad-check" value="Ventanero"> Ventanero</label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:14px"><input type="checkbox" class="usr-especialidad-check" value="Acabados"> Acabados</label>
+        </div>
       </div>
       <button class="btn-primary" style="width:100%;margin-top:8px" id="btnGuardarUsuario" data-action="guardar-usuario"><span class="btn-spin"></span><span>Guardar</span></button>
       <button class="btn-ghost hidden" style="width:100%;margin-top:10px;color:var(--red);border-color:var(--red)" id="btnEliminarUsuario" data-action="eliminar-usuario">Eliminar usuario</button>
@@ -1544,8 +1549,12 @@
         <div class="input-money"><input type="number" id="catPagoHerrero" placeholder="0" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px"></div>
       </div>
       <div class="form-group">
-        <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Masillador (etapas Masilla y Pintura)</label>
-        <div class="input-money"><input type="number" id="catPagoMasillador" placeholder="0" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px"></div>
+        <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Masilla (se puede cobrar aunque falte la pintura)</label>
+        <div class="input-money"><input type="number" id="catPagoMasilla" placeholder="0" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px"></div>
+      </div>
+      <div class="form-group">
+        <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Pintura</label>
+        <div class="input-money"><input type="number" id="catPagoPintura" placeholder="0" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px"></div>
       </div>
       <div class="form-group">
         <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Acabados (etapa Detalles)</label>
@@ -1568,25 +1577,27 @@
       <div class="avatar-menu-nombre" id="avatarMenuNombre">—</div>
       <div class="avatar-menu-rol" id="avatarMenuRol">—</div>
     </div>
+    <div class="avatar-menu-item" id="menuItemCatalogo" data-action="ir-catalogo">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v6"/></svg>Catálogo
+    </div>
     <div class="avatar-menu-item hidden" id="menuItemFinanciero" data-action="ir-financiero">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>Pagos pendientes
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Confirmación de pagos
       <span class="menu-badge-count hidden" id="badgeAbonosPendientes">0</span>
     </div>
-    <div class="avatar-menu-item hidden" id="menuItemCatalogoPublico" data-action="ir-catalogo-publico">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Catálogo público
-    </div>
+    <div class="menu-divider"></div>
     <div class="avatar-menu-item hidden" id="menuItemUsuarios" data-action="ir-usuarios">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>Usuarios
     </div>
     <div class="avatar-menu-item hidden" id="menuItemCategoriasPago" data-action="ir-categorias-pago">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>Categorías de pago
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2"/><path d="M3 12h18"/></svg>Categorías de pago
     </div>
-    <div class="avatar-menu-item" id="menuItemCatalogo" data-action="ir-catalogo">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v6"/></svg>Catálogo
+    <div class="avatar-menu-item hidden" id="menuItemCatalogoPublico" data-action="ir-catalogo-publico">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Catálogo público
     </div>
     <div class="avatar-menu-item" id="menuItemConfig" data-action="ir-config">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.9M4.6 9a1.7 1.7 0 00-.3-1.9"/></svg>Configuración
     </div>
+    <div class="menu-divider"></div>
     <div class="avatar-menu-item danger" data-action="cerrar-sesion">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>Cerrar sesión
     </div>
@@ -1598,7 +1609,7 @@
 <script>
 /* ============ CONFIG ============ */
 const MODO_DEMO = false;
-const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbwgNyDcwVWOpMf-vJwL9r2JQIZpwN23A6s5bV5CXVCqNs8s1PPARyJxR6aQyPMDryo/exec';
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbwTQOxmIbRoXLiajXS9Gml8Z63-FGS3VVLYhoGabR9o8WANSqbyDXaSMwEn2VUYQzxt/exec';
 const NUMERO_NEGOCIO = '584220167079';
 const TELEFONO_ADMIN_ABONOS = '584146326465'; // Recibe el aviso por WhatsApp cuando hay un abono pendiente de confirmar
 
@@ -1830,7 +1841,7 @@ let categoriasPago = [];
 /* ============ ESTADO UI ============ */
 const ESTADOS = ['cotizacion','confirmado','produccion','listo','entregado'];
 const ESTADO_LABEL = { cotizacion:'Cotización', confirmado:'Confirmado', produccion:'En Producción', listo:'Listo', entregado:'Entregado', cancelado:'Cancelado' };
-let state = { tab:'activos', search:'', openPedidoId:null, npItems:[], itemTarget:'nuevo', exhTab:'disponibles', exhSearch:'', catSearch:'', catTipoFiltro:'Todos', openExhId:null, openCatId:null, openCatColor:null, modoSeleccion:null, rol:null, nombreUsuario:null, modeloEditId:null, itemEditIndexNP:null, exhRango:'mes', volverAItemDespuesDeModelo:null, exhPiezasHermanasIds:[], exhCantidadSeleccionada:1 };
+let state = { tab:'activos', search:'', openPedidoId:null, npItems:[], itemTarget:'nuevo', exhTab:'disponibles', exhSearch:'', catSearch:'', catTipoFiltro:'Todos', openExhId:null, openCatId:null, openCatColor:null, modoSeleccion:null, rol:null, nombreUsuario:null, modeloEditId:null, itemEditIndexNP:null, exhRango:'mes', volverAItemDespuesDeModelo:null, exhPiezasHermanasIds:[], exhCantidadSeleccionada:1, volverAProduccionAlCerrarPedido:null };
 
 function getModelo(catalogoId){ return catalogo.find(c=>c.id===catalogoId) || null; }
 function fotoModeloPorColor(modelo, color){
@@ -1940,10 +1951,12 @@ function etapaActualIndexJS(item){
 function textoProduccionItem(it){
   if(!it.etapas) return '';
   const idx = etapaActualIndexJS(it);
-  const ventanaOk = !it.etapaVentana || it.etapaVentana.estado === 'hecho';
+  const ventanas = pistasVentana(it);
+  const ventanaOk = ventanas.every(v=>v.estado==='hecho');
   if(idx === -1 && ventanaOk) return `<div class="prod-line-pedido done">✓ Producción terminada</div>`;
   if(idx === -1 && !ventanaOk){
-    return `<div class="prod-line-pedido wip">🔨 En producción: ${it.etapaVentana.nombre}${it.etapaVentana.trabajador ? ' · asignado a ' + it.etapaVentana.trabajador : ''}</div>`;
+    const pendiente = ventanas.find(v=>v.estado!=='hecho');
+    return `<div class="prod-line-pedido wip">🔨 En producción: ${pendiente.nombre}${pendiente.trabajador ? ' · asignado a ' + pendiente.trabajador : ''}</div>`;
   }
   const etapa = it.etapas[idx];
   return `<div class="prod-line-pedido wip">🔨 En producción: ${etapa.nombre}${etapa.trabajador ? ' · asignado a ' + etapa.trabajador : ''}</div>`;
@@ -2048,13 +2061,19 @@ function renderLista(){
       <div class="order-body">
         <div class="order-top">
           <span class="order-code">#${p.codigo}</span>
-          <span class="badge ${p.estado}">${ESTADO_LABEL[p.estado]}</span>
+          ${state.rol==='admin' && (p.estado==='confirmado' || p.estado==='produccion') && p.items.some(it=>!esDeExhibicion(it))
+            ? `<span class="badge ${p.estado}" data-action="ir-produccion-desde-badge" data-id="${p.id}" style="cursor:pointer">${ESTADO_LABEL[p.estado]} →</span>`
+            : `<span class="badge ${p.estado}">${ESTADO_LABEL[p.estado]}</span>`}
         </div>
         <div class="order-client">${p.cliente.nombre}</div>
         <div class="order-bottom">
           <div class="order-meta">${p.items.map(it=>it.tipo).join(' + ')} · ${p.fecha_entrega ? 'Entrega ' + fechaCorta(p.fecha_entrega) : 'Sin fecha'}</div>
           <div class="order-saldo ${saldo<=0 ? 'paid' : ''}">${saldo>0 ? money(saldo) : 'Pagado'}</div>
         </div>
+        ${p.estado === 'listo' ? `<div class="listo-avisar-strip">
+          <span>🎉 Listo — avisa al cliente</span>
+          <button type="button" data-action="avisar-cliente-listo" data-id="${p.id}">WhatsApp</button>
+        </div>` : ''}
       </div>
     </div>
   `;}).join('');
@@ -2178,6 +2197,11 @@ function renderBentoVentas(){
 }
 
 /* ============ DRAWER DETALLE ============ */
+function avisarClienteListo(pedidoId){
+  const anteriorOpenId = state.openPedidoId;
+  state.openPedidoId = Number(pedidoId);
+  enviarNotaWhatsapp().finally(()=>{ state.openPedidoId = anteriorOpenId; });
+}
 function destellar(elId){
   const el = document.getElementById(elId);
   if(!el) return;
@@ -2229,7 +2253,10 @@ function poblarDetalle(id){
   document.getElementById('btnVerSeguimientoCliente').classList.toggle('hidden', p.estado === 'cotizacion');
   const saldoPendiente = Math.max(0, totalPedido(p) - (p.abono||0));
   const btnEntregado = document.getElementById('btnMarcarEntregado');
-  const puedeMostrarEntregado = !(p.estado === 'entregado' || p.estado === 'cancelado' || p.estado === 'cotizacion' || saldoPendiente > 0);
+  // Un pedido con algo por fabricar no puede entregarse hasta que Producción lo marque "Listo" —
+  // antes esto solo miraba el dinero, y eso dejaba marcar entregado con ítems todavía en fabricación.
+  const necesitaProduccionLista = p.items.some(it=>!esDeExhibicion(it)) && p.estado !== 'listo';
+  const puedeMostrarEntregado = !(p.estado === 'entregado' || p.estado === 'cancelado' || p.estado === 'cotizacion' || saldoPendiente > 0 || necesitaProduccionLista);
   btnEntregado.classList.toggle('hidden', !puedeMostrarEntregado);
   if(puedeMostrarEntregado){
     // El saldo visible puede llegar a $0 con abonos todavía sin confirmar por un admin.
@@ -2288,6 +2315,12 @@ function cerrarTodo(){
   state.openPedidoId = null;
   state.itemTarget = 'nuevo';
   state.itemSeleccionado = null;
+  if(state.volverAProduccionAlCerrarPedido != null){
+    const pedidoId = state.volverAProduccionAlCerrarPedido;
+    state.volverAProduccionAlCerrarPedido = null;
+    irAScreen('produccion', 'Producción');
+    cargarProduccion().then(()=> abrirDrawerProduccion('pedido', Number(pedidoId)));
+  }
 }
 
 /* ============ SELECCIÓN Y EDICIÓN DE UN ÍTEM DEL PEDIDO ============ */
@@ -2389,6 +2422,10 @@ async function marcarComoEntregado(){
   if(!p) return;
   if(saldoConfirmadoPedido(p) > 0){
     showToast('Todavía hay un abono sin confirmar, no se puede entregar', 'error');
+    return;
+  }
+  if(p.items.some(it=>!esDeExhibicion(it)) && p.estado !== 'listo'){
+    showToast('Este pedido todavía no está listo en Producción', 'error');
     return;
   }
   const anterior = p.estado;
@@ -2516,7 +2553,8 @@ function renderLedgerAbonos(p){
       </div>
       <div class="ledger-abono-right">
         ${a._guardando ? `<div class="mini-spin"></div>` : `<span class="badge-abono ${estado}">${ABONO_ESTADO_LABEL[estado]}</span>`}
-        ${puedeAvisar ? `<button type="button" class="btn-avisar-admin" data-action="avisar-admin-abono" data-abono-id="${a.id}">Avisar admin</button>` : ''}
+        ${puedeAvisar && state.rol === 'admin' ? `<button type="button" class="btn-avisar-admin" style="background:var(--green-dim);color:var(--green);border-color:var(--green)" data-action="confirmar-abono-ventas" data-pedido-id="${p.id}" data-abono-id="${a.id}"><span class="btn-spin"></span><span>Confirmar</span></button>` : ''}
+        ${puedeAvisar && state.rol !== 'admin' ? `<button type="button" class="btn-avisar-admin" data-action="avisar-admin-abono" data-abono-id="${a.id}">Avisar admin</button>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -2640,7 +2678,7 @@ async function procesarDeepLinkFinanciero(){
     return;
   }
   cerrarAvatarMenu();
-  irAScreen('financiero', 'Pagos pendientes');
+  irAScreen('financiero', 'Confirmación de pagos');
   await cargarAbonosPendientes();
   // Un pequeño respiro para que el DOM ya haya pintado las tarjetas antes de buscar la indicada.
   await new Promise(r => setTimeout(r, 60));
@@ -2652,6 +2690,13 @@ async function procesarDeepLinkFinanciero(){
     // Puede que ya lo hayan confirmado/rechazado antes de que este admin abriera el link.
     showToast('Ese abono ya no está pendiente de confirmar', 'success');
   }
+}
+async function irAProduccionDesdePedido(pedidoId){
+  irAScreen('produccion', 'Producción');
+  await cargarProduccion();
+  const tarjeta = document.querySelector(`[data-action="ver-produccion-pedido"][data-id="${pedidoId}"]`);
+  if(tarjeta) destellarNodo(tarjeta);
+  abrirDrawerProduccion('pedido', Number(pedidoId));
 }
 function destellarNodo(el){
   el.classList.add('destello');
@@ -2713,14 +2758,16 @@ function renderBentoProduccion(){
         if(urgenciaPedido(p.fecha_entrega)) pedidoUrgente = true;
         if(it.etapas[it.etapaActual].estado === 'pendiente' && !it.bloqueada) esperandoAsignar++;
       }
-      if(it.etapaVentana && it.etapaVentana.estado !== 'hecho'){
-        if(urgenciaPedido(p.fecha_entrega)) pedidoUrgente = true;
-        if(it.etapaVentana.estado === 'pendiente') esperandoAsignar++;
-      }
+      pistasVentana(it).forEach(v=>{
+        if(v.estado !== 'hecho'){
+          if(urgenciaPedido(p.fecha_entrega)) pedidoUrgente = true;
+          if(v.estado === 'pendiente') esperandoAsignar++;
+        }
+        if(v.estado === 'hecho' && v.fecha_hecho && new Date(v.fecha_hecho).toDateString() === hoy) completadasHoy++;
+      });
       it.etapas.forEach(e=>{
         if(e.estado === 'hecho' && e.fecha_hecho && new Date(e.fecha_hecho).toDateString() === hoy) completadasHoy++;
       });
-      if(it.etapaVentana && it.etapaVentana.estado === 'hecho' && it.etapaVentana.fecha_hecho && new Date(it.etapaVentana.fecha_hecho).toDateString() === hoy) completadasHoy++;
     });
     if(pedidoUrgente) urgentes++;
   });
@@ -2790,12 +2837,18 @@ function renderProduccion(){
 // Embalar no requiere especialidad: lo marca el admin directo.
 const ETAPA_A_ESPECIALIDAD = {
   'Hierro': 'Herrero',
-  'Masilla': 'Masillador',
-  'Pintura': 'Masillador',
+  'Masilla y Pintura': 'Masillador',
   'Detalles': 'Acabados',
   'Ensamblar': 'Ventanero',
   'Instalar ventana': 'Ventanero'
 };
+// Igual que en el backend: siempre devuelve un arreglo, sea 1 ventana (con protección normal)
+// o 2 (las del combo, que se arman y se pagan por separado aunque en Ventas sigan siendo 1 ítem).
+function pistasVentana(it){
+  if(it.etapaVentanas) return it.etapaVentanas;
+  if(it.etapaVentana) return [it.etapaVentana];
+  return [];
+}
 function nombreItemProd(it){
   const base = it.autoGenerado ? 'Ventana del combo' : (it.nombreModelo || it.tipo);
   return base + (it.cantidad > 1 ? ' ×' + it.cantidad : '');
@@ -2828,29 +2881,45 @@ function cerrarDrawerProduccion(){
 function verPedidoDesdeProduccion(){
   if(!prodPedidoActual || prodPedidoActual.origen !== 'pedido') return;
   const id = prodPedidoActual.pedido_id;
+  state.volverAProduccionAlCerrarPedido = id;
   cerrarDrawerProdItem();
   cerrarDrawerProduccion();
   irAScreen('ventas', 'Ventas');
   abrirDrawer(Number(id));
 }
-function renderAccionEtapa(p, it, etapa, pista){
+function renderAccionEtapa(p, it, etapa, pista, etapaIndex, ventanaIndex){
   const idParam = p.pedido_id != null ? p.pedido_id : p.trabajo_id;
-  if(etapa.nombre === 'Embalar'){
-    return `<button class="btn-primary" style="width:100%" data-action="completar-embalaje" data-origen="${p.origen}" data-id="${idParam}" data-item-index="${it.index}" data-pista="${pista}"><span class="btn-spin"></span><span>Marcar como embalado</span></button>`;
-  }
   if(etapa.estado === 'pendiente'){
     const especialidadNecesaria = ETAPA_A_ESPECIALIDAD[etapa.nombre] || etapa.nombre;
-    const disponibles = trabajadoresCache.filter(t => t.especialidad === especialidadNecesaria);
+    const disponibles = trabajadoresCache.filter(t => (t.especialidad||'').split(',').map(s=>s.trim()).includes(especialidadNecesaria));
     return `
       <div class="prod-asignar-box">
-        <select id="prodAsignarSelect-${it.index}-${pista}">
+        <select id="prodAsignarSelect-${it.index}-${pista}${ventanaIndex!=null?'-'+ventanaIndex:''}">
           <option value="">Elegir ${especialidadNecesaria}...</option>
           ${disponibles.map(t=>`<option value="${t.usuario}">${t.nombre}</option>`).join('')}
         </select>
-        <button class="btn-primary" style="padding:11px 16px;flex-shrink:0" data-action="asignar-etapa" data-origen="${p.origen}" data-id="${idParam}" data-item-index="${it.index}" data-pista="${pista}"><span class="btn-spin"></span><span>Asignar</span></button>
+        <button class="btn-primary" style="padding:11px 16px;flex-shrink:0" data-action="asignar-etapa" data-origen="${p.origen}" data-id="${idParam}" data-item-index="${it.index}" data-pista="${pista}" data-ventana-index="${ventanaIndex!=null?ventanaIndex:''}"><span class="btn-spin"></span><span>Asignar</span></button>
       </div>
       ${disponibles.length===0 ? `<div class="prod-bloqueada" style="margin-top:6px">Todavía no hay ningún ${especialidadNecesaria} registrado.</div>` : ''}
     `;
+  }
+  if(etapa.tipo === 'combinada'){
+    const filaSub = (label, sub, subKey) => {
+      if(sub.hecho){
+        const cobrar = !sub.pagado ? `<button class="btn-ghost" style="padding:5px 10px;font-size:11.5px;margin-left:8px" data-action="pagar-inmediato" data-origen="${p.origen}" data-id="${idParam}" data-item-index="${it.index}" data-etapa-index="${etapaIndex}" data-sub="${subKey}" data-trabajador="${etapa.trabajador}">Cobrar ${money(sub.monto||0)} ya</button>` : '';
+        return `<div class="prod-terminado-nota">✓ ${label} lista${sub.pagado ? ' · pagada' : ''}${cobrar}</div>`;
+      }
+      return `<div class="prod-bloqueada">${label}: todavía pendiente</div>`;
+    };
+    return `
+      <div class="prod-bloqueada" style="margin-bottom:6px">Asignado a ${etapa.trabajador || '—'}</div>
+      ${filaSub('Masilla', etapa.masilla, 'masilla')}
+      ${filaSub('Pintura', etapa.pintura, 'pintura')}
+    `;
+  }
+  if(etapa.estado === 'hecho'){
+    const cobrar = !etapa.pagado ? `<button class="btn-ghost" style="padding:5px 10px;font-size:11.5px;margin-left:8px" data-action="pagar-inmediato" data-origen="${p.origen}" data-id="${idParam}" data-item-index="${it.index}" data-ventana-index="${ventanaIndex!=null?ventanaIndex:''}" data-trabajador="${etapa.trabajador}">Cobrar ${money(etapa.monto||0)} ya</button>` : '';
+    return `<div class="prod-terminado-nota">✓ Terminado${etapa.pagado ? ' · pagado' : ''}${cobrar}</div>`;
   }
   return `<div class="prod-bloqueada">Asignado a ${etapa.trabajador || '—'}, esperando a que lo marque terminado.</div>`;
 }
@@ -2882,7 +2951,7 @@ function renderProdDrawerItems(p){
 function bitacoraDeItem(it){
   const filas = [];
   (it.etapas||[]).forEach(e=>{ if(e.estado==='hecho') filas.push(e); });
-  if(it.etapaVentana && it.etapaVentana.estado==='hecho') filas.push(it.etapaVentana);
+  pistasVentana(it).forEach((v,i)=>{ if(v.estado==='hecho') filas.push(Object.assign({}, v, { nombre: pistasVentana(it).length>1 ? v.nombre+' (ventana '+(i+1)+')' : v.nombre })); });
   filas.sort((a,b)=> new Date(a.fecha_hecho||0) - new Date(b.fecha_hecho||0));
   return filas;
 }
@@ -2906,22 +2975,25 @@ function abrirDrawerProdItem(itemIndex){
   } else if(it.bloqueada){
     accionHtml = `<div class="prod-bloqueada">Esperando a que la ventana de este combo esté ensamblada.</div>`;
   } else if(state.rol === 'admin'){
-    accionHtml = renderAccionEtapa(p, it, it.etapas[it.etapaActual], 'principal');
+    accionHtml = renderAccionEtapa(p, it, it.etapas[it.etapaActual], 'principal', it.etapaActual);
   }
 
   let ventanaHtml = '';
-  if(it.etapaVentana){
-    const chipVentana = `<span class="prod-etapa-chip ${it.etapaVentana.estado}${it.etapaVentana.estado!=='hecho' ? ' actual' : ''}">${it.etapaVentana.nombre}</span>`;
-    let accionVentanaHtml = '';
-    if(it.etapaVentana.estado === 'hecho'){
-      accionVentanaHtml = `<div class="prod-terminado-nota">✓ Ventana ensamblada</div>`;
-    } else if(state.rol === 'admin'){
-      accionVentanaHtml = renderAccionEtapa(p, it, it.etapaVentana, 'ventana');
-    }
-    ventanaHtml = `
-      <div class="track-label">Pista de la ventana (en paralelo)</div>
+  const ventanas = pistasVentana(it);
+  if(ventanas.length){
+    ventanaHtml = ventanas.map((v, vIdx)=>{
+      const chipVentana = `<span class="prod-etapa-chip ${v.estado}${v.estado!=='hecho' ? ' actual' : ''}">${v.nombre}</span>`;
+      let accionVentanaHtml = '';
+      if(state.rol === 'admin'){
+        accionVentanaHtml = renderAccionEtapa(p, it, v, 'ventana', null, vIdx);
+      } else if(v.estado === 'hecho'){
+        accionVentanaHtml = `<div class="prod-terminado-nota">✓ Ventana ensamblada</div>`;
+      }
+      return `
+      <div class="track-label">${ventanas.length > 1 ? 'Ventana ' + (vIdx+1) + ' (en paralelo)' : 'Pista de la ventana (en paralelo)'}</div>
       <div class="prod-etapas-row">${chipVentana}</div>
       ${accionVentanaHtml}`;
+    }).join('');
   }
 
   const bitacora = bitacoraDeItem(it);
@@ -2935,7 +3007,7 @@ function abrirDrawerProdItem(itemIndex){
 
   document.getElementById('prodItemDetalleBody').innerHTML = `
     <h2 style="font-size:16px;margin:0 0 10px">${nombreItemProd(it)}</h2>
-    ${it.etapaVentana ? '<div class="track-label">Pista principal</div>' : ''}
+    ${ventanas.length ? '<div class="track-label">Pista principal</div>' : ''}
     <div class="prod-etapas-row">${chips}</div>
     ${accionHtml}
     ${ventanaHtml}
@@ -2977,27 +3049,38 @@ async function cancelarTrabajoExhUI(trabajoId, btn){
     setCargando(btn, false);
   }
 }
-async function completarEmbalajeUI(origen, id, itemIndex, pista, btn){
+async function pagarInmediatoUI(btn){
   setCargando(btn, true);
   try{
-    const payload = { origen: origen, item_index: Number(itemIndex), pista: pista };
-    if(origen === 'exhibicion') payload.trabajo_id = id; else payload.pedido_id = id;
-    await llamarBackend('completarEtapa', payload);
-    showToast('Marcado como embalado', 'success');
+    const payload = {
+      trabajador: btn.dataset.trabajador,
+      origen: btn.dataset.origen, item_index: Number(btn.dataset.itemIndex)
+    };
+    if(btn.dataset.ventanaIndex){
+      payload.ventana_index = Number(btn.dataset.ventanaIndex);
+    } else {
+      payload.etapa_index = Number(btn.dataset.etapaIndex);
+      payload.sub = btn.dataset.sub;
+    }
+    if(btn.dataset.origen === 'exhibicion') payload.trabajo_id = btn.dataset.id; else payload.pedido_id = btn.dataset.id;
+    await llamarBackend('pagarInmediato', payload);
+    showToast('Cobro registrado', 'success');
     await cargarProduccion();
-    abrirDrawerProduccion(origen, id);
-    abrirDrawerProdItem(itemIndex);
+    abrirDrawerProduccion(btn.dataset.origen, btn.dataset.id);
+    abrirDrawerProdItem(btn.dataset.itemIndex);
   } catch(err){
     setCargando(btn, false);
   }
 }
-async function asignarEtapaUI(origen, id, itemIndex, pista, btn){
-  const select = document.getElementById('prodAsignarSelect-' + itemIndex + '-' + pista);
+async function asignarEtapaUI(origen, id, itemIndex, pista, btn, ventanaIndex){
+  const selectId = 'prodAsignarSelect-' + itemIndex + '-' + pista + (ventanaIndex!=null && ventanaIndex!=='' ? '-'+ventanaIndex : '');
+  const select = document.getElementById(selectId);
   const trabajador = select ? select.value : '';
   if(!trabajador){ showToast('Elige un trabajador primero', 'error'); return; }
   setCargando(btn, true);
   try{
     const payload = { origen: origen, item_index: Number(itemIndex), trabajador: trabajador, pista: pista };
+    if(ventanaIndex!=null && ventanaIndex!=='') payload.ventana_index = Number(ventanaIndex);
     if(origen === 'exhibicion') payload.trabajo_id = id; else payload.pedido_id = id;
     const resultado = await llamarBackend('asignarEtapa', payload);
     if(origen === 'pedido' && resultado && resultado.pasoAProduccion){
@@ -3045,7 +3128,7 @@ function renderNomina(){
       <div class="fin-card-head">
         <div>
           <div class="fin-card-cliente">${t.nombre}</div>
-          <div class="fin-card-meta">${t.especialidad || 'Sin especialidad'} · ${t.cantidadItems} sin pagar</div>
+          <div class="fin-card-meta">${(t.especialidad||'').split(',').join(', ') || 'Sin especialidad'} · ${t.cantidadItems} sin pagar</div>
         </div>
         <div class="fin-card-monto">${money(t.acumulado)}</div>
       </div>
@@ -3105,10 +3188,14 @@ function renderNominaDrawer(){
           </label>
           <div class="ledger-abono-info" data-action="ver-nomina-item-detalle" data-index="${i}" style="flex:1;cursor:pointer">
             <strong>${it.nombre_item || ''} — ${it.nombre_etapa} · ${money(it.monto)}</strong>
-            <span>${it.codigo} · ${fechaHoraCorta(it.fecha_hecho)}</span>
+            <span>${it.codigo} · ${fechaHoraCorta(it.fecha_hecho)}${it.pendiente_de_terminar ? ' · pintura pendiente' : ''}</span>
           </div>
         </div>`).join('')}
-      <div style="font-size:11px;color:var(--text2);margin:6px 2px 0">Toca una fila para ver su detalle. El check es solo para incluirla en el pago.</div>`;
+      <div style="font-size:11px;color:var(--text2);margin:6px 2px 0">Toca una fila para ver su detalle. El check es solo para incluirla en el pago.</div>
+      ${nominaDetalle.vales.length ? `
+        <div class="section-label" style="margin-top:12px">Vales que se restan de este pago</div>
+        ${nominaDetalle.vales.map(v=>`<div class="ledger-abono-item"><div class="ledger-abono-info"><strong style="color:var(--red)">−${money(v.monto)}</strong><span>${v.motivo || 'Vale'} · ${fechaHoraCorta(v.fecha)}</span></div></div>`).join('')}
+      ` : ''}`;
   }
 
   const contVales = document.getElementById('nominaValesLista');
@@ -3228,7 +3315,7 @@ async function registrarPagoTrabajadorUI(btn){
   try{
     await llamarBackend('registrarPagoTrabajador', {
       trabajador: nominaTrabajadorActual.usuario,
-      items: seleccionados.map(it => ({ origen: it.origen, pedido_id: it.pedido_id, trabajo_id: it.trabajo_id, item_index: it.item_index, etapa_index: it.etapa_index })),
+      items: seleccionados.map(it => ({ origen: it.origen, pedido_id: it.pedido_id, trabajo_id: it.trabajo_id, item_index: it.item_index, etapa_index: it.etapa_index, sub: it.sub, ventana_index: it.ventana_index })),
       vale_ids: (nominaDetalle.vales || []).map(v=>v.id)
     });
     showToast('Pago registrado', 'success');
@@ -3257,19 +3344,31 @@ async function cargarBandeja(){
   nominaBandejaActual = nomina;
   renderBandeja();
 }
-function tareaActualDelTrabajador(){
+// Devuelve hasta una tarea POR ESPECIALIDAD que tenga asignada este trabajador (normalmente una
+// sola, pero si el trabajador tiene más de una especialidad puede tener una de cada una a la
+// vez). Nunca devuelve más de una por especialidad — la más urgente — para no dejarlo elegir.
+function tareasActualesDelTrabajador(){
   const candidatos = [];
   produccionData.forEach(p=>{
     p.items.forEach(it=>{
       if(it.etapaActual > -1 && !it.bloqueada){
         const e = it.etapas[it.etapaActual];
-        if(e.estado === 'asignado' && e.trabajador === state.usuario){
-          candidatos.push({ pedido: p, item: it, etapa: e, pista: 'principal' });
+        if(e.trabajador === state.usuario){
+          if(e.tipo === 'combinada'){
+            if(e.estado !== 'hecho'){
+              const sub = !e.masilla.hecho ? 'masilla' : (!e.pintura.hecho ? 'pintura' : null);
+              if(sub) candidatos.push({ pedido: p, item: it, etapa: e, pista: 'principal', sub: sub, especialidad: ETAPA_A_ESPECIALIDAD[e.nombre] });
+            }
+          } else if(e.estado === 'asignado'){
+            candidatos.push({ pedido: p, item: it, etapa: e, pista: 'principal', sub: null, especialidad: ETAPA_A_ESPECIALIDAD[e.nombre] });
+          }
         }
       }
-      if(it.etapaVentana && it.etapaVentana.estado === 'asignado' && it.etapaVentana.trabajador === state.usuario){
-        candidatos.push({ pedido: p, item: it, etapa: it.etapaVentana, pista: 'ventana' });
-      }
+      pistasVentana(it).forEach((v, vIdx)=>{
+        if(v.estado === 'asignado' && v.trabajador === state.usuario){
+          candidatos.push({ pedido: p, item: it, etapa: v, pista: 'ventana', ventanaIndex: vIdx, sub: null, especialidad: ETAPA_A_ESPECIALIDAD[v.nombre] });
+        }
+      });
     });
   });
   candidatos.sort((a,b)=>{
@@ -3277,13 +3376,16 @@ function tareaActualDelTrabajador(){
     const fb = b.pedido.fecha_entrega ? new Date(b.pedido.fecha_entrega) : new Date('9999-12-31');
     return fa - fb;
   });
-  return candidatos[0] || null;
+  const porEspecialidad = {};
+  candidatos.forEach(c=>{ if(!porEspecialidad[c.especialidad]) porEspecialidad[c.especialidad] = c; });
+  return Object.values(porEspecialidad);
 }
 function cambiarTabBandeja(tab){
   bandejaTabActual = tab;
   document.querySelectorAll('#bandejaTabs .tab').forEach(el=>el.classList.toggle('active', el.dataset.tab===tab));
   renderBandeja();
 }
+let tareasBandejaCache = [];
 function renderBandeja(){
   const nomina = nominaBandejaActual;
   const cont = document.getElementById('bandejaContenido');
@@ -3301,6 +3403,7 @@ function renderBandeja(){
       </div>${ledgerAcumulado}`;
       return;
     }
+    const vales = nomina.vales || [];
     cont.innerHTML = `
       ${nomina.items.map((it,i)=>`
         <div class="prod-item-card" style="cursor:pointer" data-action="ver-bandeja-cobro" data-index="${i}">
@@ -3308,17 +3411,22 @@ function renderBandeja(){
             <div>
               <div class="prod-item-nombre">${it.nombre_item || ''} — ${it.nombre_etapa}</div>
               <div class="prod-item-meta">${it.codigo} · terminado el ${fechaHoraCorta(it.fecha_hecho)}</div>
+              ${it.pendiente_de_terminar ? '<div class="prod-item-meta" style="color:var(--amber)">Pintura todavía pendiente — esto ya está cobrado por adelantado</div>' : ''}
             </div>
             <div style="font-weight:700;color:var(--gold)">${money(it.monto)}</div>
           </div>
         </div>`).join('')}
+      ${vales.length ? `
+        <div class="section-label" style="margin-top:14px">Vales pendientes (se restan del total)</div>
+        ${vales.map(v=>`<div class="ledger-abono-item"><div class="ledger-abono-info"><strong>−${money(v.monto)}</strong><span>${v.motivo || 'Vale'} · ${fechaHoraCorta(v.fecha)}</span></div></div>`).join('')}
+      ` : ''}
       ${ledgerAcumulado}`;
     return;
   }
 
-  // Pestaña "Asignado"
-  const tarea = tareaActualDelTrabajador();
-  if(!tarea){
+  // Pestaña "Asignado" — una tarjeta por especialidad (1 normalmente, 2 si el trabajador tiene doble especialidad).
+  tareasBandejaCache = tareasActualesDelTrabajador();
+  if(tareasBandejaCache.length === 0){
     cont.innerHTML = `
       <div class="empty-state">
         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 12l2 2 4-4M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -3326,32 +3434,39 @@ function renderBandeja(){
       </div>${ledgerAcumulado}`;
     return;
   }
-  cont.innerHTML = `
-    <div class="prod-item-card" style="cursor:pointer" data-action="ver-bandeja-tarea">
+  cont.innerHTML = tareasBandejaCache.map((tarea,idx)=>`
+    <div class="prod-item-card" style="cursor:pointer" data-action="ver-bandeja-tarea" data-index="${idx}">
       <div class="prod-item-head">
         <div>
           <div class="prod-item-nombre">${nombreItemProd(tarea.item)}</div>
           <div class="prod-item-meta">${tarea.pedido.codigo} · ${tarea.pedido.cliente_nombre}</div>
         </div>
       </div>
-      <div class="prod-etapas-row"><span class="prod-etapa-chip actual asignado">${tarea.etapa.nombre}</span></div>
+      <div class="prod-etapas-row"><span class="prod-etapa-chip actual asignado">${tarea.sub ? (tarea.etapa.nombre + ' — ' + (tarea.sub==='masilla'?'masilla':'pintura')) : tarea.etapa.nombre + (tarea.ventanaIndex!=null && pistasVentana(tarea.item).length>1 ? ' (ventana '+(tarea.ventanaIndex+1)+')' : '')}</span></div>
       <div style="text-align:center;color:var(--text2);font-size:12px;margin-top:8px">Toca para ver las especificaciones completas ↑</div>
-    </div>${ledgerAcumulado}`;
+    </div>`).join('') + ledgerAcumulado;
 }
 // Drawer: la tarea asignada, con TODAS las especificaciones (sin precio) y la foto grande ampliable.
-function abrirDrawerBandejaTarea(){
-  const tarea = tareaActualDelTrabajador();
+function abrirDrawerBandejaTarea(index){
+  const tarea = tareasBandejaCache[Number(index) || 0];
   if(!tarea) return;
   const filas = especFilasCompletas(tarea.item);
   const foto = tarea.item.foto || null;
   const cont = document.getElementById('bandejaTareaDetalleBody');
+  const etiquetaEtapa = tarea.sub
+    ? (tarea.etapa.nombre + ' — ' + (tarea.sub==='masilla' ? 'masilla' : 'pintura'))
+    : tarea.etapa.nombre + (tarea.ventanaIndex!=null && pistasVentana(tarea.item).length>1 ? ' (ventana '+(tarea.ventanaIndex+1)+')' : '');
+  const notaSub = tarea.sub === 'pintura'
+    ? `<div class="prod-terminado-nota" style="margin-bottom:10px">✓ Masilla ya quedó marcada${tarea.etapa.masilla.pagado ? ' y cobrada' : ' (todavía sin cobrar)'} — ahora falta la pintura.</div>`
+    : '';
   cont.innerHTML = `
     <h2 style="font-size:16px;margin:0 0 2px">${nombreItemProd(tarea.item)}</h2>
     <div style="font-size:12.5px;color:var(--text2);margin-bottom:12px">${tarea.pedido.codigo} · ${tarea.pedido.cliente_nombre}</div>
     ${foto ? `<div style="width:100%;height:180px;border-radius:12px;background:var(--surface3) center/cover;background-image:url('${foto}');margin-bottom:14px;position:relative;cursor:pointer" data-action="ver-comprobante" data-url="${foto}">
       <span style="position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.6);color:#fff;font-size:11px;padding:4px 8px;border-radius:6px">Toca para ampliar</span>
     </div>` : ''}
-    <div class="prod-etapas-row" style="margin-bottom:10px"><span class="prod-etapa-chip actual asignado">${tarea.etapa.nombre}</span></div>
+    <div class="prod-etapas-row" style="margin-bottom:10px"><span class="prod-etapa-chip actual asignado">${etiquetaEtapa}</span></div>
+    ${notaSub}
     <div class="section-label">Especificaciones</div>
     ${filas.map(([label,valor])=>`<div class="specs-row-nomina"><span>${label}</span><strong>${valor}</strong></div>`).join('') || `<div style="font-size:12.5px;color:var(--text2)">Sin especificaciones adicionales.</div>`}
     <label class="comprobante-box" for="bandejaFoto" style="margin-top:14px">
@@ -3362,8 +3477,8 @@ function abrirDrawerBandejaTarea(){
       <img id="bandejaFotoPreview" class="comprobante-img hidden">
     </label>
     <input type="file" id="bandejaFoto" accept="image/*" class="file-input-hidden">
-    <button class="btn-primary" style="width:100%;margin-top:14px" id="btnBandejaTerminar" data-action="bandeja-terminar" data-origen="${tarea.pedido.origen}" data-pedido-id="${tarea.pedido.pedido_id||''}" data-trabajo-id="${tarea.pedido.trabajo_id||''}" data-item-index="${tarea.item.index}" data-pista="${tarea.pista}">
-      <span class="btn-spin"></span><span>Marcar como terminado</span>
+    <button class="btn-primary" style="width:100%;margin-top:14px" id="btnBandejaTerminar" data-action="bandeja-terminar" data-origen="${tarea.pedido.origen}" data-pedido-id="${tarea.pedido.pedido_id||''}" data-trabajo-id="${tarea.pedido.trabajo_id||''}" data-item-index="${tarea.item.index}" data-pista="${tarea.pista}" data-sub="${tarea.sub||''}" data-ventana-index="${tarea.ventanaIndex!=null?tarea.ventanaIndex:''}">
+      <span class="btn-spin"></span><span>Marcar ${tarea.sub ? (tarea.sub==='masilla'?'masilla':'pintura') : ''} como terminado</span>
     </button>`;
   wireFotoPreview('bandejaFoto', 'bandejaFotoEmpty', 'bandejaFotoPreview');
   document.getElementById('scrimBandejaTarea').classList.add('open');
@@ -3415,17 +3530,30 @@ async function completarTareaBandeja(btn){
   setCargando(btn, true);
   try{
     const foto_base64 = await comprimirImagen(archivo, 900);
-    await llamarBackend('completarEtapa', {
+    const resultado = await llamarBackend('completarEtapa', {
       origen: btn.dataset.origen,
       pedido_id: btn.dataset.pedidoId || null,
       trabajo_id: btn.dataset.trabajoId || null,
       item_index: Number(btn.dataset.itemIndex),
       pista: btn.dataset.pista,
+      sub: btn.dataset.sub || null,
+      ventana_index: btn.dataset.ventanaIndex !== '' ? Number(btn.dataset.ventanaIndex) : null,
       foto_base64: foto_base64, mimeType: 'image/jpeg'
     });
+    if(btn.dataset.origen === 'pedido' && resultado && resultado.pedidoListo){
+      const p = pedidos.find(x=>x.id===Number(btn.dataset.pedidoId));
+      if(p) p.estado = 'listo';
+    }
     showToast('Tarea marcada como terminada', 'success');
-    cerrarDrawerBandejaTarea();
+    // En vez de cerrar el drawer de una (dejando ver la tarjeta vieja un instante hasta que
+    // se recargue), se muestra este estado de espera hasta tener la data fresca.
+    document.getElementById('bandejaTareaDetalleBody').innerHTML = `
+      <div style="text-align:center;padding:50px 0">
+        <div class="mini-spin" style="margin:0 auto 14px"></div>
+        <div style="color:var(--text2);font-size:13px">Buscando tu próxima tarea...</div>
+      </div>`;
     await cargarBandeja();
+    cerrarDrawerBandejaTarea();
   } catch(err){
     setCargando(btn, false);
   }
@@ -3455,7 +3583,7 @@ function renderUsuarios(){
       <div class="fin-card-head">
         <div>
           <div class="fin-card-cliente">${u.nombre}</div>
-          <div class="fin-card-meta">@${u.usuario}${u.especialidad ? ' · ' + u.especialidad : ''}</div>
+          <div class="fin-card-meta">@${u.usuario}${u.especialidad ? ' · ' + u.especialidad.split(',').join(', ') : ''}</div>
         </div>
         <span class="badge-abono confirmado">${ROL_LABEL[u.rol] || u.rol}</span>
       </div>
@@ -3463,6 +3591,13 @@ function renderUsuarios(){
 }
 function actualizarVisibilidadEspecialidad(){
   document.getElementById('usrEspecialidadGroup').classList.toggle('hidden', document.getElementById('usrRol').value !== 'trabajador');
+}
+function marcarEspecialidades(lista){
+  const set = new Set((lista||'').split(',').map(s=>s.trim()).filter(Boolean));
+  document.querySelectorAll('.usr-especialidad-check').forEach(cb => cb.checked = set.has(cb.value));
+}
+function leerEspecialidadesMarcadas(){
+  return Array.from(document.querySelectorAll('.usr-especialidad-check:checked')).map(cb=>cb.value).join(',');
 }
 function abrirNuevoUsuario(){
   usuarioEditandoOriginal = null;
@@ -3473,7 +3608,7 @@ function abrirNuevoUsuario(){
   document.getElementById('usrPassword').value = '';
   document.getElementById('usrPassword').placeholder = 'PIN de acceso';
   document.getElementById('usrRol').value = 'vendedor';
-  document.getElementById('usrEspecialidad').value = 'Herrero';
+  marcarEspecialidades('Herrero');
   document.getElementById('btnEliminarUsuario').classList.add('hidden');
   actualizarVisibilidadEspecialidad();
   document.getElementById('scrimUsuario').classList.add('open');
@@ -3490,7 +3625,7 @@ function abrirEditarUsuario(usuario){
   document.getElementById('usrPassword').value = '';
   document.getElementById('usrPassword').placeholder = 'Déjalo vacío para no cambiarlo';
   document.getElementById('usrRol').value = u.rol;
-  document.getElementById('usrEspecialidad').value = u.especialidad || 'Herrero';
+  marcarEspecialidades(u.especialidad || 'Herrero');
   document.getElementById('btnEliminarUsuario').classList.remove('hidden');
   actualizarVisibilidadEspecialidad();
   document.getElementById('scrimUsuario').classList.add('open');
@@ -3505,9 +3640,10 @@ async function guardarUsuarioUI(btn){
   const nombre = document.getElementById('usrNombre').value.trim();
   const password = document.getElementById('usrPassword').value.trim();
   const rol = document.getElementById('usrRol').value;
-  const especialidad = rol === 'trabajador' ? document.getElementById('usrEspecialidad').value : '';
+  const especialidad = rol === 'trabajador' ? leerEspecialidadesMarcadas() : '';
   if(!usuario || !nombre){ showToast('Completa usuario y nombre', 'error'); return; }
   if(!usuarioEditandoOriginal && !password){ showToast('Ingresa un PIN para el usuario nuevo', 'error'); return; }
+  if(rol === 'trabajador' && !especialidad){ showToast('Elige al menos una especialidad', 'error'); return; }
   setCargando(btn, true);
   try{
     await llamarBackend('guardarUsuario', { usuario, nombre, password, rol, especialidad });
@@ -3543,20 +3679,25 @@ function renderCategoriasPago(){
   const cont = document.getElementById('listaCategoriasPago');
   if(categoriasPago.length === 0){
     cont.innerHTML = `<div class="empty-state">
-      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2"/><path d="M3 12h18"/></svg>
       <strong>Sin categorías todavía</strong><span>Créalas con el botón de arriba, y luego asígnalas a cada modelo en Catálogo.</span>
     </div>`;
     return;
   }
-  cont.innerHTML = categoriasPago.map((c,i)=>`
+  cont.innerHTML = categoriasPago.map((c,i)=>{
+    if(c._guardando){
+      return `<div class="fin-card" style="--i:${i};opacity:.6"><div class="fin-card-head"><div><div class="fin-card-cliente">${c.nombre}</div><div class="fin-card-meta">Guardando...</div></div><div class="mini-spin"></div></div></div>`;
+    }
+    return `
     <div class="fin-card" style="--i:${i}" data-action="editar-categoria" data-id="${c.id}">
       <div class="fin-card-head">
         <div>
           <div class="fin-card-cliente">${c.nombre}</div>
-          <div class="fin-card-meta">${c.modo === 'm2' ? 'Por m²' : 'Monto fijo'} · Herrero ${money(c.herrero)} · Masillador ${money(c.masillador)} · Acabados ${money(c.acabados)} · Ventanero ${money(c.ventanero)}</div>
+          <div class="fin-card-meta">${c.modo === 'm2' ? 'Por m²' : 'Monto fijo'} · Herrero ${money(c.herrero)} · Masilla ${money(c.masilla)} · Pintura ${money(c.pintura)} · Acabados ${money(c.acabados)} · Ventanero ${money(c.ventanero)}</div>
         </div>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 function abrirNuevaCategoria(){
   categoriaEditandoId = null;
@@ -3564,7 +3705,8 @@ function abrirNuevaCategoria(){
   document.getElementById('catPagoNombre').value = '';
   document.getElementById('catPagoModo').value = 'fijo';
   document.getElementById('catPagoHerrero').value = '';
-  document.getElementById('catPagoMasillador').value = '';
+  document.getElementById('catPagoMasilla').value = '';
+  document.getElementById('catPagoPintura').value = '';
   document.getElementById('catPagoAcabados').value = '';
   document.getElementById('catPagoVentanero').value = '';
   document.getElementById('btnEliminarCategoria').classList.add('hidden');
@@ -3579,7 +3721,8 @@ function abrirEditarCategoria(id){
   document.getElementById('catPagoNombre').value = c.nombre;
   document.getElementById('catPagoModo').value = c.modo || 'fijo';
   document.getElementById('catPagoHerrero').value = c.herrero || '';
-  document.getElementById('catPagoMasillador').value = c.masillador || '';
+  document.getElementById('catPagoMasilla').value = c.masilla || '';
+  document.getElementById('catPagoPintura').value = c.pintura || '';
   document.getElementById('catPagoAcabados').value = c.acabados || '';
   document.getElementById('catPagoVentanero').value = c.ventanero || '';
   document.getElementById('btnEliminarCategoria').classList.remove('hidden');
@@ -3596,35 +3739,53 @@ async function guardarCategoriaUI(btn){
   const payload = {
     nombre, modo: document.getElementById('catPagoModo').value,
     herrero: parseFloat(document.getElementById('catPagoHerrero').value) || 0,
-    masillador: parseFloat(document.getElementById('catPagoMasillador').value) || 0,
+    masilla: parseFloat(document.getElementById('catPagoMasilla').value) || 0,
+    pintura: parseFloat(document.getElementById('catPagoPintura').value) || 0,
     acabados: parseFloat(document.getElementById('catPagoAcabados').value) || 0,
     ventanero: parseFloat(document.getElementById('catPagoVentanero').value) || 0
   };
-  setCargando(btn, true);
+  // Cierre inmediato con tarjeta "guardando", igual que Catálogo — no hace esperar al backend.
+  cerrarDrawerCategoria();
+  const editandoId = categoriaEditandoId;
+  let idxLocal;
+  if(editandoId){
+    idxLocal = categoriasPago.findIndex(c=>c.id===editandoId);
+    categoriasPago[idxLocal] = { ...payload, id: editandoId, _guardando: true };
+  } else {
+    idxLocal = categoriasPago.length;
+    categoriasPago.push({ ...payload, id: 'temp-' + Date.now(), _guardando: true });
+  }
+  renderCategoriasPago();
   try{
-    if(categoriaEditandoId){
-      await llamarBackend('updateCategoriaPago', Object.assign({ id: categoriaEditandoId }, payload));
+    if(editandoId){
+      await llamarBackend('updateCategoriaPago', Object.assign({ id: editandoId }, payload));
+      categoriasPago[idxLocal] = { ...payload, id: editandoId };
     } else {
-      await llamarBackend('saveCategoriaPago', payload);
+      const resultado = await llamarBackend('saveCategoriaPago', payload);
+      categoriasPago[idxLocal] = { ...payload, id: resultado.id };
     }
+    renderCategoriasPago();
     showToast('Categoría guardada', 'success');
-    cerrarDrawerCategoria();
-    await cargarCategoriasPago();
   } catch(err){
-  } finally {
-    setCargando(btn, false);
+    categoriasPago.splice(idxLocal, 1);
+    renderCategoriasPago();
+    showToast('No se pudo guardar la categoría, intenta de nuevo', 'error');
   }
 }
 async function eliminarCategoriaUI(btn){
   if(!categoriaEditandoId) return;
-  setCargando(btn, true);
+  const id = categoriaEditandoId;
+  cerrarDrawerCategoria();
+  const respaldo = categoriasPago.slice();
+  categoriasPago = categoriasPago.filter(c=>c.id!==id);
+  renderCategoriasPago();
   try{
-    await llamarBackend('deleteCategoriaPago', { id: categoriaEditandoId });
+    await llamarBackend('deleteCategoriaPago', { id });
     showToast('Categoría eliminada', 'success');
-    cerrarDrawerCategoria();
-    await cargarCategoriasPago();
   } catch(err){
-    setCargando(btn, false);
+    categoriasPago = respaldo;
+    renderCategoriasPago();
+    showToast('No se pudo eliminar, intenta de nuevo', 'error');
   }
 }
 
@@ -4128,6 +4289,9 @@ function pintarDetalleCatalogo(m){
   if(e.bloque) chips.push(['Bloque', e.bloque]);
   if(e.manillon) chips.push(['Manillón', e.manillon_tipo || 'Sí']);
   if(e.vidrio_o_farquilla) chips.push([e.vidrio_o_farquilla === 'Vidrio' ? 'Vidrio' : 'Farquilla', e.color_vidrio || '—']);
+  if(e.papel_ahumado) chips.push(['Papel ahumado', e.color_ahumado || 'Sí']);
+  const cat = m.categoria_pago_id ? categoriasPago.find(c=>c.id===Number(m.categoria_pago_id)) : null;
+  chips.push(['Categoría de pago', cat ? cat.nombre : 'Sin asignar']);
   document.getElementById('catSpecs').innerHTML = chips.map(c=>`<div class="exh-spec-chip"><span>${c[0]}</span><strong>${c[1]}</strong></div>`).join('');
   document.getElementById('catPrecio').textContent = money(m.precio_base);
   document.getElementById('btnUsarModelo').classList.toggle('hidden', !['catalogo','proteccion'].includes(state.modoSeleccion));
@@ -4153,7 +4317,7 @@ function abrirNuevoModelo(modeloAEditar){
   document.getElementById('nmFotoNegro').value = '';
   document.getElementById('nmPrecio').value = modeloAEditar ? modeloAEditar.precio_base : '';
   const selCategoria = document.getElementById('nmCategoriaPago');
-  selCategoria.innerHTML = '<option value="">Sin categoría</option>' + categoriasPago.map(c=>`<option value="${c.id}">${c.nombre}</option>`).join('');
+  selCategoria.innerHTML = '<option value="">Elige una categoría...</option>' + categoriasPago.map(c=>`<option value="${c.id}">${c.nombre}</option>`).join('');
   selCategoria.value = modeloAEditar && modeloAEditar.categoria_pago_id ? String(modeloAEditar.categoria_pago_id) : '';
   // Si ya tiene fotos guardadas, se muestran de una vez (no hay que volver a elegirlas para verlas)
   const fotoBlancoExistente = modeloAEditar && modeloAEditar.fotos && modeloAEditar.fotos.Blanco;
@@ -4207,6 +4371,7 @@ async function guardarNuevoModelo(){
   const precio = parseFloat(document.getElementById('nmPrecio').value);
   if(!nombre){ showToast('Ponle un nombre al modelo', 'error'); return; }
   if(!precio || precio <= 0){ showToast('Ingresa un precio base válido', 'error'); return; }
+  if(!document.getElementById('nmCategoriaPago').value){ showToast('Elige una categoría de pago para este modelo', 'error'); return; }
 
   const editandoId = state.modeloEditId;
   const modeloPrevio = editandoId ? catalogo.find(c=>c.id===editandoId) : null;
@@ -4590,6 +4755,8 @@ function renderCamposDinamicosGenerico(tipo, contId, idPrefix, radioPrefix){
   else if(tipo === 'combo'){
     html += CR('variante','Variante del combo', ['Sin protección en puerta','Con protección en puerta'], 'Con protección en puerta');
     html += `<div style="font-size:12px;color:var(--text2);margin-bottom:14px;padding:10px 12px;background:var(--surface3);border-radius:var(--radius-sm)">Las 2 ventanas del combo se agregan automáticamente en 1×1 m con protección. Sin marco decorativo en ninguna pieza.</div>`;
+    html += CT('PapelAhumado', 'Papel ahumado en las ventanas (incluido de fábrica)', true);
+    html += SUB('PapelAhumado', CR('color_ahumado','Color del ahumado', ['Espejo','Azul','Negro'], 'Espejo'));
     html += CM();
     html += CR('color','Color puerta', ['Blanco','Negro'], 'Blanco');
     html += CR('sentido','Sentido de apertura', ['Derecha','Izquierda'], 'Derecha');
@@ -4815,6 +4982,8 @@ function leerEspecificacionesGenerico(tipo, idPrefix, radioPrefix){
     e.variante = radioVal('variante');
     e.sentido = radioVal('sentido'); e.posicion = radioVal('posicion'); e.bloque = radioVal('bloque');
     e.proteccion = e.variante === 'Con protección en puerta';
+    e.papel_ahumado = g('PapelAhumado')?.checked || false;
+    e.color_ahumado = e.papel_ahumado ? radioVal('color_ahumado') : null;
   }
   return e;
 }
@@ -4980,6 +5149,13 @@ function agregarItem(){
   if(!item.precio || item.precio <= 0){
     showToast('Ingresa un precio válido', 'error');
     setCargando(btn, false);
+    return;
+  }
+  if(item.catalogoId && !item.categoriaPagoId){
+    setCargando(btn, false);
+    showToast('Este modelo no tiene categoría de pago — asígnasela primero', 'error');
+    const modelo = catalogo.find(m=>m.id===item.catalogoId);
+    if(modelo){ state.volverAItemDespuesDeModelo = state.itemTarget; editarModeloCatalogo(modelo.id); }
     return;
   }
   if(!item.catalogoId && !item.categoriaPagoId){
@@ -5330,6 +5506,8 @@ document.body.addEventListener('click', e=>{
 
   if(action === 'nav') irAScreen(el.dataset.screen, el.dataset.label);
   else if(action === 'open-drawer') abrirDrawer(parseInt(el.dataset.id));
+  else if(action === 'ir-produccion-desde-badge') irAProduccionDesdePedido(el.dataset.id);
+  else if(action === 'avisar-cliente-listo') avisarClienteListo(el.dataset.id);
   else if(action === 'close-drawer' || action === 'close-all') cerrarTodo();
   else if(action === 'close-nuevo'){
     const hayDatos = document.getElementById('npNombre').value.trim() || document.getElementById('npTelefono').value.trim() ||
@@ -5403,7 +5581,7 @@ document.body.addEventListener('click', e=>{
   else if(action === 'cancelar-seleccion') cancelarSeleccion();
   else if(action === 'toggle-avatar-menu') toggleAvatarMenu();
   else if(action === 'ir-catalogo'){ cerrarAvatarMenu(); irAScreen('catalogo', 'Catálogo'); }
-  else if(action === 'ir-financiero'){ cerrarAvatarMenu(); irAScreen('financiero', 'Pagos pendientes'); cargarAbonosPendientes(); }
+  else if(action === 'ir-financiero'){ cerrarAvatarMenu(); irAScreen('financiero', 'Confirmación de pagos'); cargarAbonosPendientes(); }
   else if(action === 'ver-seguimiento-cliente') verSeguimientoCliente();
   else if(action === 'ir-usuarios'){ cerrarAvatarMenu(); irAScreen('usuarios', 'Usuarios'); cargarUsuarios(); }
   else if(action === 'ir-categorias-pago'){ cerrarAvatarMenu(); irAScreen('categorias-pago', 'Categorías de pago'); cargarCategoriasPago(); }
@@ -5421,6 +5599,7 @@ document.body.addEventListener('click', e=>{
   }
   else if(action === 'fin-ver-pedido') verPedidoDesdeFinanciero(el.dataset.pedidoId);
   else if(action === 'avisar-admin-abono') avisarAdminAbono(el.dataset.abonoId);
+  else if(action === 'confirmar-abono-ventas') confirmarAbonoFinanciero(el.dataset.pedidoId, el.dataset.abonoId, el);
   else if(action === 'ver-comprobante') abrirLightbox(el.dataset.url);
   else if(action === 'close-lightbox') cerrarLightbox();
   else if(action === 'set-prod-tab') cambiarTabProduccion(el.dataset.tab);
@@ -5431,8 +5610,8 @@ document.body.addEventListener('click', e=>{
   else if(action === 'close-drawer-prod-item') cerrarDrawerProdItem();
   else if(action === 'ver-prod-item-specs') abrirDrawerProdItemSpecs(el.dataset.itemIndex);
   else if(action === 'close-drawer-prod-item-specs') cerrarDrawerProdItemSpecs();
-  else if(action === 'asignar-etapa') asignarEtapaUI(el.dataset.origen, el.dataset.id, el.dataset.itemIndex, el.dataset.pista, el);
-  else if(action === 'completar-embalaje') completarEmbalajeUI(el.dataset.origen, el.dataset.id, el.dataset.itemIndex, el.dataset.pista, el);
+  else if(action === 'asignar-etapa') asignarEtapaUI(el.dataset.origen, el.dataset.id, el.dataset.itemIndex, el.dataset.pista, el, el.dataset.ventanaIndex);
+  else if(action === 'pagar-inmediato') pagarInmediatoUI(el);
   else if(action === 'cancelar-trabajo-exh') cancelarTrabajoExhUI(el.dataset.id, el);
   else if(action === 'abrir-nuevo-trabajo-exh') abrirNuevoTrabajoExh();
   else if(action === 'ver-nomina-trabajador') abrirDrawerNomina(el.dataset.usuario);
@@ -5446,7 +5625,7 @@ document.body.addEventListener('click', e=>{
   else if(action === 'agregar-vale') agregarValeUI(el);
   else if(action === 'registrar-pago-trabajador') registrarPagoTrabajadorUI(el);
   else if(action === 'set-bandeja-tab') cambiarTabBandeja(el.dataset.tab);
-  else if(action === 'ver-bandeja-tarea') abrirDrawerBandejaTarea();
+  else if(action === 'ver-bandeja-tarea') abrirDrawerBandejaTarea(el.dataset.index);
   else if(action === 'close-drawer-bandeja-tarea') cerrarDrawerBandejaTarea();
   else if(action === 'ver-bandeja-cobro') abrirDrawerBandejaCobro(Number(el.dataset.index));
   else if(action === 'close-drawer-bandeja-cobro') cerrarDrawerBandejaCobro();
@@ -5589,9 +5768,10 @@ function flowHtmlPublico(etapas){
   return `<div class="flow">${etapas.map((e,i)=>{
     let cls = '';
     let dot = '';
+    const fotoHecho = e.tipo === 'combinada' ? (e.pintura.foto_url || e.masilla.foto_url) : e.foto_url;
     if(e.estado === 'hecho'){
       cls = 'done';
-      dot = e.foto_url ? `<img src="${e.foto_url}">` : '✓';
+      dot = fotoHecho ? `<img src="${fotoHecho}">` : '✓';
     } else if(i === idxActual){
       cls = 'wip';
       dot = '⏳';
@@ -5624,7 +5804,8 @@ function renderSeguimientoPublico(){
         <div class="listo-nota-pub">✓ Ya disponible</div>
       </div>`;
     }
-    const flowVentana = it.etapaVentana ? `<div class="section-label-pub" style="margin:10px 0 6px">Ventana</div>${flowHtmlPublico([it.etapaVentana])}` : '';
+    const ventanasPub = it.etapaVentanas || (it.etapaVentana ? [it.etapaVentana] : []);
+    const flowVentana = ventanasPub.length ? ventanasPub.map((v,vi)=>`<div class="section-label-pub" style="margin:10px 0 6px">${ventanasPub.length>1 ? 'Ventana '+(vi+1) : 'Ventana'}</div>${flowHtmlPublico([v])}`).join('') : '';
     return `<div class="item-block-pub">
       <div class="item-head-pub">${foto}<div class="item-name-pub">${it.nombre}${it.cantidad>1?' ×'+it.cantidad:''}</div></div>
       ${flowHtmlPublico(it.etapas)}
@@ -5637,10 +5818,12 @@ function renderSeguimientoPublico(){
   ).join('');
 
   cont.innerHTML = `
+    ${window.opener ? `<button class="back-btn-pub" id="btnVolverSeguimientoPub"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg> Volver</button>` : ''}
     <div class="track-head-pub">
       ${collageHtml}
       <div><div class="ped">#${s.codigo}</div><div class="cliente">${s.cliente_nombre}</div></div>
     </div>
+    ${s.estado === 'listo' ? `<div class="listo-banner-pub">🎉 ¡Tu pedido está listo, puedes retirarlo!</div>` : ''}
     <div class="saldo-box-pub">
       <div><span>Total</span><strong>${money(s.total)}</strong></div>
       <div><span>Abonado</span><strong>${money(s.abono)}</strong></div>
@@ -5664,15 +5847,14 @@ function renderSeguimientoPublico(){
       ${resumenLineas}
       <div class="recibo-line-pub total-pub"><span>Total</span><span>${money(s.total)}</span></div>
       <div class="recibo-line-pub total-pub" style="color:var(--sp-red)"><span>Resta por pagar</span><span>${money(s.saldo)}</span></div>
-      <button class="download-btn-pub" id="btnDescargarPub"><span class="btn-spin"></span><span>⬇️ Descargar PDF</span></button>
     </div>
   `;
+  if(window.opener) document.getElementById('btnVolverSeguimientoPub').addEventListener('click', ()=> window.close());
   document.getElementById('btnWaSeguimientoPub').addEventListener('click', ()=>{
     const texto = encodeURIComponent(`Hola! Quisiera información sobre mi pedido #${s.codigo}`);
     window.open(`https://wa.me/${NUMERO_NEGOCIO}?text=${texto}`, '_blank');
   });
   document.getElementById('btnVerReciboPub').addEventListener('click', verReciboPublico);
-  document.getElementById('btnDescargarPub').addEventListener('click', descargarNotaPublica);
 }
 async function verReciboPublico(){
   const btn = document.getElementById('btnVerReciboPub');
