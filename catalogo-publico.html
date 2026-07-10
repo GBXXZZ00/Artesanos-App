@@ -74,16 +74,34 @@
   .detail-img img{ width:100%; height:100%; object-fit:cover; display:block; }
   .detail-img::after{ content:''; position:absolute; inset:0; background:linear-gradient(transparent,rgba(13,31,30,.95)); }
   .detail-close{ position:absolute; top:calc(env(safe-area-inset-top) + 14px); left:14px; z-index:2; width:32px; height:32px; border-radius:50%; background:rgba(0,0,0,.45); color:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:15px;}
-  .detail-body{ padding:22px; }
+  .detail-body{ padding:22px 22px 32px; }
   .detail-cat{ font-size:10px; letter-spacing:.25em; text-transform:uppercase; color:var(--gold); font-weight:600; margin-bottom:6px;}
   .detail-name{ font-size:28px; font-weight:300; margin-bottom:4px; }
   .detail-price{ font-size:20px; font-weight:700; color:var(--gold); margin-bottom:14px;}
   .detail-divider{ width:36px; height:1px; background:var(--gold); opacity:.5; margin-bottom:14px;}
-  .detail-desc{ font-size:13px; color:rgba(255,255,255,.6); line-height:1.6; margin-bottom:16px;}
-  .feature-item{ display:flex; align-items:center; gap:8px; font-size:12.5px; color:rgba(255,255,255,.75); margin-bottom:9px;}
+  .detail-desc{ font-size:13px; color:rgba(255,255,255,.6); line-height:1.6; margin-bottom:22px;}
+  .feature-item{ display:flex; align-items:center; gap:8px; font-size:12.5px; color:rgba(255,255,255,.75); margin-bottom:11px;}
   .feature-dot{ width:4px; height:4px; border-radius:50%; background:var(--gold); flex-shrink:0;}
+  #detCaracteristicas{ margin-bottom:26px; }
   .avail-tag{ display:inline-block; font-size:10.5px; font-weight:700; padding:6px 13px; border-radius:20px; background:rgba(201,169,110,.15); color:var(--gold-light); border:1px solid rgba(201,169,110,.3); margin:12px 0 18px;}
-  .wa-btn-full{ display:flex; align-items:center; justify-content:center; gap:8px; background:var(--gold); color:var(--dark); font-weight:700; font-size:14px; padding:14px; border-radius:6px; margin-top:8px; cursor:pointer; text-decoration:none; }
+  .wa-btn-full{ display:flex; align-items:center; justify-content:center; gap:8px; background:var(--gold); color:var(--dark); font-weight:700; font-size:14px; padding:14px; border-radius:6px; margin-top:14px; cursor:pointer; text-decoration:none; }
+
+  /* ---------- SPECS DE LA PIEZA DISPONIBLE (drawer sobre el detalle) ---------- */
+  .ver-specs-btn{ display:inline-flex; align-items:center; gap:5px; font-size:11.5px; font-weight:700; color:var(--gold-light); background:rgba(201,169,110,.12); border:1px solid rgba(201,169,110,.35); padding:7px 13px; border-radius:20px; cursor:pointer; margin:12px 0 18px 8px; }
+  #scrimSpecs{ position:fixed; inset:0; background:rgba(0,0,0,.5); opacity:0; pointer-events:none; transition:opacity .3s var(--ease-out); z-index:22; }
+  #scrimSpecs.open{ opacity:1; pointer-events:auto; }
+  #drawerSpecsPieza{
+    position:fixed; top:0; right:0; bottom:0; width:88%; max-width:400px; background:var(--dark); color:#fff;
+    transform:translateX(100%); transition:transform .35s var(--ease-out); z-index:23; overflow-y:auto;
+  }
+  #drawerSpecsPieza.open{ transform:translateX(0); }
+  .specs-header{ padding:calc(env(safe-area-inset-top) + 18px) 22px 16px; display:flex; align-items:center; gap:12px; border-bottom:1px solid rgba(201,169,110,.15); }
+  .specs-close{ font-size:20px; color:var(--gold); cursor:pointer; line-height:1; }
+  .specs-title{ font-weight:700; font-size:15px; }
+  .specs-body{ padding:18px 22px 32px; }
+  .spec-row{ display:flex; justify-content:space-between; gap:14px; padding:12px 0; border-bottom:1px solid rgba(255,255,255,.08); font-size:13px; }
+  .spec-row span:first-child{ color:rgba(255,255,255,.5); }
+  .spec-row span:last-child{ font-weight:600; text-align:right; }
 
   .loading-msg{ padding:60px 24px; text-align:center; color:rgba(255,255,255,.5); font-size:13px; }
 </style>
@@ -131,8 +149,18 @@
     </div>
   </div>
 
+  <!-- SPECS DE LA PIEZA DISPONIBLE -->
+  <div id="scrimSpecs"></div>
+  <div id="drawerSpecsPieza">
+    <div class="specs-header">
+      <div class="specs-close" id="btnCerrarSpecs">✕</div>
+      <div class="specs-title">Especificaciones de esta pieza</div>
+    </div>
+    <div class="specs-body" id="specsPiezaBody"></div>
+  </div>
+
 <script>
-const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbxSMS0yPwq8-VqE1uzqA5Agb1RJ6CXr8-3IrqCU-kNvFN2X2ge8wlTrfTdQWoPo90Oq/exec';
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbypmSBjdTznsA0HKAOXnxs2-0ovjvK_NL6jT0h2dm5QnoYsSj7AnI2_l1hBt5-0WBwK/exec';
 const NUMERO_NEGOCIO = '584220167079';
 
 let tarjetas = [];
@@ -164,9 +192,34 @@ function normalizarTelefonoVE(telefono){
   return '58' + digitos;
 }
 
+function ordenarTarjetas(lista){
+  const grupos = [];
+  const porId = new Map();
+  lista.forEach(t => {
+    if(!porId.has(t.catalogo_id)){
+      const g = { catalogo_id: t.catalogo_id, tarjetas: [] };
+      porId.set(t.catalogo_id, g);
+      grupos.push(g);
+    }
+    porId.get(t.catalogo_id).tarjetas.push(t);
+  });
+  grupos.forEach(g => {
+    g.disponible = g.tarjetas.some(t => t.disponible); // si al menos un color está disponible, el par entero sube
+    g.tieneBadge = g.tarjetas.some(t => t.badge);
+  });
+  grupos.sort((a,b) => {
+    if(a.disponible !== b.disponible) return a.disponible ? -1 : 1;
+    if(a.tieneBadge !== b.tieneBadge) return a.tieneBadge ? -1 : 1;
+    return 0;
+  });
+  const resultado = [];
+  grupos.forEach(g => resultado.push(...g.tarjetas));
+  return resultado;
+}
+
 async function cargarCatalogo(){
   try{
-    tarjetas = await llamarBackend('getCatalogoPublico');
+    tarjetas = ordenarTarjetas(await llamarBackend('getCatalogoPublico'));
   } catch(err){
     document.getElementById('categoriasWrap').innerHTML = '<div class="loading-msg">No pudimos cargar el catálogo. Intenta de nuevo más tarde.</div>';
     return;
@@ -262,13 +315,42 @@ function abrirWhatsappModelo(t){
   window.open(`https://wa.me/${NUMERO_NEGOCIO}?text=${texto}`, '_blank');
 }
 
+const ESPEC_LABELS = {
+  alto:'Alto', ancho:'Ancho', color:'Color', sentido:'Sentido de apertura', posicion:'Posición',
+  bloque:'Bloque', manillon_tipo:'Manillón', marco_decorativo:'Marco decorativo',
+  vidrio_o_farquilla:'Vidrio / Farquilla', color_vidrio:'Color de vidrio', proteccion:'Protección',
+  proteccion_monto:'Monto de protección', papel_ahumado:'Papel ahumado', mas_hojas:'Hojas adicionales',
+  variante:'Variante', instalacion:'Instalación'
+};
+function abrirSpecsPieza(t){
+  const e = t.especificaciones_disponible || {};
+  const filas = Object.keys(e)
+    .filter(k => e[k] !== '' && e[k] !== false && e[k] != null)
+    .map(k => {
+      let valor = e[k] === true ? 'Sí' : e[k];
+      if(k === 'alto' || k === 'ancho') valor = valor + ' m';
+      return `<div class="spec-row"><span>${ESPEC_LABELS[k] || k}</span><span>${valor}</span></div>`;
+    }).join('');
+  document.getElementById('specsPiezaBody').innerHTML = filas || '<div style="color:rgba(255,255,255,.5);font-size:13px">Sin datos adicionales para esta pieza.</div>';
+  document.getElementById('scrimSpecs').classList.add('open');
+  document.getElementById('drawerSpecsPieza').classList.add('open');
+}
+function cerrarSpecsPieza(){
+  document.getElementById('scrimSpecs').classList.remove('open');
+  document.getElementById('drawerSpecsPieza').classList.remove('open');
+}
+
 function abrirDetalle(idx){
   const t = tarjetas[idx];
   document.getElementById('detImg').src = t.foto || '';
   document.getElementById('detCat').textContent = t.tipo;
   document.getElementById('detNombre').textContent = t.nombre + ' — ' + t.color;
   document.getElementById('detPrecio').textContent = money(t.precio);
-  document.getElementById('detDisponibilidad').textContent = t.disponible ? '✓ Disponible ahora' : '🔧 Bajo pedido';
+  const btnSpecs = (t.disponible && t.especificaciones_disponible) ? `<span class="ver-specs-btn" id="btnVerSpecsPieza">🔍 Ver specs de esta pieza</span>` : '';
+  document.getElementById('detDisponibilidad').innerHTML = (t.disponible ? '✓ Disponible ahora' : '🔧 Bajo pedido') + btnSpecs;
+  if(t.disponible && t.especificaciones_disponible){
+    document.getElementById('btnVerSpecsPieza').addEventListener('click', () => abrirSpecsPieza(t));
+  }
   document.getElementById('detDescripcion').textContent = t.descripcion || '';
   document.getElementById('detCaracteristicas').innerHTML = (t.caracteristicas||[]).map(f=>
     `<div class="feature-item"><div class="feature-dot"></div>${f}</div>`
@@ -288,6 +370,8 @@ function cerrarDetalle(){
 document.getElementById('btnVolverHome').addEventListener('click', volverHome);
 document.getElementById('btnCerrarDetalle').addEventListener('click', cerrarDetalle);
 document.getElementById('scrimDetalle').addEventListener('click', cerrarDetalle);
+document.getElementById('btnCerrarSpecs').addEventListener('click', cerrarSpecsPieza);
+document.getElementById('scrimSpecs').addEventListener('click', cerrarSpecsPieza);
 
 cargarCatalogo();
 </script>
