@@ -1311,6 +1311,16 @@
           <input type="file" id="nmFotoNegro" accept="image/*" class="file-input-hidden">
         </div>
       </div>
+      <div class="form-group"><label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Badge / etiqueta (opcional)</label><input type="text" id="nmBadge" placeholder="Ej: Nuevo, Más vendido" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px"></div>
+      <div class="form-group"><label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Descripción pública (opcional)</label><textarea id="nmDescripcion" rows="3" placeholder="Lo que verá el cliente en el catálogo público" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px;font-family:inherit;resize:vertical"></textarea></div>
+      <div class="form-group">
+        <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Características (opcional)</label>
+        <div id="nmCaracteristicasLista" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px"></div>
+        <div style="display:flex;gap:8px">
+          <input type="text" id="nmCaracteristicaInput" placeholder="Ej: Lámina calibre 16" style="flex:1;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px">
+          <button type="button" class="btn-ghost" data-action="agregar-caracteristica" style="flex-shrink:0;padding:0 18px">+ Agregar</button>
+        </div>
+      </div>
       <div class="form-group"><label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Precio base</label><div class="input-money"><input type="number" id="nmPrecio" placeholder="0" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px"></div></div>
       <div class="form-group">
         <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Categoría de pago (para lo que se le paga a los trabajadores)</label>
@@ -1614,7 +1624,7 @@
 <script>
 /* ============ CONFIG ============ */
 const MODO_DEMO = false;
-const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbxQbGFjMzrzZKEr97fZi8A6xq2vzuYqru4kBy9kc4Ldcq1JToA5L83-LFMWKTSPz1g/exec';
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbxSMS0yPwq8-VqE1uzqA5Agb1RJ6CXr8-3IrqCU-kNvFN2X2ge8wlTrfTdQWoPo90Oq/exec';
 const NUMERO_NEGOCIO = '584220167079';
 const TELEFONO_ADMIN_ABONOS = '584146326465'; // Recibe el aviso por WhatsApp cuando hay un abono pendiente de confirmar
 
@@ -1846,7 +1856,7 @@ let categoriasPago = [];
 /* ============ ESTADO UI ============ */
 const ESTADOS = ['cotizacion','confirmado','produccion','listo','entregado'];
 const ESTADO_LABEL = { cotizacion:'Cotización', confirmado:'Confirmado', produccion:'En Producción', listo:'Listo', entregado:'Entregado', cancelado:'Cancelado' };
-let state = { tab:'activos', search:'', openPedidoId:null, npItems:[], itemTarget:'nuevo', exhTab:'disponibles', exhSearch:'', catSearch:'', catTipoFiltro:'Todos', openExhId:null, openCatId:null, openCatColor:null, modoSeleccion:null, rol:null, nombreUsuario:null, modeloEditId:null, itemEditIndexNP:null, exhRango:'mes', volverAItemDespuesDeModelo:null, exhPiezasHermanasIds:[], exhCantidadSeleccionada:1, volverAProduccionAlCerrarPedido:null };
+let state = { tab:'activos', search:'', openPedidoId:null, npItems:[], itemTarget:'nuevo', exhTab:'disponibles', exhSearch:'', catSearch:'', catTipoFiltro:'Todos', openExhId:null, openCatId:null, openCatColor:null, modoSeleccion:null, rol:null, nombreUsuario:null, modeloEditId:null, itemEditIndexNP:null, exhRango:'mes', volverAItemDespuesDeModelo:null, exhPiezasHermanasIds:[], exhCantidadSeleccionada:1, volverAProduccionAlCerrarPedido:null, nmCaracteristicas:[] };
 
 function getModelo(catalogoId){ return catalogo.find(c=>c.id===catalogoId) || null; }
 function fotoModeloPorColor(modelo, color){
@@ -4286,12 +4296,38 @@ function cerrarCatDrawer(){
 }
 
 /* ============ CREAR / EDITAR MODELO DE CATÁLOGO ============ */
+function renderNmCaracteristicas(){
+  const cont = document.getElementById('nmCaracteristicasLista');
+  cont.innerHTML = state.nmCaracteristicas.map((c, i) => `
+    <span style="display:inline-flex;align-items:center;gap:6px;background:var(--surface3);color:var(--text2);font-size:12.5px;padding:6px 10px;border-radius:20px">
+      ${c}
+      <span data-action="quitar-caracteristica" data-index="${i}" style="cursor:pointer;color:var(--text3);font-weight:700">✕</span>
+    </span>
+  `).join('');
+}
+function agregarCaracteristica(){
+  const input = document.getElementById('nmCaracteristicaInput');
+  const valor = input.value.trim();
+  if(!valor) return;
+  state.nmCaracteristicas.push(valor);
+  input.value = '';
+  renderNmCaracteristicas();
+}
+function quitarCaracteristica(index){
+  state.nmCaracteristicas.splice(index, 1);
+  renderNmCaracteristicas();
+}
 function abrirNuevoModelo(modeloAEditar){
   state.modeloEditId = modeloAEditar ? modeloAEditar.id : null;
   document.getElementById('nmTitulo').textContent = modeloAEditar ? 'Editar modelo' : 'Nuevo modelo';
   document.getElementById('btnGuardarModeloLabel').textContent = modeloAEditar ? 'Guardar cambios' : 'Guardar modelo';
   document.getElementById('nmNombre').value = modeloAEditar ? modeloAEditar.nombre : '';
   document.getElementById('nmTipo').value = modeloAEditar ? modeloAEditar.tipo : 'Puerta Multilock';
+  document.getElementById('nmBadge').value = modeloAEditar ? (modeloAEditar.badge || '') : '';
+  document.getElementById('nmDescripcion').value = modeloAEditar ? (modeloAEditar.descripcion_publica || '') : '';
+  document.getElementById('nmCaracteristicaInput').value = '';
+  state.nmCaracteristicas = modeloAEditar && Array.isArray(modeloAEditar.caracteristicas) ? [...modeloAEditar.caracteristicas] : [];
+  renderNmCaracteristicas();
   renderCamposDinamicosModelo();
   if(modeloAEditar) precargarEspecificaciones(modeloAEditar.especificaciones_base, 'nm', 'nm');
   document.getElementById('nmFotoBlanco').value = '';
@@ -4366,7 +4402,10 @@ async function guardarNuevoModelo(){
     fotos: modeloPrevio ? {...modeloPrevio.fotos} : {},
     especificaciones_base: leerEspecificacionesGenerico(tipoKey, 'nm', 'nm'),
     precio_base: precio,
-    categoria_pago_id: document.getElementById('nmCategoriaPago').value || null
+    categoria_pago_id: document.getElementById('nmCategoriaPago').value || null,
+    badge: document.getElementById('nmBadge').value.trim(),
+    descripcion_publica: document.getElementById('nmDescripcion').value.trim(),
+    caracteristicas: [...state.nmCaracteristicas]
   };
 
   const destinoRetorno = state.volverAItemDespuesDeModelo;
@@ -5558,6 +5597,8 @@ document.body.addEventListener('click', e=>{
     else cerrarNuevoModelo();
   }
   else if(action === 'guardar-nuevo-modelo') guardarNuevoModelo();
+  else if(action === 'agregar-caracteristica') agregarCaracteristica();
+  else if(action === 'quitar-caracteristica') quitarCaracteristica(parseInt(el.dataset.index));
   else if(action === 'ir-seleccion-exhibicion') irASeleccionExhibicion();
   else if(action === 'cancelar-seleccion') cancelarSeleccion();
   else if(action === 'toggle-avatar-menu') toggleAvatarMenu();
