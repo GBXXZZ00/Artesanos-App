@@ -207,32 +207,48 @@ function ordenarTarjetas(lista){
     g.disponible = g.tarjetas.some(t => t.disponible); // si al menos un color está disponible, el par entero sube
     g.tieneBadge = g.tarjetas.some(t => t.badge);
   });
-  grupos.sort((a,b) => {
-    if(a.disponible !== b.disponible) return a.disponible ? -1 : 1;
-    if(a.tieneBadge !== b.tieneBadge) return a.tieneBadge ? -1 : 1;
-    return 0;
-  });
 
-  // La grilla es de 2 columnas: un modelo de un solo color nunca debe quedar "suelto"
-  // justo antes de un modelo de doble color, porque eso corre el conteo y separa esa
-  // pareja Blanco/Negro entre dos filas distintas. Por eso los modelos de un solo color
-  // se van guardando en un buffer y solo se sueltan de a pares (llenando su propia fila);
-  // los de doble color se insertan siempre completos, nunca partidos.
-  const resultado = [];
-  let bufferUnico = null;
+  // 3 niveles de prioridad: disponible > con badge > el resto.
   grupos.forEach(g => {
-    if(g.tarjetas.length === 1){
-      if(bufferUnico){
-        resultado.push(bufferUnico, g.tarjetas[0]);
-        bufferUnico = null;
+    g.tieneCaracteristicas = g.tarjetas.some(t => (t.caracteristicas || []).length > 0);
+  });
+  // 4 niveles: disponible > con badge > con características (los "completos") > sin características (viejos, van al final)
+  function nivel(g){
+    if(g.disponible) return 0;
+    if(g.tieneBadge) return 1;
+    if(g.tieneCaracteristicas) return 2;
+    return 3;
+  }
+  const niveles = [[], [], [], []];
+  grupos.forEach(g => niveles[nivel(g)].push(g));
+
+  // Dentro de cada nivel: los modelos de doble color se sueltan siempre completos y
+  // seguidos (nunca se parten). Los de un solo color se emparejan de a dos entre ellos
+  // mismos, para llenar su propia fila sin meterse en medio de un par real. Si sobra un
+  // único suelto al final de un nivel, se guarda para emparejarlo con el próximo único
+  // que aparezca (aunque sea del siguiente nivel), en vez de dejarlo partiendo algo.
+  const resultado = [];
+  let sobrante = null;
+  niveles.forEach(nivelActual => {
+    const dobles = nivelActual.filter(g => g.tarjetas.length > 1);
+    const unicos = nivelActual.filter(g => g.tarjetas.length === 1).map(g => g.tarjetas[0]);
+
+    if(sobrante && unicos.length){
+      resultado.push(sobrante, unicos.shift());
+      sobrante = null;
+    }
+    dobles.forEach(g => resultado.push(...g.tarjetas)); // resultado.length siempre par aquí
+
+    for(let i = 0; i < unicos.length; i += 2){
+      if(unicos[i + 1] != null){
+        resultado.push(unicos[i], unicos[i + 1]);
       } else {
-        bufferUnico = g.tarjetas[0];
+        sobrante = unicos[i];
       }
-    } else {
-      resultado.push(...g.tarjetas); // en este punto resultado.length siempre es par
     }
   });
-  if(bufferUnico) resultado.push(bufferUnico); // si sobra uno solo, cae al final, solo
+  if(sobrante) resultado.push(sobrante);
+
   return resultado;
 }
 
