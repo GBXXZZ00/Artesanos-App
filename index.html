@@ -1464,8 +1464,8 @@
             <div class="input-money"><input type="number" id="nominaValeMonto" placeholder="0" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px"></div>
           </div>
           <div class="field">
-            <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Motivo (opcional)</label>
-            <input type="text" id="nominaValeMotivo" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px">
+            <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Motivo (obligatorio — de dónde sale este vale)</label>
+            <input type="text" id="nominaValeMotivo" placeholder="Ej. Préstamo de herramienta" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px">
           </div>
         </div>
         <button class="btn-ghost" style="width:100%;margin-top:8px" id="btnAgregarVale" data-action="agregar-vale"><span class="btn-spin"></span><span>+ Agregar vale</span></button>
@@ -1624,7 +1624,7 @@
 <script>
 /* ============ CONFIG ============ */
 const MODO_DEMO = false;
-const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbypmSBjdTznsA0HKAOXnxs2-0ovjvK_NL6jT0h2dm5QnoYsSj7AnI2_l1hBt5-0WBwK/exec';
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbzPJL2IMw4P8gge4Wldf3CN4dLcLKiIQRb1EDxCi6eTTEwgrh1UFNjOYfKOhyyBhrIG/exec';
 const NUMERO_NEGOCIO = '584220167079';
 const TELEFONO_ADMIN_ABONOS = '584146326465'; // Recibe el aviso por WhatsApp cuando hay un abono pendiente de confirmar
 
@@ -1735,6 +1735,7 @@ async function retomarSesion(sesion){
   document.getElementById('loginScreen').classList.add('hidden');
   if(state.rol === 'trabajador'){ mostrarVistaTrabajador(); ocultarSplashInicial(); return; }
   document.querySelector('.bottom-nav-wrap')?.classList.remove('hidden');
+  document.querySelector('#prodTabs [data-tab="nomina"]')?.classList.toggle('hidden', state.rol !== 'admin');
   procesarDeepLinkFinanciero();
   ocultarSplashInicial();
 }
@@ -2724,7 +2725,13 @@ let trabajadoresCache = [];
 let prodTabActual = 'pendiente';
 
 async function cargarProduccion(){
-  document.getElementById('listaProduccion').innerHTML = '<div class="mini-spin" style="margin:40px auto"></div>';
+  // Igual que Ventas: si ya había algo en memoria de una visita anterior, se muestra de una
+  // vez (no hace sentir que "carga lento") mientras la versión fresca llega por detrás.
+  if(produccionData.length || nominaData.length){
+    if(prodTabActual === 'nomina') renderNomina(); else renderProduccion();
+  } else {
+    document.getElementById('listaProduccion').innerHTML = '<div class="mini-spin" style="margin:40px auto"></div>';
+  }
   try{
     if(MODO_DEMO){
       produccionData = [];
@@ -2746,12 +2753,16 @@ async function cargarProduccion(){
   else renderProduccion();
 }
 function cambiarTabProduccion(tab){
+  if(tab === 'nomina' && state.rol !== 'admin') tab = 'pendiente';
   prodTabActual = tab;
   document.querySelectorAll('#prodTabs .tab').forEach(t=>t.classList.toggle('active', t.dataset.tab===tab));
   document.getElementById('btnNuevoTrabajoExh').classList.toggle('hidden', tab==='nomina' || state.rol !== 'admin');
-  document.getElementById('listaProduccion').innerHTML = '<div class="mini-spin" style="margin:40px auto"></div>';
-  if(tab === 'nomina') cargarNomina();
-  else renderProduccion();
+  if(tab === 'nomina'){
+    if(nominaData.length) renderNomina(); else document.getElementById('listaProduccion').innerHTML = '<div class="mini-spin" style="margin:40px auto"></div>';
+    cargarNomina();
+  } else {
+    renderProduccion();
+  }
 }
 // null = a tiempo, 'proximo' = 3 días o menos, 'vencido' = ya se pasó la fecha
 function urgenciaPedido(fechaEntrega){
@@ -3116,13 +3127,13 @@ function renderNomina(){
     return;
   }
   cont.innerHTML = nominaData.map((t,i)=>`
-    <div class="fin-card" style="--i:${i}" data-action="ver-nomina-trabajador" data-usuario="${t.usuario}">
+    <div class="fin-card" style="--i:${i}${t._actualizando ? ';opacity:.7' : ''}" data-action="ver-nomina-trabajador" data-usuario="${t.usuario}">
       <div class="fin-card-head">
         <div>
           <div class="fin-card-cliente">${t.nombre}</div>
           <div class="fin-card-meta">${(t.especialidad||'').split(',').join(', ') || 'Sin especialidad'} · ${t.cantidadItems} sin pagar</div>
         </div>
-        <div class="fin-card-monto">${money(t.acumulado)}</div>
+        ${t._actualizando ? '<div class="mini-spin"></div>' : `<div class="fin-card-monto">${money(t.acumulado)}</div>`}
       </div>
     </div>`).join('');
 }
@@ -3140,6 +3151,9 @@ async function abrirDrawerNomina(usuario){
   document.getElementById('nominaSubHistorial').classList.add('hidden');
   document.getElementById('scrimNomina').classList.add('open');
   document.getElementById('drawerNomina').classList.add('open');
+  document.getElementById('nominaItemsLista').innerHTML = '<div class="mini-spin" style="margin:30px auto"></div>';
+  document.getElementById('nominaValesLista').innerHTML = '';
+  document.getElementById('nominaHistorialLista').innerHTML = '';
   try{
     const [detalle, historial] = await Promise.all([
       llamarBackend('getNominaTrabajador', { trabajador: usuario }),
@@ -3266,7 +3280,7 @@ function abrirNominaHistorialDetalle(index){
     `).join('') || `<div style="font-size:12.5px;color:var(--text2)">Sin ítems.</div>`}
     ${p.vales.length ? `
       <div class="section-label" style="margin-top:12px">Vales descontados</div>
-      ${p.vales.map(v=>`<div class="specs-row-nomina"><span>${v.motivo || 'Vale'}</span><strong style="color:var(--red)">−${money(v.monto)}</strong></div>`).join('')}
+      ${p.vales.map(v=>`<div class="specs-row-nomina"><span>${v.motivo || 'Vale'} <small style="color:var(--text2)">(${fechaHoraCorta(v.fecha)})</small></span><strong style="color:var(--red)">−${money(v.monto)}</strong></div>`).join('')}
     ` : ''}
     <div class="ledger-box" style="margin-top:14px">
       <div class="ledger-row"><span>Total ítems</span><strong>${money(p.total_items)}</strong></div>
@@ -3291,6 +3305,7 @@ async function agregarValeUI(btn){
   const monto = parseFloat(document.getElementById('nominaValeMonto').value);
   if(!monto || monto<=0){ showToast('Ingresa un monto válido', 'error'); return; }
   const motivo = document.getElementById('nominaValeMotivo').value.trim();
+  if(!motivo){ showToast('Escribe de qué es el vale (motivo obligatorio)', 'error'); return; }
   setCargando(btn, true);
   try{
     await llamarBackend('agregarVale', { trabajador: nominaTrabajadorActual.usuario, monto, motivo });
@@ -3305,18 +3320,30 @@ async function agregarValeUI(btn){
 async function registrarPagoTrabajadorUI(btn){
   const seleccionados = Array.from(document.querySelectorAll('.nomina-item-check:checked')).map(el => nominaDetalle.items[Number(el.dataset.index)]);
   if(seleccionados.length === 0){ showToast('Selecciona al menos un ítem', 'error'); return; }
-  setCargando(btn, true);
+  const trabajadorUsuario = nominaTrabajadorActual.usuario;
+  const totalPagado = seleccionados.reduce((a,i)=>a+i.monto, 0) - (nominaDetalle.vales||[]).reduce((a,v)=>a+v.monto, 0);
+  // Cierre inmediato, igual que el resto de la app: no dejamos el botón girando con el drawer
+  // abierto — se cierra ya, y la tarjeta de la lista se actualiza sola mientras el pago se
+  // termina de confirmar por detrás.
+  cerrarDrawerNomina();
+  const trabajadorEnLista = nominaData.find(t=>t.usuario===trabajadorUsuario);
+  if(trabajadorEnLista){
+    trabajadorEnLista.acumulado -= totalPagado;
+    trabajadorEnLista.cantidadItems -= seleccionados.length;
+    trabajadorEnLista._actualizando = true;
+    renderNomina();
+  }
   try{
     await llamarBackend('registrarPagoTrabajador', {
-      trabajador: nominaTrabajadorActual.usuario,
+      trabajador: trabajadorUsuario,
       items: seleccionados.map(it => ({ origen: it.origen, pedido_id: it.pedido_id, trabajo_id: it.trabajo_id, item_index: it.item_index, etapa_index: it.etapa_index, sub: it.sub, ventana_index: it.ventana_index })),
       vale_ids: (nominaDetalle.vales || []).map(v=>v.id)
     });
     showToast('Pago registrado', 'success');
-    cerrarDrawerNomina();
     await cargarNomina();
   } catch(err){
-    setCargando(btn, false);
+    showToast('No se pudo registrar el pago, intenta de nuevo', 'error');
+    await cargarNomina();
   }
 }
 
@@ -4774,11 +4801,14 @@ function renderCamposDinamicosGenerico(tipo, contId, idPrefix, radioPrefix){
   }
   else if(tipo === 'combo'){
     html += CR('variante','Variante del combo', ['Sin protección en puerta','Con protección en puerta'], 'Con protección en puerta');
-    html += `<div style="font-size:12px;color:var(--text2);margin-bottom:14px;padding:10px 12px;background:var(--surface3);border-radius:var(--radius-sm)">Las 2 ventanas del combo se agregan automáticamente en 1×1 m con protección. Sin marco decorativo en ninguna pieza.</div>`;
-    html += CT('PapelAhumado', 'Papel ahumado en las ventanas (incluido de fábrica)', true);
+    html += `<div style="font-size:12px;color:var(--text2);margin-bottom:14px;padding:10px 12px;background:var(--surface3);border-radius:var(--radius-sm)">Las 2 ventanas del combo se agregan automáticamente en 1×1 m con protección. Marco decorativo y manillón son extras opcionales solo para la puerta del combo.</div>`;
+    html += CT('PapelAhumado', 'Papel ahumado en las ventanas (incluido de fábrica, sin costo extra)', true);
     html += SUB('PapelAhumado', CR('color_ahumado','Color del ahumado', ['Espejo','Azul','Negro'], 'Espejo'));
     html += CM();
     html += CR('color','Color puerta', ['Blanco','Negro'], 'Blanco');
+    html += CT('Manillon', 'Manillón (puerta)');
+    html += SUB('Manillon', CR('manillon_tipo','Tipo de manillón', ['H','S','Luna'], 'Luna'));
+    html += CT('MarcoDecorativo', 'Marco decorativo (puerta)');
     html += CR('sentido','Sentido de apertura', ['Derecha','Izquierda'], 'Derecha');
     html += CR('posicion','Posición de apertura', ['Adentro','Afuera'], 'Afuera');
     html += CR('bloque','Tipo de bloque', ['10','15','Tubo'], '10');
@@ -4875,7 +4905,7 @@ function actualizarPrecioSugerido(){
   const area = alto * ancho;
   const base = PRECIO_BASE[tipo] || 100;
   let sugerido = area > 1 ? Math.round(base * area) : base;
-  if(tipo === 'puerta' || tipo === 'puerta_multilock'){
+  if(tipo === 'puerta' || tipo === 'puerta_multilock' || tipo === 'combo'){
     if(document.getElementById('npManillon')?.checked) sugerido += 20;
     const montoProteccion = parseFloat(document.getElementById('npProteccionMonto')?.value) || 0;
     if(document.getElementById('npProteccion')?.checked) sugerido += montoProteccion;
@@ -5004,6 +5034,9 @@ function leerEspecificacionesGenerico(tipo, idPrefix, radioPrefix){
     e.proteccion = e.variante === 'Con protección en puerta';
     e.papel_ahumado = g('PapelAhumado')?.checked || false;
     e.color_ahumado = e.papel_ahumado ? radioVal('color_ahumado') : null;
+    e.manillon = g('Manillon')?.checked || false;
+    e.manillon_tipo = e.manillon ? radioVal('manillon_tipo') : null;
+    e.marco_decorativo = g('MarcoDecorativo')?.checked || false;
   }
   return e;
 }
@@ -5392,7 +5425,7 @@ function irAScreen(name, label){
   document.getElementById('placeholderTitle').textContent = label;
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active', n.dataset.screen===name && n.dataset.label===label));
   document.getElementById('btnNuevoPedido').classList.toggle('hidden', name!=='ventas');
-  document.getElementById('btnNuevaExh').classList.toggle('hidden', name!=='exhibicion' || state.modoSeleccion || state.rol !== 'admin');
+  document.getElementById('btnNuevaExh').classList.toggle('hidden', name!=='exhibicion' || state.modoSeleccion || state.rol === 'trabajador');
   document.getElementById('btnNuevoModelo').classList.toggle('hidden', name!=='catalogo');
   document.getElementById('btnNuevoTrabajoExh').classList.toggle('hidden', name!=='produccion' || prodTabActual==='nomina' || state.rol !== 'admin');
   document.getElementById('btnNuevoUsuario').classList.toggle('hidden', name!=='usuarios' || state.rol !== 'admin');
@@ -5439,6 +5472,7 @@ document.getElementById('btnLogin').addEventListener('click', async ()=>{
     if(state.rol === 'trabajador'){ mostrarVistaTrabajador(); }
     else {
       document.querySelector('.bottom-nav-wrap')?.classList.remove('hidden');
+      document.querySelector('#prodTabs [data-tab="nomina"]')?.classList.toggle('hidden', state.rol !== 'admin');
       procesarDeepLinkFinanciero();
     }
   } catch(err){
@@ -5506,7 +5540,8 @@ document.body.addEventListener('change', e=>{
   if(/^(np|nm)(Proteccion|Manillon|PapelAhumado)$/.test(id)){
     actualizarSubfields(id.slice(0,2));
   }
-  if(id === 'npPapelAhumado' || id === 'npProteccion') actualizarPrecioVentana();
+  const tipoActual = document.getElementById('npTipoProducto')?.value;
+  if((id === 'npPapelAhumado' || id === 'npProteccion') && tipoActual === 'ventana') actualizarPrecioVentana();
   if(id === 'npManillon') actualizarPrecioSugerido();
 });
 
