@@ -921,17 +921,6 @@
         </div>
       </div>
 
-      <!-- SCRIM + DRAWER: detalle de un pedido en el Histórico de pagos confirmados -->
-      <div class="scrim3" id="scrimHistoricoPedido" style="z-index:90" data-action="close-drawer-historico-pedido"></div>
-      <div class="drawer-exh" id="drawerHistoricoPedido" style="z-index:91">
-        <div class="drawer-handle"></div>
-        <div class="drawer-head">
-          <h2 id="historicoPedidoTitulo">Pedido</h2>
-          <div class="icon-btn" data-action="close-drawer-historico-pedido"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 6l12 12M18 6L6 18"/></svg></div>
-        </div>
-        <div id="historicoPedidoBody"></div>
-      </div>
-
       <!-- SCREEN: USUARIOS (gestión, solo admin) -->
       <div class="screen" id="screen-usuarios">
         <div id="listaUsuarios"></div>
@@ -1006,6 +995,17 @@
       </div>
     </div>
     </div>
+  </div>
+
+  <!-- SCRIM + DRAWER: detalle de un pedido en el Histórico de pagos confirmados -->
+  <div class="scrim3" id="scrimHistoricoPedido" style="z-index:90" data-action="close-drawer-historico-pedido"></div>
+  <div class="drawer-exh" id="drawerHistoricoPedido" style="z-index:91">
+    <div class="drawer-handle"></div>
+    <div class="drawer-head">
+      <h2 id="historicoPedidoTitulo">Pedido</h2>
+      <div class="icon-btn" data-action="close-drawer-historico-pedido"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 6l12 12M18 6L6 18"/></svg></div>
+    </div>
+    <div id="historicoPedidoBody"></div>
   </div>
 
   <!-- SCRIM + DRAWER DETALLE -->
@@ -1311,6 +1311,7 @@
           <option value="Puerta Multilock" selected>Puerta Multilock</option>
           <option value="Combo">Combo</option>
           <option value="Protección Ventana">Protección de ventana</option>
+          <option value="Protección Puerta">Protección de puerta</option>
         </select>
       </div>
       <div id="nmCamposDinamicos"></div>
@@ -1650,7 +1651,7 @@
 <script>
 /* ============ CONFIG ============ */
 const MODO_DEMO = false;
-const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbwrog81bv_UxfdJK6GRT531zQTfiBbd8L5q4VLlGYG639DRxr6l1iUpzYwV65gucvTg/exec';
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbw_aIjPRQueTriooG--faNZR6yvhCwM4KmBAm08lo8u3qFqkBMC5SBQWKjanEtM3KZf/exec';
 const NUMERO_NEGOCIO = '584220167079';
 const TELEFONO_ADMIN_ABONOS = '584146326465'; // Recibe el aviso por WhatsApp cuando hay un abono pendiente de confirmar
 
@@ -1992,16 +1993,35 @@ function etapaActualIndexJS(item){
   return -1;
 }
 function textoProduccionItem(it){
-  if(!it.etapas) return '';
-  const idx = etapaActualIndexJS(it);
-  const ventanas = pistasVentana(it);
+  if(!it.etapas && !it.unidades) return '';
+  const unidades = unidadesEfectivas(it);
+  const terminada = u => etapaActualIndexJS(u) === -1 && pistasVentana(u).every(v=>v.estado==='hecho');
+  if(unidades.length > 1){
+    const listas = unidades.filter(terminada).length;
+    if(listas === unidades.length) return `<div class="prod-line-pedido done">✓ Producción terminada (${unidades.length}/${unidades.length})</div>`;
+    const pendiente = unidades.find(u => !terminada(u));
+    const idx = etapaActualIndexJS(pendiente);
+    const ventanas = pistasVentana(pendiente);
+    let detalle;
+    if(idx === -1){
+      const v = ventanas.find(v=>v.estado!=='hecho');
+      detalle = v.nombre + (v.trabajador ? ' · asignado a ' + v.trabajador : '');
+    } else {
+      const etapa = pendiente.etapas[idx];
+      detalle = etapa.nombre + (etapa.trabajador ? ' · asignado a ' + etapa.trabajador : '');
+    }
+    return `<div class="prod-line-pedido wip">🔨 En producción (${listas}/${unidades.length} listas): ${detalle}</div>`;
+  }
+  const it0 = unidades[0];
+  const idx = etapaActualIndexJS(it0);
+  const ventanas = pistasVentana(it0);
   const ventanaOk = ventanas.every(v=>v.estado==='hecho');
   if(idx === -1 && ventanaOk) return `<div class="prod-line-pedido done">✓ Producción terminada</div>`;
   if(idx === -1 && !ventanaOk){
     const pendiente = ventanas.find(v=>v.estado!=='hecho');
     return `<div class="prod-line-pedido wip">🔨 En producción: ${pendiente.nombre}${pendiente.trabajador ? ' · asignado a ' + pendiente.trabajador : ''}</div>`;
   }
-  const etapa = it.etapas[idx];
+  const etapa = it0.etapas[idx];
   return `<div class="prod-line-pedido wip">🔨 En producción: ${etapa.nombre}${etapa.trabajador ? ' · asignado a ' + etapa.trabajador : ''}</div>`;
 }
 // Etiquetas legibles para cada campo de especificaciones, usadas en la Bandeja del trabajador
@@ -2899,19 +2919,21 @@ function renderBentoProduccion(){
   produccionData.forEach(p=>{
     let pedidoUrgente = false;
     p.items.forEach(it=>{
-      if(it.etapaActual > -1){
-        if(urgenciaPedido(p.fecha_entrega)) pedidoUrgente = true;
-        if(it.etapas[it.etapaActual].estado === 'pendiente' && !it.bloqueada) esperandoAsignar++;
-      }
-      pistasVentana(it).forEach(v=>{
-        if(v.estado !== 'hecho'){
+      unidadesEfectivas(it).forEach(u=>{
+        if(u.etapaActual > -1){
           if(urgenciaPedido(p.fecha_entrega)) pedidoUrgente = true;
-          if(v.estado === 'pendiente') esperandoAsignar++;
+          if(u.etapas[u.etapaActual].estado === 'pendiente' && !u.bloqueada) esperandoAsignar++;
         }
-        if(v.estado === 'hecho' && v.fecha_hecho && new Date(v.fecha_hecho).toDateString() === hoy) completadasHoy++;
-      });
-      it.etapas.forEach(e=>{
-        if(e.estado === 'hecho' && e.fecha_hecho && new Date(e.fecha_hecho).toDateString() === hoy) completadasHoy++;
+        pistasVentana(u).forEach(v=>{
+          if(v.estado !== 'hecho'){
+            if(urgenciaPedido(p.fecha_entrega)) pedidoUrgente = true;
+            if(v.estado === 'pendiente') esperandoAsignar++;
+          }
+          if(v.estado === 'hecho' && v.fecha_hecho && new Date(v.fecha_hecho).toDateString() === hoy) completadasHoy++;
+        });
+        u.etapas.forEach(e=>{
+          if(e.estado === 'hecho' && e.fecha_hecho && new Date(e.fecha_hecho).toDateString() === hoy) completadasHoy++;
+        });
       });
     });
     if(pedidoUrgente) urgentes++;
@@ -2929,11 +2951,13 @@ function renderBentoProduccion(){
 function transicionPendiente(p){
   let mejor = null;
   p.items.forEach(it=>{
-    if(it.etapaActual > 0 && !it.bloqueada && it.etapas[it.etapaActual].estado === 'pendiente'){
-      const anterior = it.etapas[it.etapaActual - 1];
-      const cand = { de: anterior.nombre, a: it.etapas[it.etapaActual].nombre, fecha: anterior.fecha_hecho || '' };
-      if(!mejor || new Date(cand.fecha) < new Date(mejor.fecha)) mejor = cand;
-    }
+    unidadesEfectivas(it).forEach(u=>{
+      if(u.etapaActual > 0 && !u.bloqueada && u.etapas[u.etapaActual].estado === 'pendiente'){
+        const anterior = u.etapas[u.etapaActual - 1];
+        const cand = { de: anterior.nombre, a: u.etapas[u.etapaActual].nombre, fecha: anterior.fecha_hecho || '' };
+        if(!mejor || new Date(cand.fecha) < new Date(mejor.fecha)) mejor = cand;
+      }
+    });
   });
   return mejor;
 }
@@ -2962,8 +2986,8 @@ function renderProduccion(){
   }
   cont.innerHTML = filtrados.map((p,i)=>{
     const urgencia = urgenciaPedido(p.fecha_entrega);
-    const totalItems = p.items.length;
-    const itemsListos = p.items.filter(it => it.etapaActual === -1).length;
+    const totalItems = p.items.reduce((a,it)=> a + unidadesEfectivas(it).length, 0);
+    const itemsListos = p.items.reduce((a,it)=> a + unidadesEfectivas(it).filter(u=>u.etapaActual === -1).length, 0);
     return `
     <div class="fin-card ${urgencia ? 'prod-urgente' : ''}" style="--i:${i}" data-action="ver-produccion-pedido" data-origen="${p.origen}" data-id="${p.pedido_id != null ? p.pedido_id : p.trabajo_id}">
       <div class="fin-card-head">
@@ -2993,6 +3017,11 @@ function pistasVentana(it){
   if(it.etapaVentanas) return it.etapaVentanas;
   if(it.etapaVentana) return [it.etapaVentana];
   return [];
+}
+// Igual que en el backend: si el ítem tiene "unidades" (cantidad > 1), cada una se trackea
+// por separado; si no, se trata el ítem mismo como una única unidad.
+function unidadesEfectivas(it){
+  return (it.unidades && it.unidades.length) ? it.unidades : [it];
 }
 function nombreItemProd(it){
   const base = it.autoGenerado ? 'Ventana del combo' : (it.nombreModelo || it.tipo);
@@ -3032,18 +3061,19 @@ function verPedidoDesdeProduccion(){
   irAScreen('ventas', 'Ventas');
   abrirDrawer(Number(id));
 }
-function renderAccionEtapa(p, it, etapa, pista, etapaIndex, ventanaIndex){
+function renderAccionEtapa(p, it, etapa, pista, etapaIndex, ventanaIndex, unidadIndex){
   const idParam = p.pedido_id != null ? p.pedido_id : p.trabajo_id;
+  const sufijoSelect = unidadIndex!=null ? '-u'+unidadIndex : '';
   if(etapa.estado === 'pendiente'){
     const especialidadNecesaria = ETAPA_A_ESPECIALIDAD[etapa.nombre] || etapa.nombre;
     const disponibles = trabajadoresCache.filter(t => (t.especialidad||'').split(',').map(s=>s.trim()).includes(especialidadNecesaria));
     return `
       <div class="prod-asignar-box">
-        <select id="prodAsignarSelect-${it.index}-${pista}${ventanaIndex!=null?'-'+ventanaIndex:''}">
+        <select id="prodAsignarSelect-${it.index}${sufijoSelect}-${pista}${ventanaIndex!=null?'-'+ventanaIndex:''}">
           <option value="">Elegir ${especialidadNecesaria}...</option>
           ${disponibles.map(t=>`<option value="${t.usuario}">${t.nombre}</option>`).join('')}
         </select>
-        <button class="btn-primary" style="padding:11px 16px;flex-shrink:0" data-action="asignar-etapa" data-origen="${p.origen}" data-id="${idParam}" data-item-index="${it.index}" data-pista="${pista}" data-ventana-index="${ventanaIndex!=null?ventanaIndex:''}"><span class="btn-spin"></span><span>Asignar</span></button>
+        <button class="btn-primary" style="padding:11px 16px;flex-shrink:0" data-action="asignar-etapa" data-origen="${p.origen}" data-id="${idParam}" data-item-index="${it.index}" data-unidad-index="${unidadIndex!=null?unidadIndex:''}" data-pista="${pista}" data-ventana-index="${ventanaIndex!=null?ventanaIndex:''}"><span class="btn-spin"></span><span>Asignar</span></button>
       </div>
       ${disponibles.length===0 ? `<div class="prod-bloqueada" style="margin-top:6px">Todavía no hay ningún ${especialidadNecesaria} registrado.</div>` : ''}
     `;
@@ -3068,69 +3098,83 @@ function renderAccionEtapa(p, it, etapa, pista, etapaIndex, ventanaIndex){
   }
   return `<div class="prod-bloqueada">Asignado a ${etapa.trabajador || '—'}, esperando a que lo marque terminado.</div>`;
 }
-// Lista colapsada: una tarjeta chiquita por ítem, con un resumen de en qué va — tocarla abre
-// el drawer anidado con todo el detalle (así no se amontona cuando el pedido tiene varios ítems).
+// Lista colapsada: una tarjeta chiquita por ítem (o por CADA unidad, si el ítem tiene cantidad
+// > 1 y por lo tanto varias cadenas de etapas independientes) — tocarla abre el drawer anidado
+// con todo el detalle de esa unidad en particular.
 function renderProdDrawerItems(p){
   const cont = document.getElementById('prodDrawerItems');
-  cont.innerHTML = p.items.map((it,idx)=>{
-    const chips = it.etapas.map((e,i)=>{
-      let cls = e.estado;
-      if(i === it.etapaActual) cls += ' actual';
-      return `<span class="prod-etapa-chip ${cls}">${e.nombre}</span>`;
-    }).join('');
-    return `
-    <div class="prod-item-card" style="cursor:pointer" data-action="ver-prod-item" data-item-index="${it.index}">
+  const tarjetas = [];
+  p.items.forEach((it, idx)=>{
+    const tieneUnidades = it.unidades && it.unidades.length;
+    const unidades = tieneUnidades ? it.unidades : [it];
+    unidades.forEach((u, uIdx)=>{
+      const unidadIndex = tieneUnidades ? uIdx : null;
+      const chips = u.etapas.map((e,i)=>{
+        let cls = e.estado;
+        if(i === u.etapaActual) cls += ' actual';
+        return `<span class="prod-etapa-chip ${cls}">${e.nombre}</span>`;
+      }).join('');
+      const sufijoUnidad = tieneUnidades ? ' (' + (uIdx+1) + '/' + unidades.length + ')' : '';
+      tarjetas.push(`
+    <div class="prod-item-card" style="cursor:pointer" data-action="ver-prod-item" data-item-index="${it.index}" data-unidad-index="${unidadIndex!=null?unidadIndex:''}">
       <div class="prod-item-head">
         ${it.foto ? `<img src="${it.foto}" style="width:44px;height:44px;border-radius:9px;object-fit:cover;border:1px solid var(--border);flex-shrink:0">` : '<div style="width:44px;height:44px;border-radius:9px;background:var(--surface3);flex-shrink:0"></div>'}
         <div>
-          <div class="prod-item-nombre">${p.items.length > 1 ? (idx+1) + '. ' : ''}${nombreItemProd(it)}</div>
+          <div class="prod-item-nombre">${p.items.length > 1 ? (idx+1) + '. ' : ''}${nombreItemProd(it)}${sufijoUnidad}</div>
           <div class="prod-item-meta">Ítem a fabricar</div>
         </div>
       </div>
       <div class="prod-etapas-row">${chips}</div>
-    </div>`;
-  }).join('');
+    </div>`);
+    });
+  });
+  cont.innerHTML = tarjetas.join('');
 }
 // Junta lo que ya se hizo (pista principal + pista de ventana si tiene), ordenado por fecha,
-// para mostrar quién hizo qué y cuándo dentro del detalle de un ítem.
-function bitacoraDeItem(it){
+// para mostrar quién hizo qué y cuándo dentro del detalle de una unidad.
+function bitacoraDeItem(u){
   const filas = [];
-  (it.etapas||[]).forEach(e=>{ if(e.estado==='hecho') filas.push(e); });
-  pistasVentana(it).forEach((v,i)=>{ if(v.estado==='hecho') filas.push(Object.assign({}, v, { nombre: pistasVentana(it).length>1 ? v.nombre+' (ventana '+(i+1)+')' : v.nombre })); });
+  (u.etapas||[]).forEach(e=>{ if(e.estado==='hecho') filas.push(e); });
+  pistasVentana(u).forEach((v,i)=>{ if(v.estado==='hecho') filas.push(Object.assign({}, v, { nombre: pistasVentana(u).length>1 ? v.nombre+' (ventana '+(i+1)+')' : v.nombre })); });
   filas.sort((a,b)=> new Date(a.fecha_hecho||0) - new Date(b.fecha_hecho||0));
   return filas;
 }
-// Drawer anidado: TODO el detalle de un ítem específico (cadena completa, pista de ventana,
-// caja de asignar, bitácora, y acceso a sus especificaciones completas).
-function abrirDrawerProdItem(itemIndex){
+// Drawer anidado: TODO el detalle de UNA unidad específica (cadena completa, pista de ventana,
+// caja de asignar, bitácora, y acceso a las especificaciones completas del ítem que la contiene).
+function abrirDrawerProdItem(itemIndex, unidadIndex){
   const p = prodPedidoActual;
   if(!p) return;
   const it = p.items.find(x=>x.index===Number(itemIndex));
   if(!it) return;
+  const tieneUnidades = it.unidades && it.unidades.length;
+  const uIdx = (unidadIndex!=null && unidadIndex!=='') ? Number(unidadIndex) : null;
+  const u = tieneUnidades ? it.unidades[uIdx != null ? uIdx : 0] : it;
+  if(!u) return;
+  const sufijoUnidad = tieneUnidades ? ' (' + ((uIdx!=null?uIdx:0)+1) + '/' + it.unidades.length + ')' : '';
 
-  const chips = it.etapas.map((e,i)=>{
+  const chips = u.etapas.map((e,i)=>{
     let cls = e.estado;
-    if(i === it.etapaActual) cls += ' actual';
+    if(i === u.etapaActual) cls += ' actual';
     return `<span class="prod-etapa-chip ${cls}">${e.nombre}</span>`;
   }).join('');
 
   let accionHtml = '';
-  if(it.etapaActual === -1){
+  if(u.etapaActual === -1){
     accionHtml = `<div class="prod-terminado-nota">✓ Cadena principal completada</div>`;
-  } else if(it.bloqueada){
+  } else if(u.bloqueada){
     accionHtml = `<div class="prod-bloqueada">Esperando a que la ventana de este combo esté ensamblada.</div>`;
   } else if(state.rol === 'admin'){
-    accionHtml = renderAccionEtapa(p, it, it.etapas[it.etapaActual], 'principal', it.etapaActual);
+    accionHtml = renderAccionEtapa(p, it, u.etapas[u.etapaActual], 'principal', u.etapaActual, null, uIdx);
   }
 
   let ventanaHtml = '';
-  const ventanas = pistasVentana(it);
+  const ventanas = pistasVentana(u);
   if(ventanas.length){
     ventanaHtml = ventanas.map((v, vIdx)=>{
       const chipVentana = `<span class="prod-etapa-chip ${v.estado}${v.estado!=='hecho' ? ' actual' : ''}">${v.nombre}</span>`;
       let accionVentanaHtml = '';
       if(state.rol === 'admin'){
-        accionVentanaHtml = renderAccionEtapa(p, it, v, 'ventana', null, vIdx);
+        accionVentanaHtml = renderAccionEtapa(p, it, v, 'ventana', null, vIdx, uIdx);
       } else if(v.estado === 'hecho'){
         accionVentanaHtml = `<div class="prod-terminado-nota">✓ Ventana ensamblada</div>`;
       }
@@ -3141,7 +3185,7 @@ function abrirDrawerProdItem(itemIndex){
     }).join('');
   }
 
-  const bitacora = bitacoraDeItem(it);
+  const bitacora = bitacoraDeItem(u);
   const bitacoraHtml = bitacora.length
     ? bitacora.map(e=>`
       <div class="bitacora-item">
@@ -3151,13 +3195,13 @@ function abrirDrawerProdItem(itemIndex){
     : `<div style="font-size:12.5px;color:var(--text2);padding:6px 0">Todavía no tiene ninguna etapa terminada.</div>`;
 
   document.getElementById('prodItemDetalleBody').innerHTML = `
-    <h2 style="font-size:16px;margin:0 0 10px">${nombreItemProd(it)}</h2>
+    <h2 style="font-size:16px;margin:0 0 10px">${nombreItemProd(it)}${sufijoUnidad}</h2>
     ${ventanas.length ? '<div class="track-label">Pista principal</div>' : ''}
     <div class="prod-etapas-row">${chips}</div>
     ${accionHtml}
     ${ventanaHtml}
     <button class="btn-ghost" style="width:100%;margin-top:12px" data-action="ver-prod-item-specs" data-item-index="${it.index}">📋 Ver especificaciones completas</button>
-    <div class="section-label" style="margin-top:16px">Bitácora de este ítem</div>
+    <div class="section-label" style="margin-top:16px">Bitácora de esta unidad</div>
     ${bitacoraHtml}`;
   document.getElementById('scrimProdItem').classList.add('open');
   document.getElementById('drawerProdItem').classList.add('open');
@@ -3194,14 +3238,15 @@ async function cancelarTrabajoExhUI(trabajoId, btn){
     setCargando(btn, false);
   }
 }
-async function asignarEtapaUI(origen, id, itemIndex, pista, btn, ventanaIndex){
-  const selectId = 'prodAsignarSelect-' + itemIndex + '-' + pista + (ventanaIndex!=null && ventanaIndex!=='' ? '-'+ventanaIndex : '');
+async function asignarEtapaUI(origen, id, itemIndex, unidadIndex, pista, btn, ventanaIndex){
+  const selectId = 'prodAsignarSelect-' + itemIndex + (unidadIndex!=null && unidadIndex!=='' ? '-u'+unidadIndex : '') + '-' + pista + (ventanaIndex!=null && ventanaIndex!=='' ? '-'+ventanaIndex : '');
   const select = document.getElementById(selectId);
   const trabajador = select ? select.value : '';
   if(!trabajador){ showToast('Elige un trabajador primero', 'error'); return; }
   setCargando(btn, true);
   try{
     const payload = { origen: origen, item_index: Number(itemIndex), trabajador: trabajador, pista: pista };
+    if(unidadIndex!=null && unidadIndex!=='') payload.unidad_index = Number(unidadIndex);
     if(ventanaIndex!=null && ventanaIndex!=='') payload.ventana_index = Number(ventanaIndex);
     if(origen === 'exhibicion') payload.trabajo_id = id; else payload.pedido_id = id;
     const resultado = await llamarBackend('asignarEtapa', payload);
@@ -3478,7 +3523,7 @@ async function registrarPagoTrabajadorUI(btn){
   try{
     await llamarBackend('registrarPagoTrabajador', {
       trabajador: trabajadorUsuario,
-      items: seleccionados.map(it => ({ origen: it.origen, pedido_id: it.pedido_id, trabajo_id: it.trabajo_id, item_index: it.item_index, etapa_index: it.etapa_index, sub: it.sub, ventana_index: it.ventana_index })),
+      items: seleccionados.map(it => ({ origen: it.origen, pedido_id: it.pedido_id, trabajo_id: it.trabajo_id, item_index: it.item_index, unidad_index: it.unidad_index, etapa_index: it.etapa_index, sub: it.sub, ventana_index: it.ventana_index })),
       vale_ids: (nominaDetalle.vales || []).map(v=>v.id)
     });
     showToast('Pago registrado', 'success');
@@ -3510,27 +3555,35 @@ async function cargarBandeja(){
 // Devuelve hasta una tarea POR ESPECIALIDAD que tenga asignada este trabajador (normalmente una
 // sola, pero si el trabajador tiene más de una especialidad puede tener una de cada una a la
 // vez). Nunca devuelve más de una por especialidad — la más urgente — para no dejarlo elegir.
+function sufijoUnidadBandeja(tarea){
+  return (tarea.unidadIndex!=null && tarea.totalUnidades>1) ? ' (' + (tarea.unidadIndex+1) + '/' + tarea.totalUnidades + ')' : '';
+}
 function tareasActualesDelTrabajador(){
   const candidatos = [];
   produccionData.forEach(p=>{
     p.items.forEach(it=>{
-      if(it.etapaActual > -1 && !it.bloqueada){
-        const e = it.etapas[it.etapaActual];
-        if(e.trabajador === state.usuario){
-          if(e.tipo === 'combinada'){
-            if(e.estado !== 'hecho'){
-              const sub = !e.masilla.hecho ? 'masilla' : (!e.pintura.hecho ? 'pintura' : null);
-              if(sub) candidatos.push({ pedido: p, item: it, etapa: e, pista: 'principal', sub: sub, especialidad: ETAPA_A_ESPECIALIDAD[e.nombre] });
+      const tieneUnidades = it.unidades && it.unidades.length;
+      const unidades = tieneUnidades ? it.unidades : [it];
+      unidades.forEach((u, uIdx)=>{
+        const unidadIndex = tieneUnidades ? uIdx : null;
+        if(u.etapaActual > -1 && !u.bloqueada){
+          const e = u.etapas[u.etapaActual];
+          if(e.trabajador === state.usuario){
+            if(e.tipo === 'combinada'){
+              if(e.estado !== 'hecho'){
+                const sub = !e.masilla.hecho ? 'masilla' : (!e.pintura.hecho ? 'pintura' : null);
+                if(sub) candidatos.push({ pedido: p, item: it, unidadIndex: unidadIndex, totalUnidades: unidades.length, etapa: e, pista: 'principal', sub: sub, especialidad: ETAPA_A_ESPECIALIDAD[e.nombre] });
+              }
+            } else if(e.estado === 'asignado'){
+              candidatos.push({ pedido: p, item: it, unidadIndex: unidadIndex, totalUnidades: unidades.length, etapa: e, pista: 'principal', sub: null, especialidad: ETAPA_A_ESPECIALIDAD[e.nombre] });
             }
-          } else if(e.estado === 'asignado'){
-            candidatos.push({ pedido: p, item: it, etapa: e, pista: 'principal', sub: null, especialidad: ETAPA_A_ESPECIALIDAD[e.nombre] });
           }
         }
-      }
-      pistasVentana(it).forEach((v, vIdx)=>{
-        if(v.estado === 'asignado' && v.trabajador === state.usuario){
-          candidatos.push({ pedido: p, item: it, etapa: v, pista: 'ventana', ventanaIndex: vIdx, sub: null, especialidad: ETAPA_A_ESPECIALIDAD[v.nombre] });
-        }
+        pistasVentana(u).forEach((v, vIdx)=>{
+          if(v.estado === 'asignado' && v.trabajador === state.usuario){
+            candidatos.push({ pedido: p, item: it, unidadIndex: unidadIndex, totalUnidades: unidades.length, etapa: v, pista: 'ventana', ventanaIndex: vIdx, sub: null, especialidad: ETAPA_A_ESPECIALIDAD[v.nombre] });
+          }
+        });
       });
     });
   });
@@ -3616,7 +3669,7 @@ function renderBandeja(){
     <div class="prod-item-card" style="cursor:pointer" data-action="ver-bandeja-tarea" data-index="${idx}">
       <div class="prod-item-head">
         <div>
-          <div class="prod-item-nombre">${nombreItemProd(tarea.item)}</div>
+          <div class="prod-item-nombre">${nombreItemProd(tarea.item)}${sufijoUnidadBandeja(tarea)}</div>
           <div class="prod-item-meta">${tarea.pedido.codigo} · ${tarea.pedido.cliente_nombre}</div>
           ${avisoYaMasillada}
         </div>
@@ -3655,7 +3708,7 @@ function abrirDrawerBandejaTarea(index){
   }
 
   cont.innerHTML = `
-    <h2 style="font-size:16px;margin:0 0 2px">${nombreItemProd(tarea.item)}</h2>
+    <h2 style="font-size:16px;margin:0 0 2px">${nombreItemProd(tarea.item)}${sufijoUnidadBandeja(tarea)}</h2>
     <div style="font-size:12.5px;color:var(--text2);margin-bottom:12px">${tarea.pedido.codigo} · ${tarea.pedido.cliente_nombre}</div>
     ${foto ? `<div style="width:100%;height:180px;border-radius:12px;background:var(--surface3) center/cover;background-image:url('${foto}');margin-bottom:14px;position:relative;cursor:pointer" data-action="ver-comprobante" data-url="${foto}">
       <span style="position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.6);color:#fff;font-size:11px;padding:4px 8px;border-radius:6px">🔍 Ampliar</span>
@@ -3672,7 +3725,7 @@ function abrirDrawerBandejaTarea(index){
       <img id="bandejaFotoPreview" class="comprobante-img hidden">
     </label>
     <input type="file" id="bandejaFoto" accept="image/*" class="file-input-hidden">
-    <button class="btn-primary" style="width:100%;margin-top:14px;font-size:15px" id="btnBandejaTerminar" data-action="bandeja-terminar" data-origen="${tarea.pedido.origen}" data-pedido-id="${tarea.pedido.pedido_id||''}" data-trabajo-id="${tarea.pedido.trabajo_id||''}" data-item-index="${tarea.item.index}" data-pista="${tarea.pista}" data-sub="${tarea.sub||''}" data-ventana-index="${tarea.ventanaIndex!=null?tarea.ventanaIndex:''}">
+    <button class="btn-primary" style="width:100%;margin-top:14px;font-size:15px" id="btnBandejaTerminar" data-action="bandeja-terminar" data-origen="${tarea.pedido.origen}" data-pedido-id="${tarea.pedido.pedido_id||''}" data-trabajo-id="${tarea.pedido.trabajo_id||''}" data-item-index="${tarea.item.index}" data-unidad-index="${tarea.unidadIndex!=null?tarea.unidadIndex:''}" data-pista="${tarea.pista}" data-sub="${tarea.sub||''}" data-ventana-index="${tarea.ventanaIndex!=null?tarea.ventanaIndex:''}">
       <span class="btn-spin"></span><span>${botonTexto}</span>
     </button>`;
   wireFotoPreview('bandejaFoto', 'bandejaFotoEmpty', 'bandejaFotoPreview');
@@ -3730,6 +3783,7 @@ async function completarTareaBandeja(btn){
       pedido_id: btn.dataset.pedidoId || null,
       trabajo_id: btn.dataset.trabajoId || null,
       item_index: Number(btn.dataset.itemIndex),
+      unidad_index: btn.dataset.unidadIndex !== '' ? Number(btn.dataset.unidadIndex) : null,
       pista: btn.dataset.pista,
       sub: btn.dataset.sub || null,
       ventana_index: btn.dataset.ventanaIndex !== '' ? Number(btn.dataset.ventanaIndex) : null,
@@ -4758,7 +4812,8 @@ function precargarEspecificaciones(e, idPrefix, radioPrefix){
     state.proteccionElegidaVentana = { id: e.proteccion_catalogo_id, nombre: e.proteccion_nombre, precio_base: e.proteccion_precio_base };
     const cajaTexto = document.getElementById(ip + 'ProteccionElegidaTexto');
     const caja = document.getElementById(ip + 'ProteccionElegidaBox');
-    if(cajaTexto){ cajaTexto.textContent = e.proteccion_nombre + ' — ' + money(e.proteccion_precio_base) + '/m²'; }
+    const esVentana = document.getElementById(ip + 'TipoProducto')?.value === 'ventana';
+    if(cajaTexto){ cajaTexto.textContent = e.proteccion_nombre + ' — ' + money(e.proteccion_precio_base) + (esVentana ? '/m²' : ''); }
     if(caja) caja.classList.add('elegido');
   }
   actualizarSubfields(ip);
@@ -4769,15 +4824,16 @@ function usarModeloCatalogo(){
   const colorElegido = state.openCatColor;
   if(state.modoSeleccion === 'proteccion'){
     state.proteccionElegidaVentana = { id: m.id, nombre: m.nombre, precio_base: m.precio_base };
+    const tipoDelForm = document.getElementById('npTipoProducto')?.value;
     cerrarCatDrawer();
     state.modoSeleccion = null;
     state.catTipoFiltro = 'Todos';
-    volverAOrigenItem();
+    volverAOrigenItem(true);
     const cajaTexto = document.getElementById('npProteccionElegidaTexto');
     const caja = document.getElementById('npProteccionElegidaBox');
-    if(cajaTexto) cajaTexto.textContent = m.nombre + ' — ' + money(m.precio_base) + '/m²';
+    if(cajaTexto) cajaTexto.textContent = m.nombre + (tipoDelForm === 'ventana' ? (' — ' + money(m.precio_base) + '/m²') : (' — ' + money(m.precio_base)));
     if(caja) caja.classList.add('elegido');
-    actualizarPrecioVentana();
+    if(tipoDelForm === 'ventana') actualizarPrecioVentana(); else actualizarPrecioSugerido();
     return;
   }
   cerrarCatDrawer();
@@ -4835,20 +4891,20 @@ function mostrarDrawerNuevoOExistente(){
 }
 /* Vuelve al lugar correcto según de dónde venía la selección de catálogo/exhibición:
    pedido existente, pedido nuevo, o una pieza nueva de exhibición (que no es un pedido). */
-function volverAOrigenItem(){
+function volverAOrigenItem(preservarForm){
   if(state.itemTarget === 'exhibicion-nueva'){
     irAScreen('exhibicion', 'Exhibición');
-    abrirItemDrawer('exhibicion-nueva');
+    if(preservarForm) mostrarItemDrawerSinReset(); else abrirItemDrawer('exhibicion-nueva');
     return;
   }
   if(state.itemTarget === 'exhibicion-especulativa'){
     irAScreen('produccion', 'Producción');
-    abrirItemDrawer('exhibicion-especulativa');
+    if(preservarForm) mostrarItemDrawerSinReset(); else abrirItemDrawer('exhibicion-especulativa');
     return;
   }
   irAScreen('ventas', 'Ventas');
   mostrarDrawerNuevoOExistente();
-  abrirItemDrawer(state.itemTarget);
+  if(preservarForm) mostrarItemDrawerSinReset(); else abrirItemDrawer(state.itemTarget);
 }
 function actualizarBannerSeleccion(){
   document.querySelectorAll('.seleccion-banner').forEach(b=>b.classList.toggle('hidden', !state.modoSeleccion));
@@ -4870,9 +4926,10 @@ function irASeleccionExhibicion(){
   irAScreen('exhibicion', 'Exhibición');
 }
 function cancelarSeleccion(){
-  if(state.modoSeleccion === 'proteccion') state.catTipoFiltro = 'Todos';
+  const eraProteccion = state.modoSeleccion === 'proteccion';
+  if(eraProteccion) state.catTipoFiltro = 'Todos';
   state.modoSeleccion = null;
-  volverAOrigenItem();
+  volverAOrigenItem(eraProteccion);
 }
 
 /* ============ MENÚ DE AVATAR ============ */
@@ -5021,7 +5078,7 @@ function renderCamposDinamicos(){
   actualizarColorVidrio();
 }
 
-const TIPO_LABEL_A_KEY = { Ventana:'ventana', 'Portón':'porton', Puerta:'puerta', 'Puerta Multilock':'puerta_multilock', Combo:'combo', 'Protección Ventana':'proteccion_ventana' };
+const TIPO_LABEL_A_KEY = { Ventana:'ventana', 'Portón':'porton', Puerta:'puerta', 'Puerta Multilock':'puerta_multilock', Combo:'combo', 'Protección Ventana':'proteccion_ventana', 'Protección Puerta':'proteccion_puerta' };
 /* El modelo de catálogo es la base "de fábrica": no incluye sentido de apertura, posición de instalación,
    tipo de bloque ni instalación incluida, porque eso se decide por pedido, no por modelo.
    Sí incluye lo que sí define al producto: medidas típicas, color, marco decorativo, protección y manillón. */
@@ -5063,6 +5120,9 @@ function renderCamposDinamicosModelo(){
   }
   else if(tipoKey === 'proteccion_ventana'){
     html += `<div style="font-size:12px;color:var(--text2);margin-bottom:14px;padding:10px 12px;background:var(--surface3);border-radius:var(--radius-sm)">El precio base de este modelo se toma como el costo por m² (1×1). Al usarlo en una ventana, se multiplica por el área real.</div>`;
+  }
+  else if(tipoKey === 'proteccion_puerta'){
+    html += `<div style="font-size:12px;color:var(--text2);margin-bottom:14px;padding:10px 12px;background:var(--surface3);border-radius:var(--radius-sm)">El precio base de este modelo se cobra como un monto fijo. A diferencia de la protección de ventana, no se multiplica por el área de la puerta.</div>`;
   }
 
   cont.innerHTML = html;
@@ -5174,13 +5234,34 @@ function actualizarPrecioVentana(){
 }
 // Reusa exactamente el mismo mecanismo de "elegir modelo del catálogo" que ya usas al
 // armar un ítem de pedido: manda a la pantalla real de Catálogo (con fotos, buscador,
-// y "+ Nuevo modelo" por si la protección que buscas todavía no existe), filtrada a
-// "Protección Ventana". El regreso lo resuelve usarModeloCatalogo() más arriba.
+// y "+ Nuevo modelo" por si la protección que buscas todavía no existe), filtrada según
+// si el ítem que estás armando es una Ventana o una Puerta — cada una con su propio
+// catálogo de protecciones, porque no son intercambiables. El regreso lo resuelve
+// usarModeloCatalogo() más arriba, preservando lo que ya tenías escrito en el formulario
+// (sin esto, volver del catálogo te mandaba de vuelta a la pantalla de "elegir producto nuevo").
 function abrirElegirProteccion(){
+  const tipoActual = document.getElementById('npTipoProducto')?.value;
   state.modoSeleccion = 'proteccion';
-  state.catTipoFiltro = 'Protección Ventana';
-  ocultarDrawerActivo();
+  state.catTipoFiltro = tipoActual === 'ventana' ? 'Protección Ventana' : 'Protección Puerta';
+  document.getElementById('scrim').classList.remove('open');
+  document.getElementById('drawerNuevo').classList.remove('open');
+  document.getElementById('drawerDetalle').classList.remove('open');
+  ocultarItemDrawerSinReset();
   irAScreen('catalogo', 'Catálogo');
+}
+// Muestra/oculta solo la capa visual del drawer de ítem, SIN resetear el formulario (a
+// diferencia de abrirItemDrawer/cerrarItemDrawer, que sí llaman a resetItemDrawerASeleccion).
+// Se usa específicamente para el viaje de ida y vuelta a elegir una protección del catálogo,
+// donde el formulario de puerta/ventana ya tiene datos que no se deben perder.
+function ocultarItemDrawerSinReset(){
+  document.getElementById('scrim2').classList.remove('open');
+  document.getElementById('drawerItem').classList.remove('open');
+}
+function mostrarItemDrawerSinReset(){
+  document.getElementById('itemDrawerOpciones').classList.add('hidden');
+  document.getElementById('npFormWrap').classList.remove('hidden');
+  document.getElementById('scrim2').classList.add('open');
+  document.getElementById('drawerItem').classList.add('open');
 }
 function setCantidadNP(n){
   document.getElementById('npCantidad').value = n;
@@ -5959,11 +6040,11 @@ document.body.addEventListener('click', e=>{
   else if(action === 'ver-produccion-pedido') abrirDrawerProduccion(el.dataset.origen, el.dataset.id);
   else if(action === 'close-drawer-produccion') cerrarDrawerProduccion();
   else if(action === 'ver-pedido-desde-produccion') verPedidoDesdeProduccion();
-  else if(action === 'ver-prod-item') abrirDrawerProdItem(el.dataset.itemIndex);
+  else if(action === 'ver-prod-item') abrirDrawerProdItem(el.dataset.itemIndex, el.dataset.unidadIndex);
   else if(action === 'close-drawer-prod-item') cerrarDrawerProdItem();
   else if(action === 'ver-prod-item-specs') abrirDrawerProdItemSpecs(el.dataset.itemIndex);
   else if(action === 'close-drawer-prod-item-specs') cerrarDrawerProdItemSpecs();
-  else if(action === 'asignar-etapa') asignarEtapaUI(el.dataset.origen, el.dataset.id, el.dataset.itemIndex, el.dataset.pista, el, el.dataset.ventanaIndex);
+  else if(action === 'asignar-etapa') asignarEtapaUI(el.dataset.origen, el.dataset.id, el.dataset.itemIndex, el.dataset.unidadIndex, el.dataset.pista, el, el.dataset.ventanaIndex);
   else if(action === 'cancelar-trabajo-exh') cancelarTrabajoExhUI(el.dataset.id, el);
   else if(action === 'abrir-nuevo-trabajo-exh') abrirNuevoTrabajoExh();
   else if(action === 'ver-nomina-trabajador') abrirDrawerNomina(el.dataset.usuario);
@@ -6154,10 +6235,28 @@ function renderSeguimientoPublico(){
 
   const itemsHtml = s.items.map(it=>{
     const foto = it.foto ? `<img class="item-photo-pub" src="${it.foto}">` : `<div class="item-photo-pub"></div>`;
-    if(it.esDeExhibicion || !it.etapas){
+    if(it.esDeExhibicion || (!it.etapas && !it.unidades)){
       return `<div class="item-block-pub">
         <div class="item-head-pub">${foto}<div class="item-name-pub">${it.nombre}${it.cantidad>1?' ×'+it.cantidad:''}</div></div>
         <div class="listo-nota-pub">✓ Ya disponible</div>
+      </div>`;
+    }
+    if(it.unidades && it.unidades.length){
+      // Cada unidad de una línea con cantidad > 1 se fabrica y avanza por separado, así que
+      // se le muestra al cliente una barra de progreso completa por cada una — igual que ya
+      // se hace con las 2 ventanas de un combo.
+      const totalUnidades = it.unidades.length;
+      const bloquesUnidad = it.unidades.map((u, ui)=>{
+        const ventanasPubU = u.etapaVentanas || (u.etapaVentana ? [u.etapaVentana] : []);
+        const flowVentanaU = ventanasPubU.length ? ventanasPubU.map((v,vi)=>`<div class="section-label-pub" style="margin:10px 0 6px">${ventanasPubU.length>1 ? 'Ventana '+(vi+1) : 'Ventana'}</div>${flowHtmlPublico([v])}`).join('') : '';
+        return `
+        <div class="section-label-pub" style="margin:${ui>0?'16px':'2px'} 0 6px">${it.nombre} ${ui+1} de ${totalUnidades}</div>
+        ${flowHtmlPublico(u.etapas)}
+        ${flowVentanaU}`;
+      }).join('');
+      return `<div class="item-block-pub">
+        <div class="item-head-pub">${foto}<div class="item-name-pub">${it.nombre} ×${totalUnidades}</div></div>
+        ${bloquesUnidad}
       </div>`;
     }
     const ventanasPub = it.etapaVentanas || (it.etapaVentana ? [it.etapaVentana] : []);
