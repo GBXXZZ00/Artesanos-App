@@ -42,7 +42,7 @@
 
   /* ---------- CATEGORIA ---------- */
   #screen-categoria{ background:var(--lbg); color:var(--ltext); }
-  .catlist-head{ padding:calc(env(safe-area-inset-top) + 16px) 16px 10px; display:flex; align-items:center; gap:10px; position:sticky; top:0; background:var(--lbg); z-index:5; }
+  .catlist-head{ padding:16px 16px 10px; display:flex; align-items:center; gap:10px; position:sticky; top:0; background:var(--lbg); z-index:5; }
   .back{ font-size:20px; color:var(--lgreen); cursor:pointer; line-height:1; }
   .catlist-title{ font-weight:800; font-size:16px; }
   .chips{ display:flex; gap:8px; overflow-x:auto; padding:0 16px 12px; }
@@ -51,8 +51,8 @@
   .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:0 16px 30px; }
   .mcard{ background:var(--lsurface); border:1px solid var(--lborder); border-radius:14px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,.04); cursor:pointer; transition:transform .15s var(--ease-out); }
   .mcard:active{ transform:scale(0.97); }
-  .mcard-img{ aspect-ratio:3/4; background:var(--lsurface2); position:relative; overflow:hidden; }
-  .mcard-img img{ width:100%; height:100%; object-fit:cover; display:block; filter:brightness(.96); }
+  .mcard-img{ height:140px; background:var(--lsurface2); position:relative; }
+  .mcard-img img{ width:100%; height:100%; object-fit:contain; display:block; }
   .avail{ position:absolute; top:7px; left:7px; font-size:8.5px; font-weight:800; padding:3px 8px; border-radius:20px; background:var(--lgreen); color:#fff;}
   .avail.pedido{ background:var(--gold); color:#3a2c0f; }
   .badge-tag{ position:absolute; top:7px; right:7px; font-size:8.5px; font-weight:800; padding:3px 8px; border-radius:20px; background:rgba(0,0,0,.6); color:var(--gold-light); text-transform:uppercase; }
@@ -70,38 +70,20 @@
     transform:translateX(100%); transition:transform .35s var(--ease-out); z-index:21; overflow-y:auto;
   }
   #drawerDetalle.open{ transform:translateX(0); }
-  .detail-img{ width:100%; aspect-ratio:3/4; max-height:70vh; background:var(--teal); position:relative; overflow:hidden; }
-  .detail-img img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .detail-img{ height:220px; background:var(--teal); position:relative; }
+  .detail-img img{ width:100%; height:100%; object-fit:contain; display:block; }
   .detail-img::after{ content:''; position:absolute; inset:0; background:linear-gradient(transparent,rgba(13,31,30,.95)); }
   .detail-close{ position:absolute; top:calc(env(safe-area-inset-top) + 14px); left:14px; z-index:2; width:32px; height:32px; border-radius:50%; background:rgba(0,0,0,.45); color:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:15px;}
-  .detail-body{ padding:22px 22px 32px; }
+  .detail-body{ padding:22px; }
   .detail-cat{ font-size:10px; letter-spacing:.25em; text-transform:uppercase; color:var(--gold); font-weight:600; margin-bottom:6px;}
   .detail-name{ font-size:28px; font-weight:300; margin-bottom:4px; }
   .detail-price{ font-size:20px; font-weight:700; color:var(--gold); margin-bottom:14px;}
   .detail-divider{ width:36px; height:1px; background:var(--gold); opacity:.5; margin-bottom:14px;}
-  .detail-desc{ font-size:13px; color:rgba(255,255,255,.6); line-height:1.6; margin-bottom:22px;}
-  .feature-item{ display:flex; align-items:center; gap:8px; font-size:12.5px; color:rgba(255,255,255,.75); margin-bottom:11px;}
+  .detail-desc{ font-size:13px; color:rgba(255,255,255,.6); line-height:1.6; margin-bottom:16px;}
+  .feature-item{ display:flex; align-items:center; gap:8px; font-size:12.5px; color:rgba(255,255,255,.75); margin-bottom:9px;}
   .feature-dot{ width:4px; height:4px; border-radius:50%; background:var(--gold); flex-shrink:0;}
-  #detCaracteristicas{ margin-bottom:26px; }
   .avail-tag{ display:inline-block; font-size:10.5px; font-weight:700; padding:6px 13px; border-radius:20px; background:rgba(201,169,110,.15); color:var(--gold-light); border:1px solid rgba(201,169,110,.3); margin:12px 0 18px;}
-  .wa-btn-full{ display:flex; align-items:center; justify-content:center; gap:8px; background:var(--gold); color:var(--dark); font-weight:700; font-size:14px; padding:14px; border-radius:6px; margin-top:14px; cursor:pointer; text-decoration:none; }
-
-  /* ---------- SPECS DE LA PIEZA DISPONIBLE (drawer sobre el detalle) ---------- */
-  .ver-specs-btn{ display:inline-flex; align-items:center; gap:5px; font-size:11.5px; font-weight:700; color:var(--gold-light); background:rgba(201,169,110,.12); border:1px solid rgba(201,169,110,.35); padding:7px 13px; border-radius:20px; cursor:pointer; margin:12px 0 18px 8px; }
-  #scrimSpecs{ position:fixed; inset:0; background:rgba(0,0,0,.5); opacity:0; pointer-events:none; transition:opacity .3s var(--ease-out); z-index:22; }
-  #scrimSpecs.open{ opacity:1; pointer-events:auto; }
-  #drawerSpecsPieza{
-    position:fixed; top:0; right:0; bottom:0; width:88%; max-width:400px; background:var(--dark); color:#fff;
-    transform:translateX(100%); transition:transform .35s var(--ease-out); z-index:23; overflow-y:auto;
-  }
-  #drawerSpecsPieza.open{ transform:translateX(0); }
-  .specs-header{ padding:calc(env(safe-area-inset-top) + 18px) 22px 16px; display:flex; align-items:center; gap:12px; border-bottom:1px solid rgba(201,169,110,.15); }
-  .specs-close{ font-size:20px; color:var(--gold); cursor:pointer; line-height:1; }
-  .specs-title{ font-weight:700; font-size:15px; }
-  .specs-body{ padding:18px 22px 32px; }
-  .spec-row{ display:flex; justify-content:space-between; gap:14px; padding:12px 0; border-bottom:1px solid rgba(255,255,255,.08); font-size:13px; }
-  .spec-row span:first-child{ color:rgba(255,255,255,.5); }
-  .spec-row span:last-child{ font-weight:600; text-align:right; }
+  .wa-btn-full{ display:flex; align-items:center; justify-content:center; gap:8px; background:var(--gold); color:var(--dark); font-weight:700; font-size:14px; padding:14px; border-radius:6px; margin-top:8px; cursor:pointer; text-decoration:none; }
 
   .loading-msg{ padding:60px 24px; text-align:center; color:rgba(255,255,255,.5); font-size:13px; }
 </style>
@@ -149,18 +131,8 @@
     </div>
   </div>
 
-  <!-- SPECS DE LA PIEZA DISPONIBLE -->
-  <div id="scrimSpecs"></div>
-  <div id="drawerSpecsPieza">
-    <div class="specs-header">
-      <div class="specs-close" id="btnCerrarSpecs">✕</div>
-      <div class="specs-title">Especificaciones de esta pieza</div>
-    </div>
-    <div class="specs-body" id="specsPiezaBody"></div>
-  </div>
-
 <script>
-const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbypmSBjdTznsA0HKAOXnxs2-0ovjvK_NL6jT0h2dm5QnoYsSj7AnI2_l1hBt5-0WBwK/exec';
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbwrog81bv_UxfdJK6GRT531zQTfiBbd8L5q4VLlGYG639DRxr6l1iUpzYwV65gucvTg/exec';
 const NUMERO_NEGOCIO = '584220167079';
 
 let tarjetas = [];
@@ -192,69 +164,9 @@ function normalizarTelefonoVE(telefono){
   return '58' + digitos;
 }
 
-function ordenarTarjetas(lista){
-  const grupos = [];
-  const porId = new Map();
-  lista.forEach(t => {
-    if(!porId.has(t.catalogo_id)){
-      const g = { catalogo_id: t.catalogo_id, tarjetas: [] };
-      porId.set(t.catalogo_id, g);
-      grupos.push(g);
-    }
-    porId.get(t.catalogo_id).tarjetas.push(t);
-  });
-  grupos.forEach(g => {
-    g.disponible = g.tarjetas.some(t => t.disponible); // si al menos un color está disponible, el par entero sube
-    g.tieneBadge = g.tarjetas.some(t => t.badge);
-  });
-
-  // 3 niveles de prioridad: disponible > con badge > el resto.
-  grupos.forEach(g => {
-    g.tieneCaracteristicas = g.tarjetas.some(t => (t.caracteristicas || []).length > 0);
-  });
-  // 4 niveles: disponible > con badge > con características (los "completos") > sin características (viejos, van al final)
-  function nivel(g){
-    if(g.disponible) return 0;
-    if(g.tieneBadge) return 1;
-    if(g.tieneCaracteristicas) return 2;
-    return 3;
-  }
-  const niveles = [[], [], [], []];
-  grupos.forEach(g => niveles[nivel(g)].push(g));
-
-  // Dentro de cada nivel: los modelos de doble color se sueltan siempre completos y
-  // seguidos (nunca se parten). Los de un solo color se emparejan de a dos entre ellos
-  // mismos, para llenar su propia fila sin meterse en medio de un par real. Si sobra un
-  // único suelto al final de un nivel, se guarda para emparejarlo con el próximo único
-  // que aparezca (aunque sea del siguiente nivel), en vez de dejarlo partiendo algo.
-  const resultado = [];
-  let sobrante = null;
-  niveles.forEach(nivelActual => {
-    const dobles = nivelActual.filter(g => g.tarjetas.length > 1);
-    const unicos = nivelActual.filter(g => g.tarjetas.length === 1).map(g => g.tarjetas[0]);
-
-    if(sobrante && unicos.length){
-      resultado.push(sobrante, unicos.shift());
-      sobrante = null;
-    }
-    dobles.forEach(g => resultado.push(...g.tarjetas)); // resultado.length siempre par aquí
-
-    for(let i = 0; i < unicos.length; i += 2){
-      if(unicos[i + 1] != null){
-        resultado.push(unicos[i], unicos[i + 1]);
-      } else {
-        sobrante = unicos[i];
-      }
-    }
-  });
-  if(sobrante) resultado.push(sobrante);
-
-  return resultado;
-}
-
 async function cargarCatalogo(){
   try{
-    tarjetas = ordenarTarjetas(await llamarBackend('getCatalogoPublico'));
+    tarjetas = await llamarBackend('getCatalogoPublico');
   } catch(err){
     document.getElementById('categoriasWrap').innerHTML = '<div class="loading-msg">No pudimos cargar el catálogo. Intenta de nuevo más tarde.</div>';
     return;
@@ -301,9 +213,8 @@ function volverHome(){
   document.getElementById('screen-home').classList.add('active');
 }
 function renderChipsColor(){
-  const colores = Array.from(new Set(tarjetas.filter(t=>t.tipo===categoriaActual).map(t=>t.color)));
-  const opciones = ['Todos', 'Disponible', ...colores];
-  document.getElementById('chipsColor').innerHTML = opciones.map(c=>
+  const colores = ['Todos', ...Array.from(new Set(tarjetas.filter(t=>t.tipo===categoriaActual).map(t=>t.color)))];
+  document.getElementById('chipsColor').innerHTML = colores.map(c=>
     `<div class="chip ${c===colorFiltro?'active':''}" data-color="${c}">${c}</div>`
   ).join('');
   document.querySelectorAll('.chip').forEach(el=>{
@@ -312,12 +223,7 @@ function renderChipsColor(){
 }
 function renderGrid(){
   const cont = document.getElementById('gridModelos');
-  const filtradas = tarjetas.filter(t => {
-    if(t.tipo !== categoriaActual) return false;
-    if(colorFiltro === 'Todos') return true;
-    if(colorFiltro === 'Disponible') return t.disponible;
-    return t.color === colorFiltro;
-  });
+  const filtradas = tarjetas.filter(t => t.tipo === categoriaActual && (colorFiltro==='Todos' || t.color===colorFiltro));
   if(filtradas.length === 0){
     cont.innerHTML = '<div class="empty-msg" style="grid-column:1/-1">No hay modelos en este filtro.</div>';
     return;
@@ -356,42 +262,13 @@ function abrirWhatsappModelo(t){
   window.open(`https://wa.me/${NUMERO_NEGOCIO}?text=${texto}`, '_blank');
 }
 
-const ESPEC_LABELS = {
-  alto:'Alto', ancho:'Ancho', color:'Color', sentido:'Sentido de apertura', posicion:'Posición',
-  bloque:'Bloque', manillon_tipo:'Manillón', marco_decorativo:'Marco decorativo',
-  vidrio_o_farquilla:'Vidrio / Farquilla', color_vidrio:'Color de vidrio', proteccion:'Protección',
-  proteccion_monto:'Monto de protección', papel_ahumado:'Papel ahumado', mas_hojas:'Hojas adicionales',
-  variante:'Variante', instalacion:'Instalación'
-};
-function abrirSpecsPieza(t){
-  const e = t.especificaciones_disponible || {};
-  const filas = Object.keys(e)
-    .filter(k => e[k] !== '' && e[k] !== false && e[k] != null)
-    .map(k => {
-      let valor = e[k] === true ? 'Sí' : e[k];
-      if(k === 'alto' || k === 'ancho') valor = valor + ' m';
-      return `<div class="spec-row"><span>${ESPEC_LABELS[k] || k}</span><span>${valor}</span></div>`;
-    }).join('');
-  document.getElementById('specsPiezaBody').innerHTML = filas || '<div style="color:rgba(255,255,255,.5);font-size:13px">Sin datos adicionales para esta pieza.</div>';
-  document.getElementById('scrimSpecs').classList.add('open');
-  document.getElementById('drawerSpecsPieza').classList.add('open');
-}
-function cerrarSpecsPieza(){
-  document.getElementById('scrimSpecs').classList.remove('open');
-  document.getElementById('drawerSpecsPieza').classList.remove('open');
-}
-
 function abrirDetalle(idx){
   const t = tarjetas[idx];
   document.getElementById('detImg').src = t.foto || '';
   document.getElementById('detCat').textContent = t.tipo;
   document.getElementById('detNombre').textContent = t.nombre + ' — ' + t.color;
   document.getElementById('detPrecio').textContent = money(t.precio);
-  const btnSpecs = (t.disponible && t.especificaciones_disponible) ? `<span class="ver-specs-btn" id="btnVerSpecsPieza">🔍 Ver specs de esta pieza</span>` : '';
-  document.getElementById('detDisponibilidad').innerHTML = (t.disponible ? '✓ Disponible ahora' : '🔧 Bajo pedido') + btnSpecs;
-  if(t.disponible && t.especificaciones_disponible){
-    document.getElementById('btnVerSpecsPieza').addEventListener('click', () => abrirSpecsPieza(t));
-  }
+  document.getElementById('detDisponibilidad').textContent = t.disponible ? '✓ Disponible ahora' : '🔧 Bajo pedido';
   document.getElementById('detDescripcion').textContent = t.descripcion || '';
   document.getElementById('detCaracteristicas').innerHTML = (t.caracteristicas||[]).map(f=>
     `<div class="feature-item"><div class="feature-dot"></div>${f}</div>`
@@ -411,8 +288,6 @@ function cerrarDetalle(){
 document.getElementById('btnVolverHome').addEventListener('click', volverHome);
 document.getElementById('btnCerrarDetalle').addEventListener('click', cerrarDetalle);
 document.getElementById('scrimDetalle').addEventListener('click', cerrarDetalle);
-document.getElementById('btnCerrarSpecs').addEventListener('click', cerrarSpecsPieza);
-document.getElementById('scrimSpecs').addEventListener('click', cerrarSpecsPieza);
 
 cargarCatalogo();
 </script>
