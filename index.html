@@ -902,10 +902,34 @@
       </div>
 
       <!-- SCREEN: FINANCIERO (confirmación de abonos, solo admin) -->
-      <!-- Cuando se agreguen más secciones (Caja, Reportes) esto se vuelve una fila de .chip como en Catálogo -->
       <div class="screen" id="screen-financiero">
-        <div class="section-label">Abonos pendientes de confirmar</div>
-        <div id="financieroLista"></div>
+        <div class="tabs" id="financieroTabs">
+          <div class="tab active" data-action="set-financiero-tab" data-tab="pendientes">Por confirmar</div>
+          <div class="tab" data-action="set-financiero-tab" data-tab="historico">Histórico</div>
+        </div>
+        <div id="financieroPendientesPanel">
+          <div class="section-label">Abonos pendientes de confirmar</div>
+          <div id="financieroLista"></div>
+        </div>
+        <div id="financieroHistoricoPanel" class="hidden">
+          <input type="text" id="historicoBuscador" placeholder="Buscar por cliente o código de pedido..." style="width:100%;padding:11px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:14px;margin-bottom:10px">
+          <div class="tabs" id="historicoFiltros" style="margin-bottom:12px">
+            <div class="tab active" data-action="set-historico-filtro" data-filtro="pendiente">Pendiente de entregar</div>
+            <div class="tab" data-action="set-historico-filtro" data-filtro="terminado">Terminado</div>
+          </div>
+          <div id="historicoLista"></div>
+        </div>
+      </div>
+
+      <!-- SCRIM + DRAWER: detalle de un pedido en el Histórico de pagos confirmados -->
+      <div class="scrim3" id="scrimHistoricoPedido" style="z-index:90" data-action="close-drawer-historico-pedido"></div>
+      <div class="drawer-exh" id="drawerHistoricoPedido" style="z-index:91">
+        <div class="drawer-handle"></div>
+        <div class="drawer-head">
+          <h2 id="historicoPedidoTitulo">Pedido</h2>
+          <div class="icon-btn" data-action="close-drawer-historico-pedido"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 6l12 12M18 6L6 18"/></svg></div>
+        </div>
+        <div id="historicoPedidoBody"></div>
       </div>
 
       <!-- SCREEN: USUARIOS (gestión, solo admin) -->
@@ -1113,6 +1137,8 @@
       <div class="section-label">Ítems agregados</div>
       <div class="added-items" id="npAddedItems"></div>
       <button class="btn-add-item-existing" style="margin-top:0;margin-bottom:22px" data-action="abrir-item-nuevo">+ Agregar ítem</button>
+
+      <div id="npInstalacionSeccion"></div>
 
       <div class="section-label">Total y descuento</div>
       <div class="form-row" style="margin-bottom:20px">
@@ -1464,7 +1490,7 @@
             <div class="input-money"><input type="number" id="nominaValeMonto" placeholder="0" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px"></div>
           </div>
           <div class="field">
-            <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Motivo (obligatorio — de dónde sale este vale)</label>
+            <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Motivo (opcional)</label>
             <input type="text" id="nominaValeMotivo" placeholder="Ej. Préstamo de herramienta" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px">
           </div>
         </div>
@@ -1624,7 +1650,7 @@
 <script>
 /* ============ CONFIG ============ */
 const MODO_DEMO = false;
-const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbzPJL2IMw4P8gge4Wldf3CN4dLcLKiIQRb1EDxCi6eTTEwgrh1UFNjOYfKOhyyBhrIG/exec';
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbwrog81bv_UxfdJK6GRT531zQTfiBbd8L5q4VLlGYG639DRxr6l1iUpzYwV65gucvTg/exec';
 const NUMERO_NEGOCIO = '584220167079';
 const TELEFONO_ADMIN_ABONOS = '584146326465'; // Recibe el aviso por WhatsApp cuando hay un abono pendiente de confirmar
 
@@ -1857,7 +1883,7 @@ let categoriasPago = [];
 /* ============ ESTADO UI ============ */
 const ESTADOS = ['cotizacion','confirmado','produccion','listo','entregado'];
 const ESTADO_LABEL = { cotizacion:'Cotización', confirmado:'Confirmado', produccion:'En Producción', listo:'Listo', entregado:'Entregado', cancelado:'Cancelado' };
-let state = { tab:'activos', search:'', openPedidoId:null, npItems:[], itemTarget:'nuevo', exhTab:'disponibles', exhSearch:'', catSearch:'', catTipoFiltro:'Todos', openExhId:null, openCatId:null, openCatColor:null, modoSeleccion:null, rol:null, nombreUsuario:null, modeloEditId:null, itemEditIndexNP:null, exhRango:'mes', volverAItemDespuesDeModelo:null, exhPiezasHermanasIds:[], exhCantidadSeleccionada:1, volverAProduccionAlCerrarPedido:null, nmCaracteristicas:[] };
+let state = { tab:'activos', search:'', openPedidoId:null, npItems:[], itemTarget:'nuevo', exhTab:'disponibles', exhSearch:'', catSearch:'', catTipoFiltro:'Todos', openExhId:null, openCatId:null, openCatColor:null, modoSeleccion:null, rol:null, nombreUsuario:null, modeloEditId:null, itemEditIndexNP:null, exhRango:'mes', volverAItemDespuesDeModelo:null, exhPiezasHermanasIds:[], exhCantidadSeleccionada:1, volverAProduccionAlCerrarPedido:null, nmCaracteristicas:[], financieroTab:'pendientes', historicoFiltro:'pendiente', historicoSearch:'', instalacionActiva:false, instalacionMonto:0, instalacionItems:[] };
 
 function getModelo(catalogoId){ return catalogo.find(c=>c.id===catalogoId) || null; }
 function fotoModeloPorColor(modelo, color){
@@ -1934,7 +1960,8 @@ function urgenciaClase(p){
 function totalPedido(p){
   const sub = p.items.reduce((a,i)=>a + i.precio*i.cantidad, 0);
   const desc = p.descuento || 0;
-  return Math.max(0, sub - desc);
+  const instalacion = (p.instalacion && p.instalacion.activa) ? (Number(p.instalacion.monto) || 0) : 0;
+  return Math.max(0, sub - desc + instalacion);
 }
 // El saldo "normal" (totalPedido - p.abono) baja apenas se registra un abono, aunque esté pendiente
 // de confirmar. Para decisiones que involucran cerrar de verdad el pedido (marcar como entregado),
@@ -1988,7 +2015,7 @@ const CAMPO_LABEL_ESPEC = {
   instalacion: 'Instalación incluida', variante: 'Variante'
 };
 // Campos que jamás se muestran aquí porque son de precio/costo, no especificación de fabricación.
-const CAMPOS_PRECIO_ESPEC = ['proteccion_precio_base', 'monto_hojas_extra', 'proteccion_monto', 'proteccion_catalogo_id'];
+const CAMPOS_PRECIO_ESPEC = ['proteccion_precio_base', 'monto_hojas_extra', 'proteccion_monto', 'proteccion_catalogo_id', 'manillon_monto', 'marco_decorativo_monto'];
 function especFilasCompletas(item){
   const e = item.especificaciones || {};
   const filas = [];
@@ -2288,13 +2315,15 @@ function poblarDetalle(id){
   document.getElementById('abonoCajaWrap').classList.toggle('hidden', pedidoCerrado || saldoPendiente <= 0);
 
   const seEditaItems = p.estado === 'cotizacion';
+  const instalacionActiva = p.instalacion && p.instalacion.activa;
+  const instalacionSet = new Set(instalacionActiva ? (p.instalacion.itemIndices||[]) : []);
   document.getElementById('detItems').innerHTML = p.items.map((it,i)=>`
     <div class="item-row" ${seEditaItems ? `data-action="toggle-select-item" data-index="${i}"` : ''}>
       <div class="item-left">
         <div class="item-thumb">${miniaturaItem(it)}</div>
         <div>
           <div class="item-name">${it.nombreModelo || it.tipo}${it.cantidad>1 ? ' ×'+it.cantidad : ''} <span class="item-origen ${esDeExhibicion(it) ? 'exh' : 'porfabricar'}">${esDeExhibicion(it) ? 'Exhibición' : 'Fabricación'}</span></div>
-          <div class="item-spec">${especTexto(it)}</div>
+          <div class="item-spec">${especTexto(it)}${instalacionSet.has(i) ? ' · <span style="color:var(--gold)">🔧 Instalación planificada</span>' : ''}</div>
           ${!esDeExhibicion(it) ? textoProduccionItem(it) : ''}
         </div>
       </div>
@@ -2302,7 +2331,11 @@ function poblarDetalle(id){
         <div class="item-price">${money(it.precio*it.cantidad)}</div>
         ${seEditaItems ? `<button class="item-delete-btn" data-action="delete-item-existing" data-index="${i}" title="Eliminar ítem">&times;</button>` : ''}
       </div>
-    </div>`).join('');
+    </div>`).join('') + (instalacionActiva ? `
+    <div class="item-row" style="opacity:.85">
+      <div class="item-left"><div style="width:40px;text-align:center;font-size:18px">🔧</div><div><div class="item-name">Instalación</div><div class="item-spec">Aplicada a ${instalacionSet.size} ítem${instalacionSet.size===1?'':'s'}</div></div></div>
+      <div class="item-actions"><div class="item-price">${money(p.instalacion.monto||0)}</div></div>
+    </div>` : '');
 
   const total = totalPedido(p);
   const saldo = Math.max(0, total - p.abono);
@@ -2629,6 +2662,81 @@ function renderFinanciero(){
       <button class="btn-ghost" style="width:100%;margin-top:10px" data-action="fin-ver-pedido" data-pedido-id="${a.pedido_id}">Ver pedido</button>
     </div>`).join('');
 }
+/* ============ HISTÓRICO DE PAGOS CONFIRMADOS ============ */
+function cambiarFinancieroTab(tab){
+  state.financieroTab = tab;
+  document.querySelectorAll('#financieroTabs .tab').forEach(t=>t.classList.toggle('active', t.dataset.tab===tab));
+  document.getElementById('financieroPendientesPanel').classList.toggle('hidden', tab!=='pendientes');
+  document.getElementById('financieroHistoricoPanel').classList.toggle('hidden', tab!=='historico');
+  if(tab === 'historico') renderHistoricoPagos();
+}
+function cambiarHistoricoFiltro(filtro){
+  state.historicoFiltro = filtro;
+  document.querySelectorAll('#historicoFiltros .tab').forEach(t=>t.classList.toggle('active', t.dataset.filtro===filtro));
+  renderHistoricoPagos();
+}
+// Pedidos que tienen al menos un abono confirmado — no hace falta pedirle nada nuevo al
+// servidor, ya está todo en el arreglo de pedidos que la app ya tiene cargado.
+function pedidosConPagoConfirmado(){
+  const busqueda = (state.historicoSearch||'').toLowerCase();
+  return pedidos.filter(p=>{
+    const tieneConfirmado = (p.abonos||[]).some(a=>a.estado==='confirmado');
+    if(!tieneConfirmado) return false;
+    const esTerminado = p.estado === 'entregado';
+    if(state.historicoFiltro === 'terminado' && !esTerminado) return false;
+    if(state.historicoFiltro === 'pendiente' && (esTerminado || p.estado === 'cancelado')) return false;
+    if(busqueda && !p.cliente.nombre.toLowerCase().includes(busqueda) && !p.codigo.toLowerCase().includes(busqueda)) return false;
+    return true;
+  });
+}
+function renderHistoricoPagos(){
+  const cont = document.getElementById('historicoLista');
+  const lista = pedidosConPagoConfirmado();
+  if(lista.length === 0){
+    cont.innerHTML = `<div class="empty-state">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18"/></svg>
+      <strong>Nada por aquí todavía</strong><span>Los pedidos con pagos confirmados van a aparecer en esta lista.</span>
+    </div>`;
+    return;
+  }
+  cont.innerHTML = lista.map((p,i)=>{
+    const confirmado = (p.abonos||[]).filter(a=>a.estado==='confirmado').reduce((a,x)=>a+x.monto,0);
+    return `
+    <div class="fin-card" style="--i:${i}" data-action="ver-historico-pedido" data-pedido-id="${p.id}">
+      <div class="fin-card-head">
+        <div>
+          <div class="fin-card-cliente">${p.cliente.nombre}</div>
+          <div class="fin-card-meta">#${p.codigo} · ${ESTADO_LABEL[p.estado]}</div>
+        </div>
+        <div class="fin-card-monto">${money(confirmado)}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function abrirHistoricoPedido(pedidoId){
+  const p = pedidos.find(x=>x.id===Number(pedidoId));
+  if(!p) return;
+  const confirmados = (p.abonos||[]).filter(a=>a.estado==='confirmado').sort((a,b)=>new Date(b.fecha)-new Date(a.fecha));
+  document.getElementById('historicoPedidoTitulo').textContent = '#' + p.codigo + ' · ' + p.cliente.nombre;
+  document.getElementById('historicoPedidoBody').innerHTML = `
+    <div class="section-label">Pagos confirmados</div>
+    ${confirmados.map(a=>`
+      <div class="fin-card">
+        <div class="fin-card-head">
+          <div><div class="fin-card-cliente">${a.metodo}</div><div class="fin-card-meta">${fechaHoraCorta(a.fecha)}${a.confirmado_por ? ' · confirmado por ' + a.confirmado_por : ''}</div></div>
+          <div class="fin-card-monto">${money(a.monto)}</div>
+        </div>
+        ${a.foto_url ? `<div data-action="ver-comprobante" data-url="${a.foto_url}" class="fin-card-comprobante"><img src="${a.foto_url}"><span>Ver comprobante</span></div>` : ''}
+      </div>`).join('') || `<div style="font-size:12.5px;color:var(--text2)">Sin pagos confirmados.</div>`}
+    <button class="btn-primary" style="width:100%;margin-top:14px" data-action="ver-pedido-desde-historico-pagos" data-pedido-id="${p.id}">Ver el pedido completo →</button>
+  `;
+  document.getElementById('scrimHistoricoPedido').classList.add('open');
+  document.getElementById('drawerHistoricoPedido').classList.add('open');
+}
+function cerrarDrawerHistoricoPedido(){
+  document.getElementById('scrimHistoricoPedido').classList.remove('open');
+  document.getElementById('drawerHistoricoPedido').classList.remove('open');
+}
 function actualizarAbonoLocal(pedidoId, abonos, abonoTotal){
   const p = pedidos.find(x=>x.id===Number(pedidoId));
   if(p){ p.abonos = abonos; if(abonoTotal !== undefined) p.abono = abonoTotal; }
@@ -2684,6 +2792,17 @@ function avisarAdminAbono(abonoId){
   window.open(`https://wa.me/${TELEFONO_ADMIN_ABONOS}?text=${texto}`, '_blank');
 }
 // Si la app se abre desde el link de "Avisar admin", entra directo a Financiero con ese abono resaltado.
+async function irAConfirmarAbono(abonoId){
+  cerrarTodo();
+  irAScreen('financiero', 'Confirmación de pagos');
+  await cargarAbonosPendientes();
+  await new Promise(r => setTimeout(r, 60));
+  const tarjeta = document.querySelector(`[data-action="fin-confirmar"][data-abono-id="${abonoId}"]`)?.closest('.fin-card');
+  if(tarjeta){
+    tarjeta.scrollIntoView({behavior:'smooth', block:'center'});
+    destellarNodo(tarjeta);
+  }
+}
 async function procesarDeepLinkFinanciero(){
   const params = new URLSearchParams(window.location.search);
   const abonoId = params.get('financiero');
@@ -3092,9 +3211,11 @@ async function asignarEtapaUI(origen, id, itemIndex, pista, btn, ventanaIndex){
       renderLista();
     }
     showToast('Etapa asignada', 'success');
+    cerrarDrawerProdItem();
+    cerrarDrawerProduccion();
     await cargarProduccion();
-    abrirDrawerProduccion(origen, id);
-    abrirDrawerProdItem(itemIndex);
+    const tarjeta = document.querySelector(`[data-action="ver-produccion-pedido"][data-id="${id}"]`);
+    if(tarjeta){ tarjeta.scrollIntoView({behavior:'smooth', block:'center'}); destellarNodo(tarjeta); }
   } catch(err){
     setCargando(btn, false);
   }
@@ -3200,13 +3321,25 @@ function renderNominaDrawer(){
       <div style="font-size:11px;color:var(--text2);margin:6px 2px 0">Toca una fila para ver su detalle. El check es solo para incluirla en el pago.</div>
       ${nominaDetalle.vales.length ? `
         <div class="section-label" style="margin-top:12px">Vales que se restan de este pago</div>
-        ${nominaDetalle.vales.map(v=>`<div class="ledger-abono-item"><div class="ledger-abono-info"><strong style="color:var(--red)">−${money(v.monto)}</strong><span>${v.motivo || 'Vale'} · ${fechaHoraCorta(v.fecha)}</span></div></div>`).join('')}
+        ${nominaDetalle.vales.map((v,i)=>`
+          <div class="fin-card" style="--i:${i}">
+            <div class="fin-card-head">
+              <div><div class="fin-card-cliente">${v.motivo || 'Vale'}</div><div class="fin-card-meta">${fechaHoraCorta(v.fecha)}</div></div>
+              <div class="fin-card-monto" style="color:var(--red)">−${money(v.monto)}</div>
+            </div>
+          </div>`).join('')}
       ` : ''}`;
   }
 
   const contVales = document.getElementById('nominaValesLista');
   contVales.innerHTML = nominaDetalle.vales.length
-    ? nominaDetalle.vales.map(v=>`<div class="ledger-abono-item"><div class="ledger-abono-info"><strong>−${money(v.monto)}</strong><span>${v.motivo || 'Vale'} · ${fechaHoraCorta(v.fecha)}</span></div></div>`).join('')
+    ? nominaDetalle.vales.map((v,i)=>`
+      <div class="fin-card" style="--i:${i}">
+        <div class="fin-card-head">
+          <div><div class="fin-card-cliente">${v.motivo || 'Vale'}</div><div class="fin-card-meta">${fechaHoraCorta(v.fecha)}</div></div>
+          <div class="fin-card-monto" style="color:var(--red)">−${money(v.monto)}</div>
+        </div>
+      </div>`).join('')
     : `<div style="font-size:12.5px;color:var(--text2);padding:8px 0">Sin vales pendientes.</div>`;
 
   const contHist = document.getElementById('nominaHistorialLista');
@@ -3276,7 +3409,13 @@ function abrirNominaHistorialDetalle(index){
     <h2 style="font-size:16px;margin:0 0 2px">Pago del ${fechaHoraCorta(p.fecha)}</h2>
     <div class="section-label">Ítems pagados</div>
     ${p.items.map(it=>`
-      <div class="specs-row-nomina"><span>${it.nombre_item || ''} — ${it.etapa} <small style="color:var(--text2)">(${it.codigo})</small></span><strong>${money(it.monto)}</strong></div>
+      <div class="specs-row-nomina" style="align-items:center">
+        <span>${it.nombre_item || ''} — ${it.etapa} <small style="color:var(--text2)">(${it.codigo})</small></span>
+        <div style="display:flex;align-items:center;gap:10px">
+          <strong>${money(it.monto)}</strong>
+          ${it.origen === 'pedido' ? `<button class="btn-ghost" style="padding:4px 9px;font-size:11px" data-action="ver-pedido-desde-historial-nomina" data-id="${it.pedido_id}">Ver pedido</button>` : ''}
+        </div>
+      </div>
     `).join('') || `<div style="font-size:12.5px;color:var(--text2)">Sin ítems.</div>`}
     ${p.vales.length ? `
       <div class="section-label" style="margin-top:12px">Vales descontados</div>
@@ -3305,12 +3444,15 @@ async function agregarValeUI(btn){
   const monto = parseFloat(document.getElementById('nominaValeMonto').value);
   if(!monto || monto<=0){ showToast('Ingresa un monto válido', 'error'); return; }
   const motivo = document.getElementById('nominaValeMotivo').value.trim();
-  if(!motivo){ showToast('Escribe de qué es el vale (motivo obligatorio)', 'error'); return; }
   setCargando(btn, true);
   try{
-    await llamarBackend('agregarVale', { trabajador: nominaTrabajadorActual.usuario, monto, motivo });
+    const resultado = await llamarBackend('agregarVale', { trabajador: nominaTrabajadorActual.usuario, monto, motivo });
     showToast('Vale agregado', 'success');
-    nominaDetalle = await llamarBackend('getNominaTrabajador', { trabajador: nominaTrabajadorActual.usuario });
+    // Se agrega de una al arreglo local en vez de re-pedir todo al servidor, y se limpia el formulario.
+    nominaDetalle.vales = nominaDetalle.vales || [];
+    nominaDetalle.vales.unshift({ id: resultado && resultado.id, monto, motivo, fecha: new Date().toISOString() });
+    document.getElementById('nominaValeMonto').value = '';
+    document.getElementById('nominaValeMotivo').value = '';
     renderNominaDrawer();
   } catch(err){
   } finally {
@@ -3410,18 +3552,21 @@ let tareasBandejaCache = [];
 function renderBandeja(){
   const nomina = nominaBandejaActual;
   const cont = document.getElementById('bandejaContenido');
-  const acumulado = nomina.items.reduce((a,i)=>a+i.monto,0) - nomina.vales.reduce((a,v)=>a+v.monto,0);
-  const ledgerAcumulado = `
-    <div class="ledger-box" style="margin-top:16px">
-      <div class="ledger-row"><span>Acumulado sin pagar</span><strong>${money(acumulado)}</strong></div>
-    </div>`;
 
   if(bandejaTabActual === 'cobrar'){
+    const totalItems = nomina.items.reduce((a,i)=>a+i.monto,0);
+    const totalVales = nomina.vales.reduce((a,v)=>a+v.monto,0);
+    const receiptBox = `
+      <div class="ledger-box" style="margin-top:16px">
+        <div class="ledger-row"><span>Pendiente por pagar</span><strong>${money(totalItems)}</strong></div>
+        <div class="ledger-row"><span>Vales registrados</span><strong style="color:var(--red)">−${money(totalVales)}</strong></div>
+        <div class="ledger-row" style="border-top:1px solid var(--border);margin-top:4px;padding-top:8px"><span>Total a cobrar</span><strong>${money(totalItems-totalVales)}</strong></div>
+      </div>`;
     if(nomina.items.length === 0){
       cont.innerHTML = `<div class="empty-state">
         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
         <strong>Nada por cobrar todavía</strong><span>Lo que termines va a aparecer aquí.</span>
-      </div>${ledgerAcumulado}`;
+      </div>${receiptBox}`;
       return;
     }
     const vales = nomina.vales || [];
@@ -3432,40 +3577,54 @@ function renderBandeja(){
             <div>
               <div class="prod-item-nombre">${it.nombre_item || ''} — ${it.nombre_etapa}</div>
               <div class="prod-item-meta">${it.codigo} · terminado el ${fechaHoraCorta(it.fecha_hecho)}</div>
-              ${it.pendiente_de_terminar ? '<div class="prod-item-meta" style="color:var(--amber)">Pintura todavía pendiente — esto ya está cobrado por adelantado</div>' : ''}
+              ${it.pendiente_de_terminar ? '<div class="prod-item-meta" style="color:var(--amber)">🎨 Falta pintar — esto ya está cobrado por adelantado</div>' : ''}
             </div>
             <div style="font-weight:700;color:var(--gold)">${money(it.monto)}</div>
           </div>
         </div>`).join('')}
       ${vales.length ? `
-        <div class="section-label" style="margin-top:14px">Vales pendientes (se restan del total)</div>
+        <div class="section-label" style="margin-top:14px">Vales registrados (se restan)</div>
         ${vales.map(v=>`<div class="ledger-abono-item"><div class="ledger-abono-info"><strong>−${money(v.monto)}</strong><span>${v.motivo || 'Vale'} · ${fechaHoraCorta(v.fecha)}</span></div></div>`).join('')}
       ` : ''}
-      ${ledgerAcumulado}`;
+      ${receiptBox}`;
     return;
   }
 
   // Pestaña "Asignado" — una tarjeta por especialidad (1 normalmente, 2 si el trabajador tiene doble especialidad).
+  // Sin totales aquí a propósito: es para que se concentren en la tarea, no en el dinero.
   tareasBandejaCache = tareasActualesDelTrabajador();
   if(tareasBandejaCache.length === 0){
     cont.innerHTML = `
       <div class="empty-state">
         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 12l2 2 4-4M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         <strong>Nada asignado por ahora</strong><span>Cuando te asignen una tarea, aparece aquí.</span>
-      </div>${ledgerAcumulado}`;
+      </div>`;
     return;
   }
-  cont.innerHTML = tareasBandejaCache.map((tarea,idx)=>`
+  cont.innerHTML = tareasBandejaCache.map((tarea,idx)=>{
+    let etiqueta = tarea.etapa.nombre;
+    let avisoYaMasillada = '';
+    if(tarea.sub === 'pintura'){
+      etiqueta = '🎨 Pintura';
+      avisoYaMasillada = `<div class="prod-item-meta" style="color:var(--green);margin-top:4px">✓ Ya está masillada — ahora toca pintar</div>`;
+    } else if(tarea.sub === 'masilla'){
+      etiqueta = '🧱 Masilla';
+    } else if(tarea.ventanaIndex!=null && pistasVentana(tarea.item).length>1){
+      etiqueta = etiqueta + ' (ventana '+(tarea.ventanaIndex+1)+')';
+    }
+    return `
     <div class="prod-item-card" style="cursor:pointer" data-action="ver-bandeja-tarea" data-index="${idx}">
       <div class="prod-item-head">
         <div>
           <div class="prod-item-nombre">${nombreItemProd(tarea.item)}</div>
           <div class="prod-item-meta">${tarea.pedido.codigo} · ${tarea.pedido.cliente_nombre}</div>
+          ${avisoYaMasillada}
         </div>
       </div>
-      <div class="prod-etapas-row"><span class="prod-etapa-chip actual asignado">${tarea.sub ? (tarea.etapa.nombre + ' — ' + (tarea.sub==='masilla'?'masilla':'pintura')) : tarea.etapa.nombre + (tarea.ventanaIndex!=null && pistasVentana(tarea.item).length>1 ? ' (ventana '+(tarea.ventanaIndex+1)+')' : '')}</span></div>
-      <div style="text-align:center;color:var(--text2);font-size:12px;margin-top:8px">Toca para ver las especificaciones completas ↑</div>
-    </div>`).join('') + ledgerAcumulado;
+      <div class="prod-etapas-row"><span class="prod-etapa-chip actual asignado">${etiqueta}</span></div>
+      <div style="text-align:center;color:var(--text2);font-size:12px;margin-top:8px">👆 Toca para ver la foto y marcar</div>
+    </div>`;
+  }).join('');
 }
 // Drawer: la tarea asignada, con TODAS las especificaciones (sin precio) y la foto grande ampliable.
 function abrirDrawerBandejaTarea(index){
@@ -3474,32 +3633,47 @@ function abrirDrawerBandejaTarea(index){
   const filas = especFilasCompletas(tarea.item);
   const foto = tarea.item.foto || null;
   const cont = document.getElementById('bandejaTareaDetalleBody');
-  const etiquetaEtapa = tarea.sub
-    ? (tarea.etapa.nombre + ' — ' + (tarea.sub==='masilla' ? 'masilla' : 'pintura'))
-    : tarea.etapa.nombre + (tarea.ventanaIndex!=null && pistasVentana(tarea.item).length>1 ? ' (ventana '+(tarea.ventanaIndex+1)+')' : '');
-  const notaSub = tarea.sub === 'pintura'
-    ? `<div class="prod-terminado-nota" style="margin-bottom:10px">✓ Masilla ya quedó marcada${tarea.etapa.pagado ? ' y cobrada por adelantado' : ' (todavía sin cobrar)'} — ahora falta la pintura.</div>`
-    : '';
+  let etiquetaEtapa = tarea.etapa.nombre;
+  let botonTexto = 'Marcar como terminado';
+  if(tarea.sub === 'masilla'){ etiquetaEtapa = '🧱 Masilla'; botonTexto = '✓ Masilla lista'; }
+  else if(tarea.sub === 'pintura'){ etiquetaEtapa = '🎨 Pintura'; botonTexto = '✓ Pintura lista'; }
+  else if(tarea.ventanaIndex!=null && pistasVentana(tarea.item).length>1){ etiquetaEtapa += ' (ventana '+(tarea.ventanaIndex+1)+')'; }
+
+  // Cuando toca pintar, se muestra ARRIBA la foto de la masilla ya hecha (con su fecha), bien
+  // separada de la foto nueva que hay que subir — para que quede clara la secuencia sin
+  // depender de leer texto.
+  let bloqueYaMasillada = '';
+  if(tarea.sub === 'pintura'){
+    const fotoMasilla = tarea.etapa.masilla.foto_url;
+    bloqueYaMasillada = `
+      <div style="background:var(--green-dim);border:1px solid var(--green);border-radius:12px;padding:12px;margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:8px;color:var(--green);font-weight:700;font-size:14px;margin-bottom:8px">✓ Ya masillada</div>
+        ${fotoMasilla ? `<div style="width:100%;height:130px;border-radius:10px;background:var(--surface3) center/cover;background-image:url('${fotoMasilla}');cursor:pointer" data-action="ver-comprobante" data-url="${fotoMasilla}"></div>` : ''}
+        <div style="font-size:11.5px;color:var(--text2);margin-top:6px">📅 Masillada el ${fechaHoraCorta(tarea.etapa.masilla.fecha_hecho)}</div>
+      </div>
+      <div style="font-size:15px;font-weight:700;margin-bottom:10px">🎨 Ahora toca pintar</div>`;
+  }
+
   cont.innerHTML = `
     <h2 style="font-size:16px;margin:0 0 2px">${nombreItemProd(tarea.item)}</h2>
     <div style="font-size:12.5px;color:var(--text2);margin-bottom:12px">${tarea.pedido.codigo} · ${tarea.pedido.cliente_nombre}</div>
     ${foto ? `<div style="width:100%;height:180px;border-radius:12px;background:var(--surface3) center/cover;background-image:url('${foto}');margin-bottom:14px;position:relative;cursor:pointer" data-action="ver-comprobante" data-url="${foto}">
-      <span style="position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.6);color:#fff;font-size:11px;padding:4px 8px;border-radius:6px">Toca para ampliar</span>
+      <span style="position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.6);color:#fff;font-size:11px;padding:4px 8px;border-radius:6px">🔍 Ampliar</span>
     </div>` : ''}
-    <div class="prod-etapas-row" style="margin-bottom:10px"><span class="prod-etapa-chip actual asignado">${etiquetaEtapa}</span></div>
-    ${notaSub}
-    <div class="section-label">Especificaciones</div>
-    ${filas.map(([label,valor])=>`<div class="specs-row-nomina"><span>${label}</span><strong>${valor}</strong></div>`).join('') || `<div style="font-size:12.5px;color:var(--text2)">Sin especificaciones adicionales.</div>`}
+    <div class="prod-etapas-row" style="margin-bottom:10px"><span class="prod-etapa-chip actual asignado" style="font-size:15px">${etiquetaEtapa}</span></div>
+    ${bloqueYaMasillada}
+    <div class="section-label">Medidas y detalles</div>
+    ${filas.map(([label,valor])=>`<div class="specs-row-nomina"><span>${label}</span><strong>${valor}</strong></div>`).join('') || `<div style="font-size:12.5px;color:var(--text2)">Sin detalles adicionales.</div>`}
     <label class="comprobante-box" for="bandejaFoto" style="margin-top:14px">
       <div class="comprobante-empty" id="bandejaFotoEmpty">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
-        <span>Agregar foto de evidencia</span>
+        <span>📷 Tomar foto</span>
       </div>
       <img id="bandejaFotoPreview" class="comprobante-img hidden">
     </label>
     <input type="file" id="bandejaFoto" accept="image/*" class="file-input-hidden">
-    <button class="btn-primary" style="width:100%;margin-top:14px" id="btnBandejaTerminar" data-action="bandeja-terminar" data-origen="${tarea.pedido.origen}" data-pedido-id="${tarea.pedido.pedido_id||''}" data-trabajo-id="${tarea.pedido.trabajo_id||''}" data-item-index="${tarea.item.index}" data-pista="${tarea.pista}" data-sub="${tarea.sub||''}" data-ventana-index="${tarea.ventanaIndex!=null?tarea.ventanaIndex:''}">
-      <span class="btn-spin"></span><span>Marcar ${tarea.sub ? (tarea.sub==='masilla'?'masilla':'pintura') : ''} como terminado</span>
+    <button class="btn-primary" style="width:100%;margin-top:14px;font-size:15px" id="btnBandejaTerminar" data-action="bandeja-terminar" data-origen="${tarea.pedido.origen}" data-pedido-id="${tarea.pedido.pedido_id||''}" data-trabajo-id="${tarea.pedido.trabajo_id||''}" data-item-index="${tarea.item.index}" data-pista="${tarea.pista}" data-sub="${tarea.sub||''}" data-ventana-index="${tarea.ventanaIndex!=null?tarea.ventanaIndex:''}">
+      <span class="btn-spin"></span><span>${botonTexto}</span>
     </button>`;
   wireFotoPreview('bandejaFoto', 'bandejaFotoEmpty', 'bandejaFotoPreview');
   document.getElementById('scrimBandejaTarea').classList.add('open');
@@ -3880,9 +4054,11 @@ function tituloDocumentoPedido(p){
 function construirDatosNota(p){
   const total = totalPedido(p);
   const saldo = Math.max(0, total - p.abono);
-  const itemsConFoto = p.items.map(it => ({
+  const instalacionItems = (p.instalacion && p.instalacion.activa) ? (p.instalacion.itemIndices || []) : [];
+  const itemsConFoto = p.items.map((it,i) => ({
     ...it,
-    foto: it.catalogoId ? fotoModeloPorColor(getModelo(it.catalogoId), it.especificaciones?.color) : null
+    foto: it.catalogoId ? fotoModeloPorColor(getModelo(it.catalogoId), it.especificaciones?.color) : null,
+    instalacion_planificada: instalacionItems.includes(i)
   }));
   const metodos = [...new Set((p.abonos || []).map(a => a.metodo))];
   return {
@@ -3895,6 +4071,7 @@ function construirDatosNota(p){
     titulo: tituloDocumentoPedido(p),
     items: itemsConFoto,
     descuento: p.descuento || 0,
+    instalacion: (p.instalacion && p.instalacion.activa) ? { monto: p.instalacion.monto || 0 } : null,
     abono: p.abono || 0,
     metodos_pago: metodos.length ? metodos.join(', ') : '—',
     pagado: saldo <= 0 && total > 0,
@@ -4575,7 +4752,8 @@ function precargarEspecificaciones(e, idPrefix, radioPrefix){
   setToggle('Instalacion', e.instalacion);
   if(g('HojasExtra') && e.hojas_extra != null) g('HojasExtra').value = e.hojas_extra;
   if(g('MontoHojasExtra') && e.monto_hojas_extra != null) g('MontoHojasExtra').value = e.monto_hojas_extra;
-  if(g('ProteccionMonto') && e.proteccion_monto != null) g('ProteccionMonto').value = e.proteccion_monto;
+  if(g('ManillonMonto') && e.manillon_monto != null) g('ManillonMonto').value = e.manillon_monto;
+  if(g('MarcoDecorativoMonto') && e.marco_decorativo_monto != null) g('MarcoDecorativoMonto').value = e.marco_decorativo_monto;
   if(e.proteccion_catalogo_id){
     state.proteccionElegidaVentana = { id: e.proteccion_catalogo_id, nombre: e.proteccion_nombre, precio_base: e.proteccion_precio_base };
     const cajaTexto = document.getElementById(ip + 'ProteccionElegidaTexto');
@@ -4779,11 +4957,13 @@ function renderCamposDinamicosGenerico(tipo, contId, idPrefix, radioPrefix){
     html += CR('vidrio_o_farquilla','Vidrio o Farquilla', ['Vidrio','Farquilla'], 'Vidrio');
     html += SUB('ColorVidrio', CR('color_vidrio','Color vidrio', ['Azul','Espejo','Negro'], 'Espejo'));
     html += CT('Manillon', 'Manillón');
-    html += SUB('Manillon', CR('manillon_tipo','Tipo de manillón', ['H','S','Luna'], 'H'));
+    html += SUB('Manillon', `
+      ${CR('manillon_tipo','Tipo de manillón', ['H','S','Luna'], 'H')}
+      <div class="field" style="margin-top:8px"><label>Monto extra por el manillón</label><div class="input-money"><input type="number" id="${idPrefix}ManillonMonto" value="20"></div></div>
+    `);
     html += CR('sentido','Sentido de apertura', ['Derecha','Izquierda'], 'Derecha');
     html += CR('posicion','Posición de instalación', ['Adentro','Afuera'], 'Afuera');
     html += CR('bloque','Tipo de bloque', ['10','15','Tubo'], '15');
-    html += CT('Instalacion', 'Instalación incluida (precio adicional)');
   }
   else if(tipo === 'puerta' || tipo === 'puerta_multilock'){
     html += CM();
@@ -4791,24 +4971,40 @@ function renderCamposDinamicosGenerico(tipo, contId, idPrefix, radioPrefix){
     html += CR('vidrio_o_farquilla','Vidrio o Farquilla', ['Vidrio','Farquilla'], 'Vidrio');
     html += SUB('ColorVidrio', CR('color_vidrio','Color vidrio', ['Azul','Espejo','Negro'], 'Negro'));
     html += CT('Manillon', 'Manillón');
-    html += SUB('Manillon', CR('manillon_tipo','Tipo de manillón', ['H','S','Luna'], 'Luna'));
+    html += SUB('Manillon', `
+      ${CR('manillon_tipo','Tipo de manillón', ['H','S','Luna'], 'Luna')}
+      <div class="field" style="margin-top:8px"><label>Monto extra por el manillón</label><div class="input-money"><input type="number" id="${idPrefix}ManillonMonto" value="20"></div></div>
+    `);
     html += CT('MarcoDecorativo', 'Marco decorativo');
+    html += SUB('MarcoDecorativo', `<div class="field"><label>Monto extra por el marco decorativo</label><div class="input-money"><input type="number" id="${idPrefix}MarcoDecorativoMonto" value="0"></div></div>`);
     html += CT('Proteccion', 'Protección');
-    html += SUB('Proteccion', `<div class="field"><label>Costo de la protección (manual)</label><div class="input-money"><input type="number" id="${idPrefix}ProteccionMonto" value="0"></div></div>`);
+    html += SUB('Proteccion', `
+      <div class="form-group">
+        <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500">Modelo de protección</label>
+        <div class="proteccion-elegida-box" id="${idPrefix}ProteccionElegidaBox" data-action="abrir-elegir-proteccion">
+          <span id="${idPrefix}ProteccionElegidaTexto">Toca para elegir del catálogo de protecciones</span>
+          <span class="proteccion-elegida-flecha">›</span>
+        </div>
+      </div>
+    `);
     html += CR('sentido','Sentido de apertura', ['Derecha','Izquierda'], 'Derecha');
     html += CR('posicion','Posición de apertura', ['Adentro','Afuera'], 'Afuera');
     html += CR('bloque','Tipo de bloque', ['10','15','Tubo'], '15');
   }
   else if(tipo === 'combo'){
     html += CR('variante','Variante del combo', ['Sin protección en puerta','Con protección en puerta'], 'Con protección en puerta');
-    html += `<div style="font-size:12px;color:var(--text2);margin-bottom:14px;padding:10px 12px;background:var(--surface3);border-radius:var(--radius-sm)">Las 2 ventanas del combo se agregan automáticamente en 1×1 m con protección. Marco decorativo y manillón son extras opcionales solo para la puerta del combo.</div>`;
+    html += `<div style="font-size:12px;color:var(--text2);margin-bottom:14px;padding:10px 12px;background:var(--surface3);border-radius:var(--radius-sm)">Las 2 ventanas del combo se agregan automáticamente en 1×1 m con protección. La protección de la puerta ya viene incluida en el precio del combo — no se cobra aparte. Marco decorativo y manillón son extras opcionales solo para la puerta.</div>`;
     html += CT('PapelAhumado', 'Papel ahumado en las ventanas (incluido de fábrica, sin costo extra)', true);
     html += SUB('PapelAhumado', CR('color_ahumado','Color del ahumado', ['Espejo','Azul','Negro'], 'Espejo'));
     html += CM();
     html += CR('color','Color puerta', ['Blanco','Negro'], 'Blanco');
     html += CT('Manillon', 'Manillón (puerta)');
-    html += SUB('Manillon', CR('manillon_tipo','Tipo de manillón', ['H','S','Luna'], 'Luna'));
+    html += SUB('Manillon', `
+      ${CR('manillon_tipo','Tipo de manillón', ['H','S','Luna'], 'Luna')}
+      <div class="field" style="margin-top:8px"><label>Monto extra por el manillón</label><div class="input-money"><input type="number" id="${idPrefix}ManillonMonto" value="20"></div></div>
+    `);
     html += CT('MarcoDecorativo', 'Marco decorativo (puerta)');
+    html += SUB('MarcoDecorativo', `<div class="field"><label>Monto extra por el marco decorativo</label><div class="input-money"><input type="number" id="${idPrefix}MarcoDecorativoMonto" value="0"></div></div>`);
     html += CR('sentido','Sentido de apertura', ['Derecha','Izquierda'], 'Derecha');
     html += CR('posicion','Posición de apertura', ['Adentro','Afuera'], 'Afuera');
     html += CR('bloque','Tipo de bloque', ['10','15','Tubo'], '10');
@@ -4883,6 +5079,10 @@ function actualizarSubfields(prefix){
   const subManillon = document.getElementById(p + 'SubManillon');
   if(manillon && subManillon) subManillon.classList.toggle('hidden', !manillon.checked);
 
+  const marco = document.getElementById(p + 'MarcoDecorativo');
+  const subMarco = document.getElementById(p + 'SubMarcoDecorativo');
+  if(marco && subMarco) subMarco.classList.toggle('hidden', !marco.checked);
+
   const papelAhumado = document.getElementById(p + 'PapelAhumado');
   const subPapelAhumado = document.getElementById(p + 'SubPapelAhumado');
   if(papelAhumado && subPapelAhumado) subPapelAhumado.classList.toggle('hidden', !papelAhumado.checked);
@@ -4905,12 +5105,29 @@ function actualizarPrecioSugerido(){
   const area = alto * ancho;
   const base = PRECIO_BASE[tipo] || 100;
   let sugerido = area > 1 ? Math.round(base * area) : base;
-  if(tipo === 'puerta' || tipo === 'puerta_multilock' || tipo === 'combo'){
-    if(document.getElementById('npManillon')?.checked) sugerido += 20;
-    const montoProteccion = parseFloat(document.getElementById('npProteccionMonto')?.value) || 0;
-    if(document.getElementById('npProteccion')?.checked) sugerido += montoProteccion;
+  const partes = [`${money(base)}${area>1?'/m² × '+area.toFixed(2)+'m²':''}`];
+
+  if(tipo === 'puerta' || tipo === 'puerta_multilock' || tipo === 'porton' || tipo === 'combo'){
+    if(document.getElementById('npManillon')?.checked){
+      const montoManillon = parseFloat(document.getElementById('npManillonMonto')?.value) || 0;
+      if(montoManillon){ sugerido += montoManillon; partes.push(`+ manillón ${money(montoManillon)}`); }
+    }
   }
-  document.getElementById('npPrecioSugerido').textContent = `Precio sugerido: ${money(sugerido)} (editable abajo)`;
+  if(tipo === 'puerta' || tipo === 'puerta_multilock' || tipo === 'combo'){
+    if(document.getElementById('npMarcoDecorativo')?.checked){
+      const montoMarco = parseFloat(document.getElementById('npMarcoDecorativoMonto')?.value) || 0;
+      if(montoMarco){ sugerido += montoMarco; partes.push(`+ marco decorativo ${money(montoMarco)}`); }
+    }
+  }
+  if(tipo === 'puerta' || tipo === 'puerta_multilock'){
+    // La protección de Puerta ahora funciona igual que en Ventana: se elige del catálogo de
+    // protecciones (precios ya definidos), en vez de escribir un monto a mano.
+    if(document.getElementById('npProteccion')?.checked && state.proteccionElegidaVentana){
+      sugerido += state.proteccionElegidaVentana.precio_base;
+      partes.push(`+ protección ${money(state.proteccionElegidaVentana.precio_base)}`);
+    }
+  }
+  document.getElementById('npPrecioSugerido').textContent = `Precio sugerido: ${money(sugerido)} (editable abajo) · ${partes.join(' ')}`;
   document.getElementById('npPrecioFinal').value = sugerido;
   actualizarTotalItem();
 }
@@ -5018,16 +5235,22 @@ function leerEspecificacionesGenerico(tipo, idPrefix, radioPrefix){
     e.bloque = radioVal('bloque');
     e.manillon = g('Manillon')?.checked || false;
     e.manillon_tipo = e.manillon ? radioVal('manillon_tipo') : null;
-    e.instalacion = g('Instalacion')?.checked || false;
+    e.manillon_monto = e.manillon ? (parseFloat(g('ManillonMonto')?.value) || 0) : 0;
   } else if(tipo==='puerta' || tipo==='puerta_multilock'){
     e.sentido = radioVal('sentido'); e.posicion = radioVal('posicion'); e.bloque = radioVal('bloque');
     e.marco_decorativo = g('MarcoDecorativo')?.checked || false;
+    e.marco_decorativo_monto = e.marco_decorativo ? (parseFloat(g('MarcoDecorativoMonto')?.value) || 0) : 0;
     e.vidrio_o_farquilla = radioVal('vidrio_o_farquilla');
     e.color_vidrio = e.vidrio_o_farquilla === 'Vidrio' ? radioVal('color_vidrio') : 'Plateado';
     e.manillon = g('Manillon')?.checked || false;
     e.manillon_tipo = e.manillon ? radioVal('manillon_tipo') : null;
+    e.manillon_monto = e.manillon ? (parseFloat(g('ManillonMonto')?.value) || 0) : 0;
     e.proteccion = g('Proteccion')?.checked || false;
-    e.proteccion_monto = e.proteccion ? (parseFloat(g('ProteccionMonto')?.value) || 0) : 0;
+    if(e.proteccion && state.proteccionElegidaVentana){
+      e.proteccion_catalogo_id = state.proteccionElegidaVentana.id;
+      e.proteccion_nombre = state.proteccionElegidaVentana.nombre;
+      e.proteccion_precio_base = state.proteccionElegidaVentana.precio_base;
+    }
   } else if(tipo==='combo'){
     e.variante = radioVal('variante');
     e.sentido = radioVal('sentido'); e.posicion = radioVal('posicion'); e.bloque = radioVal('bloque');
@@ -5036,7 +5259,9 @@ function leerEspecificacionesGenerico(tipo, idPrefix, radioPrefix){
     e.color_ahumado = e.papel_ahumado ? radioVal('color_ahumado') : null;
     e.manillon = g('Manillon')?.checked || false;
     e.manillon_tipo = e.manillon ? radioVal('manillon_tipo') : null;
+    e.manillon_monto = e.manillon ? (parseFloat(g('ManillonMonto')?.value) || 0) : 0;
     e.marco_decorativo = g('MarcoDecorativo')?.checked || false;
+    e.marco_decorativo_monto = e.marco_decorativo ? (parseFloat(g('MarcoDecorativoMonto')?.value) || 0) : 0;
   }
   return e;
 }
@@ -5245,16 +5470,58 @@ function renderAddedItems(){
   const cont = document.getElementById('npAddedItems');
   if(state.npItems.length === 0){
     cont.innerHTML = `<div style="font-size:12.5px;color:var(--text3);padding:6px 2px">Aún no has agregado ítems.</div>`;
-    return;
+  } else {
+    cont.innerHTML = state.npItems.map((it,i)=>`
+      <div class="added-item" ${it.autoGenerado ? '' : `data-action="editar-item-np" data-index="${i}" style="cursor:pointer"`}>
+        <div class="item-left">
+          <div class="item-thumb">${miniaturaItem(it)}</div>
+          <div class="info"><b>${it.nombreModelo || it.tipo}${it.cantidad>1?' ×'+it.cantidad:''}</b><span>${especTexto(it)}${it.autoGenerado ? ' · incluido' : ' · ' + money(it.precio)}</span></div>
+        </div>
+        ${it.autoGenerado ? '' : `<button class="remove-item-btn" data-action="remove-item" data-index="${i}">&times;</button>`}
+      </div>`).join('');
   }
-  cont.innerHTML = state.npItems.map((it,i)=>`
-    <div class="added-item" ${it.autoGenerado ? '' : `data-action="editar-item-np" data-index="${i}" style="cursor:pointer"`}>
-      <div class="item-left">
-        <div class="item-thumb">${miniaturaItem(it)}</div>
-        <div class="info"><b>${it.nombreModelo || it.tipo}${it.cantidad>1?' ×'+it.cantidad:''}</b><span>${especTexto(it)}${it.autoGenerado ? ' · incluido' : ' · ' + money(it.precio)}</span></div>
-      </div>
-      ${it.autoGenerado ? '' : `<button class="remove-item-btn" data-action="remove-item" data-index="${i}">&times;</button>`}
-    </div>`).join('');
+  renderInstalacionSelectorNP();
+}
+// La instalación es un extra a nivel de PEDIDO (no de un modelo o categoría): aplica a
+// Ventana, Puerta y Portón, y si hay varios ítems elegibles, se elige a cuáles se les hace.
+function itemsElegiblesInstalacion(){
+  const tiposElegibles = ['Ventana', 'Puerta', 'Puerta Multilock', 'Portón'];
+  return state.npItems.map((it,i)=>({it,i})).filter(x => tiposElegibles.includes(x.it.tipo) && !x.it.autoGenerado);
+}
+function renderInstalacionSelectorNP(){
+  const cont = document.getElementById('npInstalacionSeccion');
+  const elegibles = itemsElegiblesInstalacion();
+  if(elegibles.length === 0){ cont.innerHTML = ''; state.instalacionActiva = false; return; }
+  // Si un ítem elegible se quitó del pedido, no lo dejamos seleccionado por error.
+  state.instalacionItems = (state.instalacionItems||[]).filter(idx => elegibles.some(x=>x.i===idx));
+  cont.innerHTML = `
+    <div class="section-label">Instalación (opcional)</div>
+    <label style="display:flex;align-items:center;gap:8px;font-size:14px;margin-bottom:10px">
+      <input type="checkbox" id="npInstalacionActiva" ${state.instalacionActiva ? 'checked' : ''}> Incluir instalación en este pedido
+    </label>
+    <div id="npInstalacionDetalle" class="${state.instalacionActiva ? '' : 'hidden'}" style="margin-bottom:16px">
+      <div class="field" style="margin-bottom:10px"><label>Monto de la instalación</label><div class="input-money"><input type="number" id="npInstalacionMonto" value="${state.instalacionMonto||0}"></div></div>
+      ${elegibles.length > 1 ? `
+        <label style="display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px">¿A cuáles ítems se les hace la instalación?</label>
+        ${elegibles.map(x=>`
+          <label style="display:flex;align-items:center;gap:8px;font-size:13.5px;padding:6px 0">
+            <input type="checkbox" class="np-instalacion-item-check" data-index="${x.i}" ${state.instalacionItems.includes(x.i) ? 'checked' : ''}>
+            ${x.it.nombreModelo || x.it.tipo}
+          </label>`).join('')}
+      ` : `<div style="font-size:12px;color:var(--text2)">Se aplica a: ${elegibles[0].it.nombreModelo || elegibles[0].it.tipo}</div>`}
+    </div>`;
+}
+function leerInstalacionForm(){
+  const activa = document.getElementById('npInstalacionActiva')?.checked || false;
+  const monto = parseFloat(document.getElementById('npInstalacionMonto')?.value) || 0;
+  const elegibles = itemsElegiblesInstalacion();
+  let itemIndices;
+  if(elegibles.length > 1){
+    itemIndices = Array.from(document.querySelectorAll('.np-instalacion-item-check:checked')).map(el=>Number(el.dataset.index));
+  } else {
+    itemIndices = elegibles.map(x=>x.i);
+  }
+  return { activa, monto, itemIndices };
 }
 function abrirEditarItemNP(idx){
   const item = state.npItems[idx];
@@ -5293,7 +5560,9 @@ function guardarEdicionItemNP(itemNuevo){
 function actualizarTotalNuevo(){
   const sub = state.npItems.reduce((a,i)=>a + i.precio*i.cantidad, 0);
   const desc = parseFloat(document.getElementById('npDescuento').value) || 0;
-  document.getElementById('npTotal').value = money(Math.max(0, sub - desc));
+  const instalacionActiva = document.getElementById('npInstalacionActiva')?.checked || false;
+  const instalacionMonto = instalacionActiva ? (parseFloat(document.getElementById('npInstalacionMonto')?.value) || 0) : 0;
+  document.getElementById('npTotal').value = money(Math.max(0, sub - desc + instalacionMonto));
 }
 
 function sumarDiasHabiles(fechaInicio, dias){
@@ -5309,6 +5578,9 @@ function sumarDiasHabiles(fechaInicio, dias){
 
 function abrirNuevoPedido(itemPrecargado){
   state.npItems = itemPrecargado ? [itemPrecargado] : [];
+  state.instalacionActiva = false;
+  state.instalacionMonto = 0;
+  state.instalacionItems = [];
   document.getElementById('npNombre').value = '';
   document.getElementById('npTelefono').value = '';
   document.getElementById('npCedula').value = '';
@@ -5353,8 +5625,9 @@ async function guardarPedido(){
   const descuento = parseFloat(document.getElementById('npDescuento').value) || 0;
   const abonoInicial = 0;
   const items = state.npItems;
+  const instalacion = leerInstalacionForm();
 
-  const totalCalculado = Math.max(0, items.reduce((a,i)=>a+i.precio*i.cantidad, 0) - descuento);
+  const totalCalculado = Math.max(0, items.reduce((a,i)=>a+i.precio*i.cantidad, 0) - descuento + (instalacion.activa ? instalacion.monto : 0));
   const estadoInicial = 'cotizacion';
   const tabDestino = 'cotizaciones';
 
@@ -5366,7 +5639,7 @@ async function guardarPedido(){
   const idTemporal = 'temp-' + Date.now();
   const placeholder = {
     id: idTemporal, codigo:'', cliente, fecha: new Date().toISOString().slice(0,10),
-    fecha_entrega, estado:estadoInicial, descuento, abono: abonoInicial, items, _guardando: true
+    fecha_entrega, estado:estadoInicial, descuento, abono: abonoInicial, items, instalacion, _guardando: true
   };
   pedidos.unshift(placeholder);
   renderLista();
@@ -5377,7 +5650,7 @@ async function guardarPedido(){
       idNuevo = nextId++;
       codigoNuevo = 'PED-' + String(nextCodigo++).padStart(4,'0');
     } else {
-      const resultado = await llamarBackend('savePedido', { cliente, fecha_entrega, descuento, abono: abonoInicial, items, estado: estadoInicial });
+      const resultado = await llamarBackend('savePedido', { cliente, fecha_entrega, descuento, abono: abonoInicial, items, estado: estadoInicial, instalacion });
       idNuevo = resultado.id;
       codigoNuevo = resultado.codigo;
     }
@@ -5529,20 +5802,35 @@ document.getElementById('catSearchInput').addEventListener('input', e=>{
   state.catSearch = e.target.value;
   renderCatalogo();
 });
+document.getElementById('historicoBuscador').addEventListener('input', e=>{
+  state.historicoSearch = e.target.value;
+  renderHistoricoPagos();
+});
 
 document.body.addEventListener('input', e=>{
   if(e.target.id === 'npAlto' || e.target.id === 'npAncho') actualizarPrecioSugerido();
   if(e.target.id === 'npMontoHojasExtra' || e.target.id === 'npHojasExtra') actualizarPrecioVentana();
-  if(e.target.id === 'npProteccionMonto') actualizarPrecioSugerido();
+  if(e.target.id === 'npManillonMonto' || e.target.id === 'npMarcoDecorativoMonto') actualizarPrecioSugerido();
+  if(e.target.id === 'npDescuento' || e.target.id === 'npInstalacionMonto') actualizarTotalNuevo();
 });
 document.body.addEventListener('change', e=>{
   const id = e.target.id;
-  if(/^(np|nm)(Proteccion|Manillon|PapelAhumado)$/.test(id)){
+  if(/^(np|nm)(Proteccion|Manillon|MarcoDecorativo|PapelAhumado)$/.test(id)){
     actualizarSubfields(id.slice(0,2));
   }
   const tipoActual = document.getElementById('npTipoProducto')?.value;
-  if((id === 'npPapelAhumado' || id === 'npProteccion') && tipoActual === 'ventana') actualizarPrecioVentana();
-  if(id === 'npManillon') actualizarPrecioSugerido();
+  if(id === 'npPapelAhumado' && tipoActual === 'ventana') actualizarPrecioVentana();
+  if(id === 'npProteccion'){
+    if(tipoActual === 'ventana') actualizarPrecioVentana();
+    else actualizarPrecioSugerido();
+  }
+  if(id === 'npManillon' || id === 'npMarcoDecorativo') actualizarPrecioSugerido();
+  if(id === 'npInstalacionActiva'){
+    state.instalacionActiva = e.target.checked;
+    document.getElementById('npInstalacionDetalle')?.classList.toggle('hidden', !state.instalacionActiva);
+    actualizarTotalNuevo();
+  }
+  if(e.target.classList.contains('np-instalacion-item-check')) actualizarTotalNuevo();
 });
 
 document.body.addEventListener('click', e=>{
@@ -5655,8 +5943,16 @@ document.body.addEventListener('click', e=>{
     }
   }
   else if(action === 'fin-ver-pedido') verPedidoDesdeFinanciero(el.dataset.pedidoId);
+  else if(action === 'set-financiero-tab') cambiarFinancieroTab(el.dataset.tab);
+  else if(action === 'set-historico-filtro') cambiarHistoricoFiltro(el.dataset.filtro);
+  else if(action === 'ver-historico-pedido') abrirHistoricoPedido(el.dataset.pedidoId);
+  else if(action === 'close-drawer-historico-pedido') cerrarDrawerHistoricoPedido();
+  else if(action === 'ver-pedido-desde-historico-pagos'){
+    cerrarDrawerHistoricoPedido();
+    irAScreen('ventas', 'Ventas'); abrirDrawer(Number(el.dataset.pedidoId));
+  }
   else if(action === 'avisar-admin-abono') avisarAdminAbono(el.dataset.abonoId);
-  else if(action === 'confirmar-abono-ventas') confirmarAbonoFinanciero(el.dataset.pedidoId, el.dataset.abonoId, el);
+  else if(action === 'confirmar-abono-ventas') irAConfirmarAbono(el.dataset.abonoId);
   else if(action === 'ver-comprobante') abrirLightbox(el.dataset.url);
   else if(action === 'close-lightbox') cerrarLightbox();
   else if(action === 'set-prod-tab') cambiarTabProduccion(el.dataset.tab);
@@ -5676,6 +5972,10 @@ document.body.addEventListener('click', e=>{
   else if(action === 'ver-nomina-item-detalle') abrirNominaItemDetalle(Number(el.dataset.index));
   else if(action === 'close-drawer-nomina-item') cerrarDrawerNominaItem();
   else if(action === 'ver-nomina-historial-detalle') abrirNominaHistorialDetalle(Number(el.dataset.index));
+  else if(action === 'ver-pedido-desde-historial-nomina'){
+    cerrarDrawerNominaHistorial(); cerrarDrawerNomina(); cerrarDrawerProduccion();
+    irAScreen('ventas', 'Ventas'); abrirDrawer(Number(el.dataset.id));
+  }
   else if(action === 'close-drawer-nomina-historial') cerrarDrawerNominaHistorial();
   else if(action === 'ver-pedido-desde-nomina') verPedidoDesdeNomina(el.dataset.origen, el.dataset.pedidoId);
   else if(action === 'agregar-vale') agregarValeUI(el);
